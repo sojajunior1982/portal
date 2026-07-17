@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>スポ少ポータル</title>
+    <!-- スマホで警告帯を強制非表示にするための魔法の1行 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        // ★★★ あなたのGASの「ウェブアプリURL」をここに貼り付けてください！ ★★★
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbz2c7_4BqzbAcnj90yWS-e5iJ7ZMCtNbzuaQztCKTuRzd30tcT0eIFjBvymUI_t2LecQw/exec";
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* 警告バナー(iframe)を強制的に画面外に押し出すための絶対ルール */
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* スマホ・PC共通で綺麗な縦長に固定 */
+        .app-container {
+            background: #fafbfe;
+            width: 100%;
+            max-width: 390px;
+            height: 100%;
+            max-height: 780px;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            border: 4px solid #ffffff;
+        }
+
+        @media (max-width: 480px) {
+            .app-container {
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+                border: none;
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 22px 16px 18px 16px;
+            text-align: center;
+            font-size: 17px;
+            font-weight: 700;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+            z-index: 10;
+        }
+        .back-btn {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .logout-btn {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* --- ログイン画面 --- */
+        .login-box {
+            padding: 40px 16px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+        .login-logo { font-size: 26px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px; }
+        .login-subtitle { font-size: 13px; color: #64748b; margin-bottom: 35px; }
+        .login-box input { width: 100%; padding: 14px 16px; margin-bottom: 16px; border: 1.5px solid #e2e8f0; border-radius: 14px; font-size: 15px; outline: none; }
+        .login-box button { width: 100%; padding: 14px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 14px; cursor: pointer; font-size: 16px; font-weight: bold; box-shadow: 0 8px 16px rgba(37,99,235,0.25); }
+        #message { margin-top: 15px; color: #ef4444; font-size: 13px; text-align: center; }
+
+        /* --- 日付一覧画面 --- */
+        .month-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #ffffff; padding: 10px 16px; border-radius: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.02); }
+        .month-title { font-size: 16px; font-weight: 700; color: #1e293b; }
+        .arrow { cursor: pointer; padding: 4px 10px; font-size: 18px; color: #64748b; }
+        .date-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.01); }
+        .date-text { font-size: 15px; font-weight: 700; color: #1e293b; }
+        .status-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+        .status-recruiting { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+        .status-confirmed { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+
+        /* --- 詳細画面 --- */
+        .detail-wrapper { display: flex; flex-direction: column; height: 100%; }
+        .tab-container { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; }
+        .tab { padding: 10px 18px; border-radius: 14px 14px 0 0; font-size: 13px; font-weight: 700; cursor: pointer; background: #e2e8f0; color: #475569; border: 1.5px solid #cbd5e1; border-bottom: none; white-space: nowrap; }
+        .tab.active { background: #ffffff; color: #1e3a8a; border-color: #94a3b8; padding-bottom: 11px; margin-bottom: -1px; position: relative; z-index: 2; }
+        .tab-content-box { background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 0 16px 16px 16px; padding: 16px; flex: 1; display: flex; flex-direction: column; box-shadow: 0 6px 12px rgba(0,0,0,0.01); margin-top: -1px; overflow-y: auto; margin-bottom: 84px; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .detail-item { margin-bottom: 16px; }
+        .detail-label { font-weight: 700; color: #64748b; font-size: 11px; margin-bottom: 4px; letter-spacing: 0.5px; }
+        .detail-value { font-size: 15px; color: #1e293b; line-height: 1.5; white-space: pre-wrap; }
+        .summary-status-bar { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-top: auto; font-size: 12.5px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+
+        /* 下部固定ボタン */
+        .bottom-action-bar { position: absolute; bottom: 0; left: 0; width: 100%; background: #ffffff; border-top: 1.5px solid #cbd5e1; padding: 12px 16px 20px 16px; display: flex; gap: 10px; z-index: 10; }
+        .fixed-btn { flex: 1; padding: 12px 4px; border-radius: 14px; font-size: 13.5px; font-weight: bold; cursor: pointer; text-align: center; border: none; line-height: 1.4; }
+        .fixed-btn-recruit { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; box-shadow: 0 4px 10px rgba(234, 88, 12, 0.2); }
+        .fixed-btn-absent { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+        /* --- ポップアップ（モーダル） --- */
+        .modal-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            justify-content: center;
+            align-items: flex-end;
+            padding: 16px; 
+        }
+        .modal {
+            background: #ffffff;
+            width: 100%;
+            max-width: 358px;
+            border-radius: 24px;
+            box-shadow: 0 -4px 30px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            padding: 20px 16px;
+            max-height: 90%;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.25s cubic-bezier(0.1, 0.76, 0.55, 0.94);
+            margin-bottom: 10px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .modal-header { text-align: center; margin-bottom: 14px; }
+        .modal-title { font-size: 17px; font-weight: 800; color: #0f172a; }
+        .modal-subtitle { font-size: 12.5px; color: #64748b; margin-top: 2px; }
+        .modal-body { flex: 1; overflow-y: auto; padding-right: 2px; }
+        .modal-schedule-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; margin-bottom: 12px; }
+        .row-title { font-size: 13.5px; font-weight: bold; color: #1e3a8a; margin-bottom: 8px; }
+
+        .selector-group { display: flex; gap: 6px; margin-bottom: 8px; width: 100%; }
+        .sel-btn { flex: 1; padding: 10px 2px; border: 1.5px solid #cbd5e1; border-radius: 10px; background: #ffffff; color: #475569; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; }
+        .sel-btn-full { width: 100%; margin-bottom: 8px; padding: 11px; box-sizing: border-box; }
+
+        .sel-btn.active-green { background: #ecfdf5; border-color: #10b981; color: #047857; }
+        .sel-btn.active-red { background: #fef2f2; border-color: #f87171; color: #b91c1c; }
+        .sel-btn.active-yellow { background: #fffbeb; border-color: #fbbf24; color: #b45309; }
+        .sel-btn.active-blue { background: #eff6ff; border-color: #60a5fa; color: #1d4ed8; }
+        .modal-comment { width: 100%; padding: 10px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box; }
+
+        .modal-footer { padding-top: 12px; display: flex; gap: 10px; }
+        .modal-footer-btn { flex: 1; padding: 13px; border-radius: 12px; font-weight: bold; font-size: 14px; border: none; text-align: center; }
+        .m-btn-cancel { background: #f1f5f9; color: #475569; }
+        .m-btn-submit { background: #2563eb; color: white; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
+
+        /* トースト（通知バナー）：最初は非表示に変更 */
+        .toast { display: none; position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(15, 23, 42, 0.9); color: white; padding: 10px 20px; border-radius: 50px; font-size: 12px; font-weight: bold; z-index: 999; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .loading { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; color: #64748b; font-weight: 500; gap: 12px; }
+        .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top: 3px solid #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app">
+    <!-- 動的描画 -->
+</div>
+
+<div class="modal-overlay" id="responseModal">
+    <div class="modal" id="modalContent">
+        <!-- ポップアップ内容 -->
+    </div>
+</div>
+
+<div class="toast" id="toast">保存しました！</div>
+
+<script>
+    let currentUser = null;
+    let rawSchedules = [];
+    let myAttendances = []; 
+    let groupedSchedules = {}; 
+    let currentActiveDate = null;
+    let currentActiveTabIndex = 0;
+    let tempAttendances = [];
+
+    // ★★★ GoogleAppsの邪魔な警告帯を「枠外に強制消去」する超強力なスクリプト ★★★
+    (function() {
+        if (window.top !== window.self) {
+            try {
+                // 親フレームのスタイルを強制上書きして、警告バナーを上に隠す
+                window.top.document.querySelector('body > table').style.display = 'none';
+                window.top.document.querySelector('body > div').style.paddingTop = '0px';
+            } catch (e) {
+                // セキュリティ制限で直接触れない場合の裏技
+                const style = document.createElement('style');
+                style.innerHTML = 'html, body { height: 105vh !important; transform: translateY(-5vh); }';
+                document.head.appendChild(style);
+            }
+        }
+    })();
+
+    window.onload = function() {
+        const token = localStorage.getItem('my_token');
+        if (!token) { 
+            renderLoginView(); 
+        } else { 
+            fetchUserData(token); 
+        }
+    };
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg;
+        toast.style.display = 'block'; // 見えるようにする
+        toast.classList.add('show');
+        setTimeout(() => { 
+            toast.classList.remove('show'); 
+            setTimeout(() => { toast.style.display = 'none'; }, 300); // 完全に消す
+        }, 1500);
+    }
+
+    function renderLoginView() {
+        document.getElementById('app').innerHTML = `
+            <div class="content login-box">
+                <div class="login-logo">📣 スポ少ポータル</div>
+                <div class="login-subtitle">保護者のための連絡・出欠アプリ</div>
+                <input type="text" id="userId" placeholder="ユーザーID (例: tanaka-p)">
+                <input type="password" id="password" placeholder="パスワード">
+                <button onclick="handleLogin()">ログイン</button>
+                <div id="message"></div>
+            </div>
+        `;
+    }
+
+    async function handleLogin() {
+        const userId = document.getElementById('userId').value;
+        const password = document.getElementById('password').value;
+        const messageDiv = document.getElementById('message');
+        if(!userId || !password) return;
+        messageDiv.style.color = "#2563eb"; messageDiv.innerText = "認証中...";
+        try {
+            const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'login', user_id: userId, password: password }) });
+            const result = await response.json();
+            if (result.success) { localStorage.setItem('my_token', result.token); currentUser = result.user; await fetchSchedules(); } 
+            else { messageDiv.style.color = "#ef4444"; messageDiv.innerText = result.message; }
+        } catch (error) { messageDiv.style.color = "#ef4444"; messageDiv.innerText = "通信エラーが発生しました。"; }
+    }
+
+    // ★修正箇所：自動ログイン失敗時に、画面が真っ白にならずにちゃんとログイン画面に戻るよう修正
+    async function fetchUserData(token) {
+        showLoading("自動ログイン中...");
+        try {
+            let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'auto_login', token: token }) });
+            let loginResult = await res.json();
+            if (loginResult && loginResult.success) {
+                currentUser = loginResult.user; 
+                await fetchSchedules();
+            } else { 
+                localStorage.removeItem('my_token'); 
+                renderLoginView(); 
+            }
+        } catch (e) { 
+            localStorage.removeItem('my_token'); 
+            renderLoginView(); 
+        }
+    }
+
+    async function fetchSchedules(keepScreen = false) {
+        if (!keepScreen) { showLoading("予定を読み込み中..."); }
+        try {
+            let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_schedules', family_id: currentUser.family_id }) });
+            let schedResult = await res.json();
+            if (schedResult.success) {
+                rawSchedules = schedResult.schedules; myAttendances = schedResult.attendances; groupSchedulesByDate();
+                if (keepScreen && currentActiveDate !== null) { renderDetailView(currentActiveDate); } else { renderListView(); }
+            }
+        } catch (e) { document.getElementById('app').innerHTML = `<div class="content"><p>データ取得エラー</p></div>`; }
+    }
+
+    function showLoading(msg) {
+        document.getElementById('app').innerHTML = `<div class="loading"><div class="spinner"></div><div>${msg}</div></div>`;
+    }
+
+    function groupSchedulesByDate() {
+        groupedSchedules = {};
+        rawSchedules.forEach(item => {
+            if (!groupedSchedules[item.date]) { groupedSchedules[item.date] = []; }
+            groupedSchedules[item.date].push(item);
+        });
+        for (let date in groupedSchedules) { groupedSchedules[date].sort((a, b) => a.priority - b.priority); }
+    }
+
+    function renderListView() {
+        currentActiveDate = null;
+        let html = `
+            <div class="header"><span>📅 スポ少スケジュール</span><button class="logout-btn" onclick="handleLogout()">ログアウト</button></div>
+            <div class="content">
+                <div class="month-selector"><span class="arrow">◀</span><span class="month-title">今月の予定</span><span class="arrow">▶</span></div>
+        `;
+        const sortedDates = Object.keys(groupedSchedules).sort();
+        if (sortedDates.length === 0) { html += `<p style="text-align:center; color:#94a3b8; margin-top:40px;">登録されている予定はありません</p>`; } 
+        else {
+            sortedDates.forEach(date => {
+                const events = groupedSchedules[date]; const mainEvent = events[0];
+                const d = new Date(date); const dayStr = `${d.getMonth() + 1}/${d.getDate()}`;
+                const weekDays = ["日", "月", "火", "水", "木", "金", "土"]; const weekStr = `(${weekDays[d.getDay()]})`;
+                let badgeClass = mainEvent.status === '確定' ? 'status-confirmed' : 'status-recruiting';
+                let statusText = mainEvent.status === '確定' ? '確定！' : '要協力';
+                const eventCountBadge = events.length > 1 ? `<span style="font-size:11px; background:#e2e8f0; color:#475569; padding:2px 6px; border-radius:6px; margin-left:6px;">他${events.length - 1}件</span>` : '';
+                html += `
+                    <div class="date-card" onclick="goToDetail('${date}')">
+                        <span class="date-text">${dayStr} ${weekStr} ${mainEvent.tab_name}${eventCountBadge}</span>
+                        <span class="status-badge ${badgeClass}">${statusText}</span>
+                    </div>
+                `;
+            });
+        }
+        html += `</div>`; document.getElementById('app').innerHTML = html;
+    }
+
+    function goToDetail(date) { currentActiveTabIndex = 0; renderDetailView(date); }
+
+    function renderDetailView(date) {
+        currentActiveDate = date; const events = groupedSchedules[date];
+        const d = new Date(date); const titleStr = `${d.getMonth() + 1}月${d.getDate()}日の詳細`;
+        let html = `
+            <div class="header"><button class="back-btn" onclick="renderListView()">戻る</button><span>${titleStr}</span></div>
+            <div class="content" style="padding: 16px 16px 0 16px;">
+                <div class="detail-wrapper">
+                    <div class="tab-container">
+        `;
+        events.forEach((event, index) => {
+            const activeClass = index === currentActiveTabIndex ? 'active' : '';
+            html += `<div class="tab ${activeClass}" id="tab-${index}" onclick="switchTab(${index}, ${events.length})">${event.tab_name}</div>`;
+        });
+        html += `</div><div class="tab-content-box">`;
+        events.forEach((event, index) => {
+            const activeClass = index === currentActiveTabIndex ? 'active' : '';
+            const myAttsForThisEvent = myAttendances.filter(a => a.schedule_id === event.schedule_id);
+            const parentAns = myAttsForThisEvent.find(a => a.type === '保護者');
+            const childAns = myAttsForThisEvent.find(a => a.type === '子供');
+            const parentStatusText = parentAns ? parentAns.response : "不参加 (未回答)";
+            const childStatusText = childAns ? childAns.response : "出席 (デフォルト)";
+            html += `
+                <div class="tab-panel ${activeClass}" id="tab-panel-${index}">
+                    <div class="detail-item"><div class="detail-value" style="font-size: 19px; font-weight: 800; color:#1e3b8a; margin-bottom:10px;">${event.tab_name}</div></div>
+                    <div class="detail-item"><div class="detail-label">📍 場所</div><div class="detail-value" style="font-weight:600;">${event.location || '未定'}</div></div>
+                    <div class="detail-item"><div class="detail-label">📝 スケジュール・連絡</div><div class="detail-value" style="color:#475569; font-size:14.5px;">${event.description || '詳細なし'}</div></div>
+                    <div class="summary-status-bar">
+                        <div style="font-weight:bold; color:#334155; margin-bottom:6px; font-size:11.5px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🙋‍♀️ わが家の今の回答</div>
+                        <div class="summary-row"><span style="color:#64748b;">子供 (${currentUser.children}):</span><span style="font-weight:bold; color: ${childStatusText.includes('出席') ? '#059669' : '#ef4444'};">${childStatusText}</span></div>
+                        <div class="summary-row"><span style="color:#64748b;">保護者 (${currentUser.user_name}):</span><span style="font-weight:bold; color: ${parentStatusText === '不参加' || parentStatusText.includes('不参加') ? '#64748b' : '#0284c7'};">${parentStatusText}</span></div>
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div></div>`;
+        html += `
+            <div class="bottom-action-bar">
+                <button class="fixed-btn fixed-btn-recruit" onclick="openFullResponseModal('保護者')">🙋‍♂️ 保護者のお手伝い<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">できること選ぶ！</span></button>
+                <button class="fixed-btn fixed-btn-absent" onclick="openFullResponseModal('子供')">🧒 子供の出欠連絡<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">連絡はこちらから</span></button>
+            </div>
+        `;
+        html += `</div>`; document.getElementById('app').innerHTML = html;
+    }
+
+    function switchTab(activeIndex, totalTabs) {
+        currentActiveTabIndex = activeIndex;
+        for (let i = 0; i < totalTabs; i++) {
+            const tab = document.getElementById(`tab-${i}`); const panel = document.getElementById(`tab-panel-${i}`);
+            if (i === activeIndex) { tab.classList.add('active'); panel.classList.add('active'); } 
+            else { tab.classList.remove('active'); panel.classList.remove('active'); }
+        }
+    }
+
+    function openFullResponseModal(type) {
+        const modalOverlay = document.getElementById('responseModal'); const modalContent = document.getElementById('modalContent');
+        const events = groupedSchedules[currentActiveDate]; const targetName = type === '子供' ? currentUser.children : currentUser.user_name;
+        
+        let title = type === '子供' ? "🧒 子供の出欠を教えてね" : "🙋‍♂️ 協力パパママ募集中！";
+        let subtitle = `対象: ${targetName}（本日の全${events.length}予定）`;
+        
+        tempAttendances = []; let rowsHtml = "";
+
+        events.forEach((event, idx) => {
+            const existing = myAttendances.find(a => a.schedule_id === event.schedule_id && a.type === type);
+            let currentResponse = existing ? existing.response : (type === '子供' ? "出席" : "不参加");
+            let currentComment = existing ? existing.comment || "" : "";
+            
+            tempAttendances.push({ schedule_id: event.schedule_id, response: currentResponse, comment: currentComment });
+            let selectorButtonsHtml = "";
+
+            if (type === '子供') {
+                const opts = [
+                    { key: "出席", text: "🟢出席" },
+                    { key: "欠席", text: "🔴お休み" },
+                    { key: "遅刻", text: "🟡遅刻" },
+                    { key: "早退", text: "🔵早退" }
+                ];
+                opts.forEach(opt => {
+                    const isActive = currentResponse === opt.key; let activeClass = "";
+                    if (isActive) {
+                        if (opt.key === "出席") activeClass = "active-green"; if (opt.key === "欠席") activeClass = "active-red";
+                        if (opt.key === "遅刻") activeClass = "active-yellow"; if (opt.key === "早退") activeClass = "active-blue";
+                    }
+                    selectorButtonsHtml += `<button class="sel-btn ${activeClass}" id="btn-${event.schedule_id}-${opt.key}" onclick="selectTempResponse('${event.schedule_id}', '${opt.key}', '子供')">${opt.text}</button>`;
+                });
+            } else {
+                const availableRoles = event.recruit_roles ? event.recruit_roles.split(',').map(r => r.trim()).filter(r => r !== "") : [];
+                if (availableRoles.length === 0) {
+                    selectorButtonsHtml = `<div style="font-size:12px; color:#94a3b8; text-align:center; padding:6px 0;">🤝 お手伝いは不要な予定です</div>`;
+                } else {
+                    const isUnused = currentResponse === "不参加" || currentResponse === "";
+                    selectorButtonsHtml += `<button class="sel-btn sel-btn-full ${isUnused ? 'active-red' : ''}" id="btn-${event.schedule_id}-不参加" onclick="selectTempResponse('${event.schedule_id}', '不参加', '保護者')">❌ 今回はムリです泣</button>`;
+                    
+                    const activeRoles = currentResponse.split(',').map(r => r.trim());
+                    
+                    selectorButtonsHtml += `<div class="selector-group">`;
+                    availableRoles.forEach(role => {
+                        const isSelected = activeRoles.includes(role);
+                        let friendlyRoleText = `👍${role}`;
+                        if (role.includes("車")) friendlyRoleText = "🚗車出せる！";
+                        if (role.includes("当番")) friendlyRoleText = "🙋当番できる！";
+                        
+                        selectorButtonsHtml += `<button class="sel-btn ${isSelected ? 'active-green' : ''}" id="btn-${event.schedule_id}-${role}" onclick="selectTempResponse('${event.schedule_id}', '${role}', '保護者', ${isSelected})">${friendlyRoleText}</button>`;
+                    });
+                    selectorButtonsHtml += `</div>`;
+                }
+            }
+
+            const hasNoRoles = type === '保護者' && (!event.recruit_roles || event.recruit_roles.trim() === "");
+            const commentInputHtml = hasNoRoles ? "" : `<input type="text" class="modal-comment" id="modal-cmt-${event.schedule_id}" placeholder="理由や連絡（あればでOK）" value="${currentComment}" oninput="updateTempComment('${event.schedule_id}', this.value)">`;
+
+            rowsHtml += `
+                <div class="modal-schedule-row">
+                    <div class="row-title">${idx + 1}. ${event.tab_name}</div>
+                    <div style="width:100%;">${selectorButtonsHtml}</div>
+                    ${commentInputHtml}
+                </div>
+            `;
+        });
+
+        modalContent.innerHTML = `
+            <div class="modal-header"><div class="modal-title">${title}</div><div class="modal-subtitle">${subtitle}</div></div>
+            <div class="modal-body">${rowsHtml}</div>
+            <div class="modal-footer">
+                <button class="modal-footer-btn m-btn-cancel" onclick="closeFullResponseModal()">やめる</button>
+                <button class="modal-footer-btn m-btn-submit" onclick="submitAllResponses('${type}')">これで一括送信！</button>
+            </div>
+        `;
+        modalOverlay.style.display = 'flex';
+    }
+
+    function selectTempResponse(scheduleId, opt, type, isSelectedAlready = false) {
+        const target = tempAttendances.find(t => t.schedule_id === scheduleId); if (!target) return;
+        if (type === '子供') {
+            target.response = opt; const btns = document.querySelectorAll(`[id^="btn-${scheduleId}-"]`);
+            btns.forEach(b => {
+                b.className = "sel-btn";
+                if (b.id === `btn-${scheduleId}-${opt}`) {
+                    if (opt === "出席") b.classList.add("active-green"); if (opt === "欠席") b.classList.add("active-red");
+                    if (opt === "遅刻") b.classList.add("active-yellow"); if (opt === "早退") b.classList.add("active-blue");
+                }
+            });
+        } else {
+            if (opt === '不参加') { target.response = "unselected"; } 
+            else {
+                let currentRoles = target.response.split(',').map(r => r.trim()).filter(r => r !== "" && r !== "unselected" && r !== "不参加");
+                if (isSelectedAlready) { currentRoles = currentRoles.filter(r => r !== opt); } else { currentRoles.push(opt); }
+                target.response = currentRoles.length > 0 ? currentRoles.join(', ') : "unselected";
+            }
+            const dbResponseValue = target.response === "unselected" ? "不参加" : target.response;
+            const btns = document.querySelectorAll(`[id^="btn-${scheduleId}-"]`);
+            const activeRoles = dbResponseValue.split(',').map(r => r.trim());
+            btns.forEach(b => {
+                b.className = b.id.includes('不参加') ? "sel-btn sel-btn-full" : "sel-btn";
+                const roleName = b.id.replace(`btn-${scheduleId}-`, '');
+                if (roleName === '不参加') { if (dbResponseValue === '不参加') b.classList.add('active-red'); } 
+                else {
+                    if (activeRoles.includes(roleName)) { b.classList.add('active-green'); b.setAttribute('onclick', `selectTempResponse('${scheduleId}', '${roleName}', '保護者', true)`); } 
+                    else { b.setAttribute('onclick', `selectTempResponse('${scheduleId}', '${roleName}', '保護者', false)`); }
+                }
+            });
+        }
+    }
+
+    function updateTempComment(scheduleId, text) { const target = tempAttendances.find(t => t.schedule_id === scheduleId); if (target) { target.comment = text; } }
+    function closeFullResponseModal() { document.getElementById('responseModal').style.display = 'none'; }
+
+    async function submitAllResponses(type) {
+        closeFullResponseModal(); showLoading("まとめて保存中...");
+        const name = type === '子供' ? currentUser.children : currentUser.user_name;
+        try {
+            const promises = tempAttendances.map(temp => {
+                const finalResponse = temp.response === "unselected" ? "不参加" : temp.response;
+                return fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'submit_attendance', schedule_id: temp.schedule_id, family_id: currentUser.family_id, name: name, type: type, response: finalResponse, comment: temp.comment })
+                });
+            });
+            await Promise.all(promises); await fetchSchedules(true); showToast("すべて保存しました！");
+        } catch (error) { alert("通信エラーが発生しました。"); renderListView(); }
+    }
+
+    function handleLogout() { localStorage.removeItem('my_token'); renderLoginView(); }
+</script>
+
+</body>
+</html>
