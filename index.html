@@ -20,28 +20,28 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        html {
+        html, body {
             width: 100%;
             height: 100%;
+            margin: 0;
+            padding: 0;
             background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-            overflow-y: auto; /* ページ全体でスクロールを許可 */
+            overflow: hidden; /* 画面全体のスクロールを禁止し、アプリ内スクロールに固定 */
         }
         
         body {
-            width: 100%;
-            min-height: 100%;
-            margin: 0;
-            padding: 16px 0;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
         }
         
+        /* アプリの枠組み（スマホ風コンテナ） */
         .app-container {
             background: #fafbfe;
             width: 100%;
             max-width: 390px;
-            min-height: 700px;
+            height: 100%;
+            max-height: 844px;
             border-radius: 32px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.15);
             display: flex;
@@ -49,23 +49,20 @@
             position: relative;
             border: 4px solid #ffffff;
             overflow: hidden;
-            margin-bottom: 20px;
         }
 
         @media (max-width: 480px) {
-            body {
-                padding: 0;
-            }
             .app-container {
                 max-width: 100%;
-                min-height: 100vh;
+                height: 100vh;
+                max-height: 100vh;
                 border-radius: 0;
                 border: none;
                 box-shadow: none;
-                margin-bottom: 0;
             }
         }
 
+        /* 共通ヘッダー（完全固定） */
         .header {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: white;
@@ -91,7 +88,6 @@
             font-size: 12px;
             font-weight: bold;
             cursor: pointer;
-            z-index: 20;
         }
         .logout-btn {
             position: absolute;
@@ -105,23 +101,25 @@
             border-radius: 20px;
             font-size: 11px;
             cursor: pointer;
-            z-index: 20;
         }
 
+        /* スクロール可能なメインコンテンツ領域 */
         .content {
             flex: 1;
+            overflow-y: auto;
             padding: 16px;
-            padding-bottom: 90px; /* 下部固定ボタンと被らないように余白を確保 */
+            -webkit-overflow-scrolling: touch;
         }
 
         /* --- ログイン画面 --- */
         .login-box {
-            padding: 40px 16px;
+            padding: 20px 16px;
             text-align: center;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            height: 100%;
         }
         .login-logo-img {
             width: 100px;
@@ -148,10 +146,22 @@
         .status-confirmed { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
 
         /* --- 詳細画面 --- */
-        .tab-container { display: flex; gap: 6px; margin-bottom: 0; overflow-x: auto; padding-bottom: 0; }
+        .detail-wrapper { display: flex; flex-direction: column; height: 100%; }
+        .tab-container { display: flex; gap: 6px; margin-bottom: 0; overflow-x: auto; padding-bottom: 0; flex-shrink: 0; }
         .tab { padding: 10px 18px; border-radius: 14px 14px 0 0; font-size: 13px; font-weight: 700; cursor: pointer; background: #e2e8f0; color: #475569; border: 1.5px solid #cbd5e1; border-bottom: none; white-space: nowrap; }
         .tab.active { background: #ffffff; color: #1e3a8a; border-color: #94a3b8; padding-bottom: 11px; margin-bottom: -1px; position: relative; z-index: 2; }
-        .tab-content-box { background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 0 16px 16px 16px; padding: 16px; box-shadow: 0 6px 12px rgba(0,0,0,0.01); margin-top: -1px; }
+        
+        .tab-content-box { 
+            background: #ffffff; 
+            border: 1.5px solid #cbd5e1; 
+            border-radius: 0 16px 16px 16px; 
+            padding: 16px; 
+            flex: 1; 
+            overflow-y: auto; /* ここだけがスクロールする！ */
+            box-shadow: 0 6px 12px rgba(0,0,0,0.01); 
+            margin-top: -1px; 
+            margin-bottom: 12px;
+        }
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
         .detail-item { margin-bottom: 16px; }
@@ -160,8 +170,16 @@
         .summary-status-bar { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-top: 16px; font-size: 12.5px; }
         .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
 
-        /* 下部固定ボタン */
-        .bottom-action-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 390px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border-top: 1.5px solid #cbd5e1; padding: 10px 16px 20px 16px; display: flex; gap: 10px; z-index: 90; }
+        /* 下部固定ボタン（完全固定） */
+        .bottom-action-bar { 
+            background: #ffffff; 
+            border-top: 1.5px solid #cbd5e1; 
+            padding: 12px 16px 20px 16px; 
+            display: flex; 
+            gap: 10px; 
+            flex-shrink: 0;
+            z-index: 10; 
+        }
         .fixed-btn { flex: 1; padding: 12px 4px; border-radius: 14px; font-size: 13.5px; font-weight: bold; cursor: pointer; text-align: center; border: none; line-height: 1.4; }
         .fixed-btn-recruit { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; box-shadow: 0 4px 10px rgba(234, 88, 12, 0.2); }
         .fixed-btn-absent { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
@@ -169,12 +187,12 @@
         /* --- ポップアップ（モーダル） --- */
         .modal-overlay {
             display: none;
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15, 23, 42, 0.4);
             backdrop-filter: blur(4px);
             z-index: 100;
             justify-content: center;
@@ -189,7 +207,7 @@
             box-shadow: 0 -4px 30px rgba(0,0,0,0.15);
             box-sizing: border-box;
             padding: 20px 16px;
-            max-height: 85vh;
+            max-height: 90%;
             display: flex;
             flex-direction: column;
             animation: slideUp 0.25s cubic-bezier(0.1, 0.76, 0.55, 0.94);
@@ -219,9 +237,9 @@
         .m-btn-cancel { background: #f1f5f9; color: #475569; }
         .m-btn-submit { background: #2563eb; color: white; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
 
-        .toast { display: none; position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(15, 23, 42, 0.9); color: white; padding: 10px 20px; border-radius: 50px; font-size: 12px; font-weight: bold; z-index: 999; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .toast { display: none; position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(15, 23, 42, 0.9); color: white; padding: 10px 20px; border-radius: 50px; font-size: 12px; font-weight: bold; z-index: 999; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .toast.show { transform: translateX(-50%) translateY(0); }
-        .loading { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 300px; color: #64748b; font-weight: 500; gap: 12px; }
+        .loading { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; color: #64748b; font-weight: 500; gap: 12px; }
         .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top: 3px solid #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -281,7 +299,7 @@
 
     function renderLoginView() {
         document.getElementById('app').innerHTML = `
-            <div class="header"><span>スポ少ポータル総社ジュニアポータル</span></div>
+            <div class="header"><span>スポ少ポータル</span></div>
             <div class="content login-box">
                 <img src="https://raw.githubusercontent.com/sojajunior1982/portal/main/logo_01.png" alt="チームロゴ" class="login-logo-img">
                 <div class="login-logo">スポ少ポータル</div>
@@ -326,14 +344,22 @@
         }
     }
 
-    async function fetchSchedules(keepScreen = false) {
-        if (!keepScreen) { showLoading("予定を読み込み中..."); }
+    // 初回起動時のみサーバーからデータを取得（戻る時は通信しない！）
+    async function fetchSchedules(isInitial = true) {
+        if (isInitial) { showLoading("予定を読み込み中..."); }
         try {
             let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_schedules', family_id: currentUser.family_id }) });
             let schedResult = await res.json();
             if (schedResult.success) {
-                rawSchedules = schedResult.schedules; myAttendances = schedResult.attendances; groupSchedulesByDate();
-                if (keepScreen && currentActiveDate !== null) { renderDetailView(currentActiveDate); } else { renderListView(); }
+                rawSchedules = schedResult.schedules; 
+                myAttendances = schedResult.attendances; 
+                groupSchedulesByDate();
+                
+                if (currentActiveDate !== null) { 
+                    renderDetailView(currentActiveDate); 
+                } else { 
+                    renderListView(); 
+                }
             }
         } catch (e) { document.getElementById('app').innerHTML = `<div class="content"><p>データ取得エラー</p></div>`; }
     }
@@ -383,12 +409,18 @@
 
     function goToDetail(date) { currentActiveTabIndex = 0; renderDetailView(date); }
 
+    // ★ 戻る時はサーバーと通信せず、メモリ上のデータですぐに一覧に戻る！
+    function renderListViewInstant() {
+        currentActiveDate = null;
+        renderListView();
+    }
+
     function renderDetailView(date) {
         currentActiveDate = date; const events = groupedSchedules[date];
         const d = new Date(date); const titleStr = `${d.getMonth() + 1}月${d.getDate()}日の詳細`;
         let html = `
-            <div class="header"><button class="back-btn" onclick="renderListView()">戻る</button><span>${titleStr}</span></div>
-            <div class="content">
+            <div class="header"><button class="back-btn" onclick="renderListViewInstant()">戻る</button><span>${titleStr}</span></div>
+            <div class="content" style="display: flex; flex-direction: column;">
                 <div class="tab-container">
         `;
         events.forEach((event, index) => {
@@ -560,7 +592,9 @@
                     body: JSON.stringify({ action: 'submit_attendance', schedule_id: temp.schedule_id, family_id: currentUser.family_id, name: name, type: type, response: finalResponse, comment: temp.comment })
                 });
             });
-            await Promise.all(promises); await fetchSchedules(true); showToast("すべて保存しました！");
+            await Promise.all(promises); 
+            await fetchSchedules(false); // 保存後はローディングを出さずに裏でデータを更新
+            showToast("すべて保存しました！");
         } catch (error) { alert("通信エラーが発生しました。"); renderListView(); }
     }
 
