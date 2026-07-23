@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>総社ジュニア保護者ポータル</title>
-    <!-- スマホで警告帯を強制非表示にするための魔法の1行 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- スマホホーム画面用アイコン -->
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sojajunior1982/portal/main/logo_01.png">
     <script>
         // ★★★ あなたのGASの「ウェブアプリURL」 ★★★
@@ -26,7 +24,6 @@
             margin: 0;
             padding: 0;
             background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-            /* 全体の余計なバウンスを防ぐ */
             position: fixed;
             overflow: hidden;
         }
@@ -37,7 +34,6 @@
             align-items: center;
         }
         
-        /* アプリの枠組み（スマホ風コンテナ） */
         .app-container {
             background: #fafbfe;
             width: 100%;
@@ -56,7 +52,7 @@
         @media (max-width: 480px) {
             .app-container {
                 max-width: 100%;
-                height: 100dvh; /* スマホのビューポートハイトに完全追従 */
+                height: 100dvh;
                 max-height: 100dvh;
                 border-radius: 0;
                 border: none;
@@ -64,7 +60,6 @@
             }
         }
 
-        /* 共通ヘッダー（完全固定） */
         .header {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: white;
@@ -105,7 +100,6 @@
             cursor: pointer;
         }
 
-        /* スクロール可能なメインコンテンツ領域 */
         .content {
             flex: 1;
             overflow-y: auto;
@@ -113,7 +107,6 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* --- ログイン画面 --- */
         .login-box {
             padding: 20px 16px;
             text-align: center;
@@ -137,7 +130,6 @@
         .login-box button { width: 100%; padding: 14px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 14px; cursor: pointer; font-size: 16px; font-weight: bold; box-shadow: 0 8px 16px rgba(37,99,235,0.25); }
         #message { margin-top: 15px; color: #ef4444; font-size: 13px; text-align: center; }
 
-        /* --- 日付一覧画面 --- */
         .month-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #ffffff; padding: 10px 16px; border-radius: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.02); }
         .month-title { font-size: 16px; font-weight: 700; color: #1e293b; }
         .arrow { cursor: pointer; padding: 4px 10px; font-size: 18px; color: #64748b; }
@@ -147,8 +139,6 @@
         .status-recruiting { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
         .status-confirmed { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
 
-        /* --- 詳細画面 --- */
-        .detail-wrapper { display: flex; flex-direction: column; height: 100%; }
         .tab-container { display: flex; gap: 6px; margin-bottom: 0; overflow-x: auto; padding-bottom: 0; flex-shrink: 0; }
         .tab { padding: 10px 18px; border-radius: 14px 14px 0 0; font-size: 13px; font-weight: 700; cursor: pointer; background: #e2e8f0; color: #475569; border: 1.5px solid #cbd5e1; border-bottom: none; white-space: nowrap; }
         .tab.active { background: #ffffff; color: #1e3a8a; border-color: #94a3b8; padding-bottom: 11px; margin-bottom: -1px; position: relative; z-index: 2; }
@@ -159,7 +149,7 @@
             border-radius: 0 16px 16px 16px; 
             padding: 16px; 
             flex: 1; 
-            overflow-y: auto; /* ここだけがスクロールする！ */
+            overflow-y: auto;
             box-shadow: 0 6px 12px rgba(0,0,0,0.01); 
             margin-top: -1px; 
             margin-bottom: 12px;
@@ -172,7 +162,6 @@
         .summary-status-bar { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-top: 16px; font-size: 12.5px; }
         .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
 
-        /* 下部固定ボタン（完全固定） */
         .bottom-action-bar { 
             background: #ffffff; 
             border-top: 1.5px solid #cbd5e1; 
@@ -186,7 +175,6 @@
         .fixed-btn-recruit { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; box-shadow: 0 4px 10px rgba(234, 88, 12, 0.2); }
         .fixed-btn-absent { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
-        /* --- ポップアップ（モーダル） --- */
         .modal-overlay {
             display: none;
             position: absolute;
@@ -223,6 +211,9 @@
         .modal-body { flex: 1; overflow-y: auto; padding-right: 2px; }
         .modal-schedule-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; margin-bottom: 12px; }
         .row-title { font-size: 13.5px; font-weight: bold; color: #1e3a8a; margin-bottom: 8px; }
+
+        .child-section { border-top: 1px dashed #cbd5e1; padding-top: 10px; margin-top: 10px; }
+        .child-name-badge { font-size: 12px; font-weight: 700; color: #1d4ed8; margin-bottom: 6px; display: inline-block; background: #eff6ff; padding: 2px 8px; border-radius: 6px; }
 
         .selector-group { display: flex; gap: 6px; margin-bottom: 8px; width: 100%; }
         .sel-btn { flex: 1; padding: 10px 2px; border: 1.5px solid #cbd5e1; border-radius: 10px; background: #ffffff; color: #475569; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; }
@@ -268,6 +259,12 @@
     let currentActiveDate = null;
     let currentActiveTabIndex = 0;
     let tempAttendances = [];
+
+    // 子供一覧を配列で取得するヘルパー関数（カンマ・全角カンマ対応）
+    function getChildrenList() {
+        if (!currentUser || !currentUser.children) return [];
+        return currentUser.children.split(/[,、]/).map(c => c.trim()).filter(c => c !== "");
+    }
 
     // 邪魔な警告帯を強制消去
     (function() {
@@ -329,7 +326,11 @@
         try {
             const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'login', user_id: userId, password: password }) });
             const result = await response.json();
-            if (result.success) { localStorage.setItem('my_token', result.token); currentUser = result.user; await fetchSchedules(); } 
+            if (result.success) { 
+                localStorage.setItem('my_token', result.token); 
+                currentUser = result.user; 
+                await fetchSchedules(); 
+            } 
             else { messageDiv.style.color = "#ef4444"; messageDiv.innerText = result.message; }
         } catch (error) { messageDiv.style.color = "#ef4444"; messageDiv.innerText = "通信エラーが発生しました。"; }
     }
@@ -424,6 +425,8 @@
     function renderDetailView(date) {
         currentActiveDate = date; const events = groupedSchedules[date];
         const d = new Date(date); const titleStr = `${d.getMonth() + 1}月${d.getDate()}日の詳細`;
+        const childrenList = getChildrenList();
+
         let html = `
             <div class="header"><button class="back-btn" onclick="renderListViewInstant()">戻る</button><span>${titleStr}</span></div>
             <div class="content" style="display: flex; flex-direction: column;">
@@ -438,9 +441,24 @@
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
             const myAttsForThisEvent = myAttendances.filter(a => String(a.schedule_id) === String(event.schedule_id));
             const parentAns = myAttsForThisEvent.find(a => a.type === '保護者');
-            const childAns = myAttsForThisEvent.find(a => a.type === '子供');
             const parentStatusText = parentAns ? parentAns.response : "不参加 (未回答)";
-            const childStatusText = childAns ? childAns.response : "出席 (デフォルト)";
+
+            let childrenStatusRowsHtml = "";
+            if (childrenList.length > 0) {
+                childrenList.forEach(childName => {
+                    const childAns = myAttsForThisEvent.find(a => a.type === '子供' && a.name === childName);
+                    const childStatusText = childAns ? childAns.response : "出席 (未回答)";
+                    childrenStatusRowsHtml += `
+                        <div class="summary-row">
+                            <span style="color:#64748b;">子供 (${childName}):</span>
+                            <span style="font-weight:bold; color: ${childStatusText.includes('出席') ? '#059669' : '#ef4444'};">${childStatusText}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                childrenStatusRowsHtml = `<div class="summary-row"><span style="color:#94a3b8;">子供の情報がありません</span></div>`;
+            }
+
             html += `
                 <div class="tab-panel ${activeClass}" id="tab-panel-${index}">
                     <div class="detail-item"><div class="detail-value" style="font-size: 19px; font-weight: 800; color:#1e3b8a; margin-bottom:10px;">${event.tab_name}</div></div>
@@ -448,7 +466,7 @@
                     <div class="detail-item"><div class="detail-label">📝 スケジュール・連絡</div><div class="detail-value" style="color:#475569; font-size:14.5px;">${event.description || '詳細なし'}</div></div>
                     <div class="summary-status-bar">
                         <div style="font-weight:bold; color:#334155; margin-bottom:6px; font-size:11.5px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🙋‍♀️ わが家の今の回答</div>
-                        <div class="summary-row"><span style="color:#64748b;">子供 (${currentUser.children}):</span><span style="font-weight:bold; color: ${childStatusText.includes('出席') ? '#059669' : '#ef4444'};">${childStatusText}</span></div>
+                        ${childrenStatusRowsHtml}
                         <div class="summary-row"><span style="color:#64748b;">保護者 (${currentUser.user_name}):</span><span style="font-weight:bold; color: ${parentStatusText === '不参加' || parentStatusText.includes('不参加') ? '#64748b' : '#0284c7'};">${parentStatusText}</span></div>
                     </div>
                 </div>
@@ -477,75 +495,98 @@
         const modalOverlay = document.getElementById('responseModal'); 
         const modalContent = document.getElementById('modalContent');
         const events = groupedSchedules[currentActiveDate]; 
-        const targetName = type === '子供' ? currentUser.children : currentUser.user_name;
+        const childrenList = getChildrenList();
         
         let title = type === '子供' ? "🧒 子供の出欠を教えてね" : "🙋‍♂️ 協力パパママ募集中！";
-        let subtitle = `対象: ${targetName}（本日の全${events.length}予定）`;
+        let subtitle = type === '子供' ? `対象: ${childrenList.join('・')}` : `対象: ${currentUser.user_name}`;
         
         tempAttendances = []; 
         let rowsHtml = "";
 
         events.forEach((event, idx) => {
-            const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === type);
-            let currentResponse = existing ? existing.response : (type === '子供' ? "出席(自転車)" : "不参加");
-            let currentComment = existing ? existing.comment || "" : "";
-            
-            tempAttendances.push({ schedule_id: String(event.schedule_id), response: currentResponse, comment: currentComment });
-            let selectorButtonsHtml = "";
+            let selectorContentHtml = "";
 
             if (type === '子供') {
-                const opts = [
-                    { key: "出席(自転車)", text: "🚲出席(自転車)" },
-                    { key: "出席(送迎)", text: "🚗出席(送迎)" },
-                    { key: "欠席", text: "🔴お休み" },
-                    { key: "遅刻", text: "🟡遅刻" },
-                    { key: "早退", text: "🔵早退" }
-                ];
-                selectorButtonsHtml += `<div class="selector-group" style="flex-wrap: wrap;">`;
-                opts.forEach(opt => {
-                    const isActive = currentResponse === opt.key || (currentResponse === '出席' && opt.key === '出席(自転車)');
-                    let activeClass = "";
-                    if (isActive) {
-                        if (opt.key.includes("出席")) activeClass = "active-green"; 
-                        if (opt.key === "欠席") activeClass = "active-red";
-                        if (opt.key === "遅刻") activeClass = "active-yellow"; 
-                        if (opt.key === "早退") activeClass = "active-blue";
-                    }
-                    const btnStyle = opt.key.includes("出席") ? "flex: 1 1 45%;" : "flex: 1 1 28%;";
-                    selectorButtonsHtml += `<button class="sel-btn ${activeClass}" style="${btnStyle}" id="btn-${event.schedule_id}-${opt.key}" onclick="selectTempResponse('${event.schedule_id}', '${opt.key}', '子供')">${opt.text}</button>`;
+                // それぞれの子供ごとにブロックを作成
+                childrenList.forEach((childName, cIdx) => {
+                    const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === '子供' && a.name === childName);
+                    let currentResponse = existing ? existing.response : "出席(自転車)";
+                    let currentComment = existing ? existing.comment || "" : "";
+                    
+                    tempAttendances.push({ schedule_id: String(event.schedule_id), name: childName, response: currentResponse, comment: currentComment });
+
+                    const opts = [
+                        { key: "出席(自転車)", text: "🚲出席(自転車)" },
+                        { key: "出席(送迎)", text: "🚗出席(送迎)" },
+                        { key: "欠席", text: "🔴お休み" },
+                        { key: "遅刻", text: "🟡遅刻" },
+                        { key: "早退", text: "🔵早退" }
+                    ];
+
+                    let btnsHtml = `<div class="selector-group" style="flex-wrap: wrap;">`;
+                    opts.forEach(opt => {
+                        const isActive = currentResponse === opt.key || (currentResponse === '出席' && opt.key === '出席(自転車)');
+                        let activeClass = "";
+                        if (isActive) {
+                            if (opt.key.includes("出席")) activeClass = "active-green"; 
+                            if (opt.key === "欠席") activeClass = "active-red";
+                            if (opt.key === "遅刻") activeClass = "active-yellow"; 
+                            if (opt.key === "早退") activeClass = "active-blue";
+                        }
+                        const btnStyle = opt.key.includes("出席") ? "flex: 1 1 45%;" : "flex: 1 1 28%;";
+                        const safeChildId = encodeURIComponent(childName);
+                        btnsHtml += `<button class="sel-btn ${activeClass}" style="${btnStyle}" id="btn-${event.schedule_id}-${safeChildId}-${opt.key}" onclick="selectTempResponse('${event.schedule_id}', '${opt.key}', '子供', '${childName}')">${opt.text}</button>`;
+                    });
+                    btnsHtml += `</div>`;
+
+                    selectorContentHtml += `
+                        <div class="${cIdx > 0 ? 'child-section' : ''}">
+                            <div class="child-name-badge">👤 ${childName}</div>
+                            ${btnsHtml}
+                            <input type="text" class="modal-comment" id="modal-cmt-${event.schedule_id}-${childName}" placeholder="補足連絡（あれば）" value="${currentComment}" oninput="updateTempComment('${event.schedule_id}', '${childName}', this.value)">
+                        </div>
+                    `;
                 });
-                selectorButtonsHtml += `</div>`;
             } else {
+                // 保護者の場合
+                const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === '保護者');
+                let currentResponse = existing ? existing.response : "不参加";
+                let currentComment = existing ? existing.comment || "" : "";
+                
+                tempAttendances.push({ schedule_id: String(event.schedule_id), name: currentUser.user_name, response: currentResponse, comment: currentComment });
+
                 const availableRoles = event.recruit_roles ? event.recruit_roles.split(',').map(r => r.trim()).filter(r => r !== "") : [];
                 if (availableRoles.length === 0) {
-                    selectorButtonsHtml = `<div style="font-size:12px; color:#94a3b8; text-align:center; padding:6px 0;">🤝 お手伝いは不要な予定です</div>`;
+                    selectorContentHtml = `<div style="font-size:12px; color:#94a3b8; text-align:center; padding:6px 0;">🤝 お手伝いは不要な予定です</div>`;
                 } else {
                     const isUnused = currentResponse === "不参加" || currentResponse === "";
-                    selectorButtonsHtml += `<button class="sel-btn sel-btn-full ${isUnused ? 'active-red' : ''}" id="btn-${event.schedule_id}-不参加" onclick="selectTempResponse('${event.schedule_id}', '不参加', '保護者')">❌ 今回はムリです泣</button>`;
+                    let btnsHtml = `<button class="sel-btn sel-btn-full ${isUnused ? 'active-red' : ''}" id="btn-${event.schedule_id}-不参加" onclick="selectTempResponse('${event.schedule_id}', '不参加', '保護者')">❌ 今回はムリです泣</button>`;
                     
                     const activeRoles = currentResponse.split(',').map(r => r.trim());
                     
-                    selectorButtonsHtml += `<div class="selector-group">`;
+                    btnsHtml += `<div class="selector-group">`;
                     availableRoles.forEach(role => {
                         const isSelected = activeRoles.includes(role);
                         let friendlyRoleText = `👍${role}`;
                         if (role.includes("車")) friendlyRoleText = "🚗車出せる！";
                         if (role.includes("当番")) friendlyRoleText = "🙋当番できる！";
                         
-                        selectorButtonsHtml += `<button class="sel-btn ${isSelected ? 'active-green' : ''}" id="btn-${event.schedule_id}-${role}" onclick="selectTempResponse('${event.schedule_id}', '${role}', '保護者', ${isSelected})">${friendlyRoleText}</button>`;
+                        btnsHtml += `<button class="sel-btn ${isSelected ? 'active-green' : ''}" id="btn-${event.schedule_id}-${role}" onclick="selectTempResponse('${event.schedule_id}', '${role}', '保護者', null, ${isSelected})">${friendlyRoleText}</button>`;
                     });
-                    selectorButtonsHtml += `</div>`;
+                    btnsHtml += `</div>`;
+                    selectorContentHtml = btnsHtml;
+                }
+
+                const hasNoRoles = (!event.recruit_roles || event.recruit_roles.trim() === "");
+                if (!hasNoRoles) {
+                    selectorContentHtml += `<input type="text" class="modal-comment" id="modal-cmt-${event.schedule_id}-${currentUser.user_name}" placeholder="理由や連絡（あればでOK）" value="${currentComment}" oninput="updateTempComment('${event.schedule_id}', '${currentUser.user_name}', this.value)">`;
                 }
             }
-
-            const hasNoRoles = type === '保護者' && (!event.recruit_roles || event.recruit_roles.trim() === "");
-            const commentInputHtml = hasNoRoles ? "" : `<input type="text" class="modal-comment" id="modal-cmt-${event.schedule_id}" placeholder="理由や連絡（あればでOK）" value="${currentComment}" oninput="updateTempComment('${event.schedule_id}', this.value)">`;
 
             rowsHtml += `
                 <div class="modal-schedule-row">
                     <div class="row-title">${idx + 1}. ${event.tab_name}</div>
-                    <div style="width:100%;">${selectorButtonsHtml}</div>
-                    ${commentInputHtml}
+                    <div style="width:100%;">${selectorContentHtml}</div>
                 </div>
             `;
         });
@@ -555,7 +596,7 @@
             <div class="modal-body">${rowsHtml}</div>
             <div class="modal-footer">
                 <button class="modal-footer-btn m-btn-cancel" onclick="closeFullResponseModal()">やめる</button>
-                <button class="modal-footer-btn m-btn-submit" onclick="submitAllResponses('${type}')">これで一括送信！</button>
+                <button class="modal-footer-btn m-btn-submit" onclick="submitAllResponses('${type}')">一括送信する！</button>
             </div>
         `;
         modalOverlay.style.display = 'flex';
@@ -565,16 +606,17 @@
         document.getElementById('responseModal').style.display = 'none';
     }
 
-    function selectTempResponse(scheduleId, opt, type, isSelectedAlready = false) {
-        const target = tempAttendances.find(t => String(t.schedule_id) === String(scheduleId)); 
+    function selectTempResponse(scheduleId, opt, type, targetName = null, isSelectedAlready = false) {
+        const target = tempAttendances.find(t => String(t.schedule_id) === String(scheduleId) && (type === '保護者' || t.name === targetName)); 
         if (!target) return;
 
         if (type === '子供') {
             target.response = opt; 
-            const btns = document.querySelectorAll(`[id^="btn-${scheduleId}-"]`);
+            const safeChildId = encodeURIComponent(targetName);
+            const btns = document.querySelectorAll(`[id^="btn-${scheduleId}-${safeChildId}-"]`);
             btns.forEach(b => {
                 b.className = "sel-btn";
-                if (b.id === `btn-${scheduleId}-${opt}`) {
+                if (b.id === `btn-${scheduleId}-${safeChildId}-${opt}`) {
                     if (opt.includes("出席")) b.classList.add("active-green"); 
                     if (opt === "欠席") b.classList.add("active-red");
                     if (opt === "遅刻") b.classList.add("active-yellow"); 
@@ -606,17 +648,17 @@
                 } else {
                     if (activeRoles.includes(roleName)) { 
                         b.classList.add('active-green'); 
-                        b.setAttribute('onclick', `selectTempResponse('${scheduleId}', '${roleName}', '保護者', true)`); 
+                        b.setAttribute('onclick', `selectTempResponse('${scheduleId}', '${roleName}', '保護者', null, true)`); 
                     } else { 
-                        b.setAttribute('onclick', `selectTempResponse('${scheduleId}', '${roleName}', '保護者', false)`); 
+                        b.setAttribute('onclick', `selectTempResponse('${scheduleId}', '${roleName}', '保護者', null, false)`); 
                     }
                 }
             });
         }
     }
 
-    function updateTempComment(scheduleId, text) { 
-        const target = tempAttendances.find(t => String(t.schedule_id) === String(scheduleId)); 
+    function updateTempComment(scheduleId, name, text) { 
+        const target = tempAttendances.find(t => String(t.schedule_id) === String(scheduleId) && t.name === name); 
         if (target) { target.comment = text; }
     }
 
@@ -624,22 +666,20 @@
         closeFullResponseModal();
         showToast("保存中...");
 
-        const name = type === '子供' ? currentUser.children : currentUser.user_name;
-
         for (let item of tempAttendances) {
             const sendVal = (type === '保護者' && item.response === 'unselected') ? '不参加' : item.response;
             const payload = {
                 action: 'save_attendance',
                 schedule_id: item.schedule_id,
                 family_id: currentUser.family_id,
-                name: name,
+                name: item.name,
                 type: type,
                 response: sendVal,
                 comment: item.comment
             };
 
             // ローカルデータを即時更新（画面にすぐ反映させるため）
-            const existingIndex = myAttendances.findIndex(a => String(a.schedule_id) === String(item.schedule_id) && a.type === type);
+            const existingIndex = myAttendances.findIndex(a => String(a.schedule_id) === String(item.schedule_id) && a.type === type && a.name === item.name);
             if (existingIndex >= 0) {
                 myAttendances[existingIndex].response = sendVal;
                 myAttendances[existingIndex].comment = item.comment;
@@ -647,7 +687,7 @@
                 myAttendances.push({
                     schedule_id: String(item.schedule_id),
                     family_id: String(currentUser.family_id),
-                    name: name,
+                    name: item.name,
                     type: type,
                     response: sendVal,
                     comment: item.comment
@@ -662,7 +702,6 @@
         }
 
         showToast("保存完了！");
-        // 最新状態にして詳細画面を再描画！
         renderDetailView(currentActiveDate);
     }
 </script>
