@@ -255,11 +255,18 @@
             justify-content: center; align-items: flex-end; padding: 16px; 
         }
         .all-res-overlay .modal {
-            max-height: calc(100% - 40px); /* 画面外へのはみ出し防止 */
+            max-height: 85vh; /* ★修正：画面外へのはみ出しを確実に防止 */
             padding: 0; 
-            overflow: hidden; /* 外側は固定 */
+            overflow: hidden; 
             display: flex;
             flex-direction: column;
+        }
+        #allResponseModalContent {
+            display: flex; 
+            flex-direction: column; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; /* ★追加：内部コンテナの高さを制限してスクロールを有効に */
         }
         .sort-toggle-box {
             display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 14px; flex-shrink: 0;
@@ -956,7 +963,6 @@
         currentActiveDate = null;
         
         let today = new Date();
-        // タイムゾーンのズレを防ぐため、文字列で作成
         let todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
 
         let html = `
@@ -967,13 +973,14 @@
             <div class="content" style="background: #f8fafc; flex: 1;">
                 <div style="background: #ffffff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     <label style="font-weight:bold; font-size:14px; color:#1e293b;">管理する日付を選択</label>
-                    <input type="date" id="manageDate" value="${todayStr}" onchange="renderScheduleListForDate(this.value)" style="width:100%; padding:10px; margin-top:8px; border-radius:8px; border: 1px solid #cbd5e1;">
+                    <!-- ★ 修正：日付入力を大きく見やすく変更 -->
+                    <input type="date" id="manageDate" value="${todayStr}" onchange="renderScheduleListForDate(this.value)" style="width:100%; padding:14px 10px; margin-top:8px; border-radius:8px; border: 2px solid #cbd5e1; font-size: 20px; font-weight: bold; text-align: center; color: #1e3a8a; background: #f8fafc;">
                 </div>
                 <div id="manageListArea"></div>
             </div>
         `;
         document.getElementById('app').innerHTML = html;
-        renderScheduleListForDate(todayStr); // 初回表示
+        renderScheduleListForDate(todayStr);
     }
 
     // ★ 追加：選択された日付のスケジュールを一覧表示する
@@ -982,7 +989,7 @@
         if (!dateStr) { listArea.innerHTML = ""; return; }
 
         const evts = groupedSchedules[dateStr] || [];
-        evts.sort((a,b) => a.priority - b.priority); // 優先度順
+        evts.sort((a,b) => a.priority - b.priority); 
 
         let html = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
@@ -994,13 +1001,20 @@
         if(evts.length === 0) {
             html += `<div style="padding:20px; text-align:center; color:#64748b; background:#fff; border-radius:12px; border:1px dashed #cbd5e1; font-size: 13px;">この日の予定はありません。<br>右上のボタンから追加してください。</div>`;
         } else {
-            evts.forEach(ev => {
+            evts.forEach((ev, index) => {
                 html += `
                 <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.01);">
-                    <div>
-                        <div style="font-size:11px; color:#64748b; font-weight:bold;">表示優先度: ${ev.priority}</div>
-                        <div style="font-weight:800; font-size:15px; color:#1e3a8a; margin-top:2px;">${ev.tab_name}</div>
+                    <!-- ★ 追加：順序入れ替え用の▲▼ボタン -->
+                    <div style="display:flex; flex-direction:column; gap:4px; margin-right: 12px;">
+                        <button onclick="moveSchedulePriority('${dateStr}', ${index}, 'up')" style="background:#f1f5f9; border:none; padding:6px 12px; border-radius:6px; color:#475569; font-size:12px; cursor:pointer;" ${index === 0 ? 'disabled style="opacity:0.3;"' : ''}>▲</button>
+                        <button onclick="moveSchedulePriority('${dateStr}', ${index}, 'down')" style="background:#f1f5f9; border:none; padding:6px 12px; border-radius:6px; color:#475569; font-size:12px; cursor:pointer;" ${index === evts.length - 1 ? 'disabled style="opacity:0.3;"' : ''}>▼</button>
                     </div>
+                    
+                    <div style="flex: 1;">
+                        <div style="font-weight:800; font-size:15px; color:#1e3a8a; margin-top:2px;">${ev.tab_name}</div>
+                        <div style="font-size:11px; color:#64748b; font-weight:bold;">表示優先度: ${ev.priority}</div>
+                    </div>
+                    
                     <div style="display:flex; gap:8px;">
                         <button onclick="renderScheduleForm('${dateStr}', '${ev.schedule_id}')" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">編集</button>
                         <button onclick="deleteSchedule('${ev.schedule_id}')" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">削除</button>
@@ -1011,17 +1025,65 @@
         listArea.innerHTML = html;
     }
 
+    async function moveSchedulePriority(dateStr, index, direction) {
+        const evts = groupedSchedules[dateStr];
+        if (!evts || evts.length < 2) return;
+
+        // 配列内の要素を入れ替える
+        if (direction === 'up' && index > 0) {
+            const temp = evts[index];
+            evts[index] = evts[index - 1];
+            evts[index - 1] = temp;
+        } else if (direction === 'down' && index < evts.length - 1) {
+            const temp = evts[index];
+            evts[index] = evts[index + 1];
+            evts[index + 1] = temp;
+        } else {
+            return;
+        }
+
+        // priority を上から順に振り直す
+        const updates = [];
+        evts.forEach((ev, i) => {
+            ev.priority = i + 1;
+            updates.push({ schedule_id: ev.schedule_id, priority: ev.priority });
+        });
+
+        // 画面を即座に再描画（UX向上）
+        renderScheduleListForDate(dateStr);
+
+        // 裏でサーバーに保存
+        try {
+            await fetch(GAS_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: 'update_priorities', updates: updates }) 
+            });
+            // 生データ側にも反映させておく
+            updates.forEach(u => {
+                const target = rawSchedules.find(r => String(r.schedule_id) === String(u.schedule_id));
+                if(target) target.priority = u.priority;
+            });
+        } catch (e) {
+            console.error("順序の保存に失敗", e);
+        }
+    }
+    
     // ★ 修正：スケジュール追加・編集フォーム（IDを判別して動的生成）
     function renderScheduleForm(dateStr, scheduleId = null) {
         let isEdit = scheduleId !== null;
         let eventData = {
-            schedule_id: "", date: dateStr, tab_name: "", priority: 1, location: "", description: "", recruit_roles: ""
+            // ★ 修正：新規作成時は「参加」をデフォルトでチェック状態にする
+            schedule_id: "", date: dateStr, tab_name: "", priority: 1, location: "", description: "", recruit_roles: "参加"
         };
 
         if (isEdit) {
             const evts = groupedSchedules[dateStr] || [];
             const found = evts.find(e => String(e.schedule_id) === String(scheduleId));
             if(found) eventData = { ...found };
+        } else {
+            // 新規作成時は一番最後に優先度を設定
+            const evts = groupedSchedules[dateStr] || [];
+            eventData.priority = evts.length + 1;
         }
 
         let html = `
@@ -1033,6 +1095,8 @@
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     
                     <input type="hidden" id="editScheduleId" value="${eventData.schedule_id}">
+                    <!-- ★ 修正：優先度の入力欄を削除し、内部値として保持 -->
+                    <input type="hidden" id="newPriority" value="${eventData.priority}">
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">日付 <span style="color:#ef4444">*</span></label>
@@ -1048,11 +1112,6 @@
                             <option value="練習試合"></option>
                             <option value="試合"></option>
                         </datalist>
-                    </div>
-
-                    <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">優先度 (同日の表示順)</label>
-                        <input type="number" id="newPriority" value="${eventData.priority}" min="1" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
                     </div>
 
                     <div style="margin-bottom: 12px;">
@@ -1088,7 +1147,7 @@
         `;
         document.getElementById('app').innerHTML = html;
     }
-
+    
     function createCheckboxHTML(role, currentRoles) {
         let isChecked = (currentRoles || "").includes(role) ? "checked" : "";
         return `<label style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px;"><input type="checkbox" class="role-check" value="${role}" ${isChecked}> ${role}</label>`;
