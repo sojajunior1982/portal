@@ -10,7 +10,6 @@
         // ★★★ あなたのGASの「ウェブアプリURL」 ★★★
         const GAS_URL = "https://script.google.com/macros/s/AKfycbz2c7_4BqzbAcnj90yWS-e5iJ7ZMCtNbzuaQztCKTuRzd30tcT0eIFjBvymUI_t2LecQw/exec";
     </script>
-
     <style>
         * {
             box-sizing: border-box;
@@ -18,9 +17,10 @@
             -webkit-tap-highlight-color: transparent;
         }
         
+        /* ★変更：height を 100% から 100dvh にして、スマホのアドレスバー伸縮に対応 */
         html, body {
             width: 100%;
-            height: 100%;
+            height: 100dvh; 
             margin: 0;
             padding: 0;
             background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
@@ -201,6 +201,8 @@
             align-items: flex-end;
             padding: 16px; 
         }
+        
+        /* ★変更：モーダル本体を「画面の80%まで」にし、下の余白を自動調整 */
         .modal {
             background: #ffffff;
             width: 100%;
@@ -209,18 +211,31 @@
             box-shadow: 0 -4px 30px rgba(0,0,0,0.15);
             box-sizing: border-box;
             padding: 20px 16px;
-            max-height: 90%;
+            
+            /* ここから下がスマホ対応のええ感じ設定 */
+            max-height: 80dvh; 
+            margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); 
             display: flex;
             flex-direction: column;
+            overflow: hidden; /* はみ出た分をカットして内部スクロールさせる */
+            
             animation: slideUp 0.25s cubic-bezier(0.1, 0.76, 0.55, 0.94);
-            margin-bottom: 10px;
         }
+        
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
         .modal-header { text-align: center; margin-bottom: 14px; flex-shrink: 0; }
         .modal-title { font-size: 17px; font-weight: 800; color: #0f172a; }
         .modal-subtitle { font-size: 12.5px; color: #64748b; margin-top: 2px; }
-        .modal-body { flex: 1; overflow-y: auto; padding-right: 2px; -webkit-overflow-scrolling: touch; }
+        
+        /* ★変更：モーダルの中身（スクロールする部分） */
+        .modal-body { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding-right: 2px; 
+            -webkit-overflow-scrolling: touch; /* スマホで滑らかにスクロール */
+        }
+        
         .modal-schedule-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; margin-bottom: 12px; }
         .row-title { font-size: 13.5px; font-weight: bold; color: #1e3a8a; margin-bottom: 8px; }
 
@@ -237,6 +252,7 @@
         .sel-btn.active-blue { background: #eff6ff; border-color: #60a5fa; color: #1d4ed8; }
         .modal-comment { width: 100%; padding: 10px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box; background: #fff; }
 
+        /* モーダルの下のボタン固定エリア */
         .modal-footer { padding-top: 12px; display: flex; gap: 10px; flex-shrink: 0; }
         .modal-footer-btn { flex: 1; padding: 13px; border-radius: 12px; font-weight: bold; font-size: 14px; border: none; text-align: center; cursor: pointer; }
         .m-btn-cancel { background: #f1f5f9; color: #475569; }
@@ -254,20 +270,25 @@
             background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 150;
             justify-content: center; align-items: flex-end; padding: 16px; 
         }
+        
+        /* ★変更：全員表示用のモーダルもええ感じに調整 */
         .all-res-overlay .modal {
-            max-height: 85vh; /* ★修正：画面外へのはみ出しを確実に防止 */
+            max-height: 80dvh; 
+            margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); 
             padding: 0; 
             overflow: hidden; 
             display: flex;
             flex-direction: column;
         }
+        
         #allResponseModalContent {
             display: flex; 
             flex-direction: column; 
             width: 100%; 
             height: 100%; 
-            overflow: hidden; /* ★追加：内部コンテナの高さを制限してスクロールを有効に */
+            overflow: hidden; 
         }
+        
         .sort-toggle-box {
             display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 14px; flex-shrink: 0;
         }
@@ -331,10 +352,21 @@
 
 <div class="all-res-overlay" id="allResponseModal">
     <div class="modal">
-        <div id="allResponseModalContent" style="display:flex; flex-direction:column; width:100%; height:100%;">
-            <!-- 全員の回答データ挿入 -->
-        </div>
+    
+    <!-- ⬇️ ここがスクロールする部分 -->
+    <div class="scrollable-content">
+        <h3>わが家の出欠</h3>
+        <p>長いコンテンツ...</p>
+        <p>参加者が増えても...</p>
+        <p>ここでスクロールします。</p>
     </div>
+
+    <!-- ⬇️ ここは下に固定される部分（閉じるボタンなど） -->
+    <div class="modal-footer">
+        <button>閉じる</button>
+    </div>
+
+</div>
 </div>
 
 <script>
