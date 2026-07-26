@@ -669,7 +669,7 @@
         for (let item of tempAttendances) {
             const sendVal = (type === '保護者' && item.response === 'unselected') ? '不参加' : item.response;
             const payload = {
-                action: 'save_attendance',
+                action: 'submit_attendance',
                 schedule_id: item.schedule_id,
                 family_id: currentUser.family_id,
                 name: item.name,
