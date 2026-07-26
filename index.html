@@ -99,6 +99,18 @@
             font-size: 11px;
             cursor: pointer;
         }
+        .menu-btn {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 0;
+        }
 
         .content {
             flex: 1;
@@ -259,54 +271,46 @@
         .role-block:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
         .role-name { font-size: 12.5px; font-weight: bold; color: #0284c7; margin-bottom: 4px; }
         
+        /* サイドメニューのスタイル */
+        #sideMenuOverlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;
+        }
+        #sideMenu {
+            position: absolute; top: 0; left: -280px; width: 280px; height: 100%; background: white; z-index: 1000; transition: left 0.3s ease; box-shadow: 2px 0 8px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+        }
     </style>
 </head>
 <body>
-<!-- ▼ ヘッダーの青い帯の左端あたりに追加するボタン -->
-<div style="display: flex; align-items: center; justify-content: space-between; background: #2563eb; color: white; padding: 12px 16px;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <!-- ハンバーガーメニューボタン -->
-        <button onclick="toggleSideMenu()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0;">☰</button>
-        <span style="font-size: 18px; font-weight: bold;">📅 スケジュール</span>
-    </div>
-    <button onclick="logout()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 4px; font-size: 14px;">ログアウト</button>
+
+<!-- スマホ風アプリの全体コンテナ -->
+<div class="app-container" id="app">
+    <!-- 動的描画エリア -->
 </div>
 
-<!-- ▼ サイドメニュー本体 ＆ 背景の黒い幕 -->
-<div id="sideMenuOverlay" onclick="toggleSideMenu()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;"></div>
-
-<div id="sideMenu" style="position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: white; z-index: 1000; transition: left 0.3s ease; box-shadow: 2px 0 8px rgba(0,0,0,0.15); display: flex; flex-direction: column;">
-    
-    <!-- ユーザー名表示エリア -->
+<!-- サイドメニュー関連（アプリコンテナ内に収納して崩れを防止） -->
+<div id="sideMenuOverlay" onclick="toggleSideMenu()"></div>
+<div id="sideMenu">
     <div style="padding: 24px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
         <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">ログイン中</div>
         <div id="menuUserName" style="font-size: 16px; font-weight: bold; color: #1e293b;">-</div>
     </div>
-
-    <!-- メニュー項目一覧 -->
     <div style="flex: 1; padding: 12px 0; overflow-y: auto;">
-        <a href="#" onclick="navigateMenu('schedule')" style="display: block; padding: 14px 20px; color: #2563eb; font-weight: bold; background: #eff6ff; text-decoration: none; border-left: 4px solid #2563eb;">
+        <a href="#" onclick="navigateMenu('schedule'); return false;" style="display: block; padding: 14px 20px; color: #2563eb; font-weight: bold; background: #eff6ff; text-decoration: none; border-left: 4px solid #2563eb;">
             スケジュール
         </a>
-        <a href="#" onclick="navigateMenu('addSchedule')" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
+        <a href="#" onclick="navigateMenu('addSchedule'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
             ➕ スケジュール追加
         </a>
-        <a href="#" onclick="navigateMenu('documents')" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
+        <a href="#" onclick="navigateMenu('documents'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
             各種資料
         </a>
-        <a href="#" onclick="navigateMenu('admin')" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
+        <a href="#" onclick="navigateMenu('admin'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
             管理者用
         </a>
     </div>
-    
-    <!-- 閉じる用フッター（お好みで） -->
     <div style="padding: 16px; border-top: 1px solid #e2e8f0; text-align: center;">
-        <button onclick="toggleSideMenu()" style="background: #f1f5f9; border: none; padding: 8px 16px; border-radius: 4px; color: #64748b; font-size: 14px; width: 100%;">メニューを閉じる</button>
+        <button onclick="toggleSideMenu()" style="background: #f1f5f9; border: none; padding: 8px 16px; border-radius: 4px; color: #64748b; font-size: 14px; width: 100%; cursor: pointer;">メニューを閉じる</button>
     </div>
-</div>
-
-<div class="app-container" id="app">
-    <!-- 動的描画 -->
 </div>
 
 <div class="modal-overlay" id="responseModal">
@@ -316,79 +320,13 @@
 </div>
 
 <div class="toast" id="toast">保存しました！</div>
+
 <div class="all-res-overlay" id="allResponseModal">
     <div class="modal" style="max-height: 85%; padding: 0; overflow: hidden;">
         <div id="allResponseModalContent" style="display:flex; flex-direction:column; width:100%; height:100%;">
-            <!-- ここに全員の回答データが挿入されます -->
+            <!-- 全員の回答データ挿入 -->
         </div>
     </div>
-</div>
-<div class="form-container" style="padding: 16px; background: #f8fafc; border-radius: 8px; margin-bottom: 20px;">
-    <h3 style="margin-top: 0; color: #1e293b;">📅 新規スケジュール登録</h3>
-
-    <!-- 日付とID -->
-    <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">日付</label>
-        <input type="date" id="newDate" onchange="generateScheduleId()" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 4px;">
-    </div>
-    <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">スケジュールID (自動生成)</label>
-        <input type="text" id="newScheduleId" readonly style="width: 100%; padding: 8px; box-sizing: border-box; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 4px;">
-    </div>
-
-    <!-- タブ名（datalistで選択＆自由記述） -->
-    <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">予定の種類 (タブ名)</label>
-        <input type="text" id="newTabName" list="tab-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 4px;">
-        <datalist id="tab-defaults">
-            <option value="練習"></option>
-            <option value="練習（雨天時）"></option>
-            <option value="練習試合"></option>
-            <option value="試合"></option>
-        </datalist>
-    </div>
-
-    <!-- 優先度（表示順） -->
-    <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">優先度 (同日の表示順)</label>
-        <input type="number" id="newPriority" value="1" min="1" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 4px;">
-    </div>
-
-    <!-- 場所（datalistで選択＆自由記述） -->
-    <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">場所</label>
-        <input type="text" id="newLocation" list="location-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 4px;">
-        <datalist id="location-defaults">
-            <option value="小学校"></option>
-            <option value="本球場"></option>
-        </datalist>
-    </div>
-
-    <!-- 詳細（改行OK） -->
-    <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">詳細・持ち物</label>
-        <textarea id="newDescription" rows="6" placeholder="詳細やスケジュールを記入してください" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 4px;"></textarea>
-    </div>
-
-    <!-- 募集項目 -->
-    <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">募集項目 (チェックで追加)</label>
-        <div style="margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 8px;" onchange="updateStatus()">
-            <label><input type="checkbox" class="role-check" value="参加"> 参加</label>
-            <label><input type="checkbox" class="role-check" value="当番"> 当番</label>
-            <label><input type="checkbox" class="role-check" value="道具車"> 道具車</label>
-            <label><input type="checkbox" class="role-check" value="審判"> 審判</label>
-        </div>
-        <input type="text" id="newExtraRoles" placeholder="その他の募集項目 (カンマ区切りで入力)" oninput="updateStatus()" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 4px;">
-    </div>
-
-    <!-- ステータス (自動判定) -->
-    <div style="margin-bottom: 20px;">
-        <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">ステータス (自動設定)</label>
-        <input type="text" id="newStatus" readonly placeholder="募集項目がない場合は空欄になります" style="width: 100%; padding: 8px; box-sizing: border-box; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 4px; color: #ef4444; font-weight: bold;">
-    </div>
-
-    <button onclick="submitNewSchedule()" style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold;">スケジュールを登録</button>
 </div>
 
 <script>
@@ -403,13 +341,11 @@
     let currentAllResSort = 'number';
     let currentAllResScheduleId = null;
 
-    // 子供一覧を配列で取得するヘルパー関数（カンマ・全角カンマ対応）
     function getChildrenList() {
         if (!currentUser || !currentUser.children) return [];
         return currentUser.children.split(/[,、]/).map(c => c.trim()).filter(c => c !== "");
     }
 
-    // 邪魔な警告帯を強制消去
     (function() {
         if (window.top !== window.self) {
             try {
@@ -534,7 +470,11 @@
     function renderListView() {
         currentActiveDate = null;
         let html = `
-            <div class="header"><span>📅 スケジュール</span><button class="logout-btn" onclick="handleLogout()">ログアウト</button></div>
+            <div class="header">
+                <button class="menu-btn" onclick="toggleSideMenu()">☰</button>
+                <span style="margin-left: 24px;">📅 スケジュール</span>
+                <button class="logout-btn" onclick="handleLogout()">ログアウト</button>
+            </div>
             <div class="content">
                 <div class="month-selector"><span class="arrow">◀</span><span class="month-title">今月の予定</span><span class="arrow">▶</span></div>
         `;
@@ -654,7 +594,6 @@
             let selectorContentHtml = "";
 
             if (type === '子供') {
-                // それぞれの子供ごとにブロックを作成
                 childrenList.forEach((childName, cIdx) => {
                     const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === '子供' && a.name === childName);
                     let currentResponse = existing ? existing.response : "出席(自転車)";
@@ -695,7 +634,6 @@
                     `;
                 });
             } else {
-                // 保護者の場合
                 const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === '保護者');
                 let currentResponse = existing ? existing.response : "不参加";
                 let currentComment = existing ? existing.comment || "" : "";
@@ -825,7 +763,6 @@
                 comment: item.comment
             };
 
-            // ローカルデータを即時更新（画面にすぐ反映させるため）
             const existingIndex = myAttendances.findIndex(a => String(a.schedule_id) === String(item.schedule_id) && a.type === type && a.name === item.name);
             if (existingIndex >= 0) {
                 myAttendances[existingIndex].response = sendVal;
@@ -871,41 +808,35 @@
         const event = rawSchedules.find(s => String(s.schedule_id) === String(currentAllResScheduleId));
         if (!event) return;
 
-        // 対象スケジュールの回答を抽出
         const atts = allAttendances.filter(a => String(a.schedule_id) === String(currentAllResScheduleId));
         const childrenAtts = atts.filter(a => a.type === '子供');
         const parentAtts = atts.filter(a => a.type === '保護者');
 
-        // 子供のソート処理（背番号順 or エリア順）
         childrenAtts.sort((a, b) => {
             if (currentAllResSort === 'area') {
                 if (a.area_id !== b.area_id) return a.area_id.localeCompare(b.area_id, 'ja');
             }
-            // 背番号 "[X]" を賢く抽出して数値比較 (例: [10] と [2] なら 2 -> 10 の順になる)
             let numA = 9999, numB = 9999;
             const matchA = a.name.match(/\[(\d+)\]/);
             const matchB = b.name.match(/\[(\d+)\]/);
             if (matchA) numA = parseInt(matchA[1], 10);
             if (matchB) numB = parseInt(matchB[1], 10);
             
-            // 背番号が違う場合は数値順、同じ（または未設定）なら名前のあいうえお順
             if (numA !== numB) return numA - numB;
             return a.name.localeCompare(b.name, 'ja');
         });
 
-        // 団員の出欠振り分け
         const cGroups = { '出席': [], 'お休み': [], '遅刻': [], '早退': [] };
         childrenAtts.forEach(att => {
             let res = att.response;
             let displayStr = att.name;
 
-            // エリア順の時は目印としてエリアバッジを付ける
             if (currentAllResSort === 'area' && att.area_id) {
                 displayStr = `<span class="area-badge">${att.area_id}</span>` + displayStr;
             }
 
             if (res.includes('出席')) {
-                if (res.includes('自転車')) displayStr += ' 🚲'; // 自転車ならアイコン追加
+                if (res.includes('自転車')) displayStr += ' 🚲';
                 cGroups['出席'].push(displayStr);
             } else if (res === '欠席' || res.includes('お休み')) {
                 cGroups['お休み'].push(displayStr);
@@ -916,12 +847,10 @@
             }
         });
 
-        // 保護者の振り分け（募集項目ごとに抽出して名前順）
         let parentsHtml = '';
         const roles = event.recruit_roles ? event.recruit_roles.split(',').map(r => r.trim()).filter(r => r !== "") : [];
         if (roles.length > 0) {
             roles.forEach(role => {
-                // その役回りにエントリーしている人を抽出
                 const assigned = parentAtts.filter(a => a.response.includes(role));
                 assigned.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
                 
@@ -936,11 +865,9 @@
             parentsHtml = '<div style="color:#94a3b8; font-size:12px;">今回は募集項目はありません</div>';
         }
 
-        // 全体のステータス判定
         const statusBadgeClass = event.status === '確定' ? 'status-confirmed' : 'status-recruiting';
         const statusText = event.status === '確定' ? '確定！' : '募集中';
 
-// HTML流し込み（スクロール領域と固定領域を明確に分割）
         document.getElementById('allResponseModalContent').innerHTML = `
             <div class="modal-header" style="flex-shrink:0; margin-top:20px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:12px; padding-left:16px; padding-right:16px;">
                 <div class="modal-title" style="font-size:16px;">${event.tab_name} の状況</div>
@@ -981,7 +908,7 @@
             </div>
         `;
     }
-    // サイドメニューの開閉を切り替える
+
     function toggleSideMenu() {
         const menu = document.getElementById('sideMenu');
         const overlay = document.getElementById('sideMenuOverlay');
@@ -993,7 +920,6 @@
             menu.style.left = '0px';
             overlay.style.display = 'block';
         
-            // メニューを開いた瞬間に、現在ログインしているユーザー名を画面に反映
             if (typeof currentUser !== 'undefined' && currentUser && currentUser.name) {
                 document.getElementById('menuUserName').innerText = currentUser.name + ' さん';
             } else {
@@ -1002,66 +928,110 @@
         }
     }
 
-    // メニュー項目を押したときの遷移処理
     function navigateMenu(target) {
-        toggleSideMenu(); // まずメニューを閉じる
+        toggleSideMenu();
         
         if (target === 'schedule') {
-            // 現在のスケジュール画面を表示する処理
-            console.log('スケジュール画面へ');
+            renderListView();
         } else if (target === 'addSchedule') {
-            // 先ほど作った「スケジュール追加フォーム」を表示するエリアに切り替える処理
-            alert('ここに先ほどのスケジュール追加画面を表示します！');
+            renderAddScheduleView();
         } else if (target === 'documents') {
-            alert('各種資料ページは現在準備中です（ブランク）');
+            alert('各種資料ページは現在準備中です');
         } else if (target === 'admin') {
             alert('管理者用ページへ移動します');
         }
     }
-    // 日付からスケジュールIDを自動生成する (例: S20260728001)
+
+    // 新規スケジュール追加画面をアプリ内に動的描画する関数
+    function renderAddScheduleView() {
+        document.getElementById('app').innerHTML = `
+            <div class="header">
+                <button class="back-btn" onclick="renderListViewInstant()">戻る</button>
+                <span>📅 スケジュール追加</span>
+            </div>
+            <div class="content" style="padding: 16px; background: #f8fafc;">
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color:#334155;">日付</label>
+                    <input type="date" id="newDate" onchange="generateScheduleId()" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; background:#fff;">
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color:#334155;">スケジュールID (自動生成)</label>
+                    <input type="text" id="newScheduleId" readonly style="width: 100%; padding: 10px; box-sizing: border-box; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 8px; color:#64748b;">
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color:#334155;">予定の種類 (タブ名)</label>
+                    <input type="text" id="newTabName" list="tab-defaults" placeholder="選択するか入力" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; background:#fff;">
+                    <datalist id="tab-defaults">
+                        <option value="練習"></option>
+                        <option value="練習（雨天時）"></option>
+                        <option value="練習試合"></option>
+                        <option value="試合"></option>
+                    </datalist>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color:#334155;">優先度 (同日の表示順)</label>
+                    <input type="number" id="newPriority" value="1" min="1" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; background:#fff;">
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color:#334155;">場所</label>
+                    <input type="text" id="newLocation" list="location-defaults" placeholder="選択するか入力" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; background:#fff;">
+                    <datalist id="location-defaults">
+                        <option value="小学校"></option>
+                        <option value="本球場"></option>
+                    </datalist>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color:#334155;">詳細・持ち物</label>
+                    <textarea id="newDescription" rows="4" placeholder="詳細やスケジュールを記入" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; background:#fff;"></textarea>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color:#334155;">募集項目</label>
+                    <div style="margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 12px;" onchange="updateStatus()">
+                        <label><input type="checkbox" class="role-check" value="参加"> 参加</label>
+                        <label><input type="checkbox" class="role-check" value="当番"> 当番</label>
+                        <label><input type="checkbox" class="role-check" value="道具車"> 道具車</label>
+                        <label><input type="checkbox" class="role-check" value="審判"> 審判</label>
+                    </div>
+                    <input type="text" id="newExtraRoles" placeholder="その他項目 (カンマ区切り)" oninput="updateStatus()" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; background:#fff;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color:#334155;">ステータス</label>
+                    <input type="text" id="newStatus" readonly placeholder="自動設定" style="width: 100%; padding: 10px; box-sizing: border-box; background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 8px; color: #ef4444; font-weight: bold;">
+                </div>
+                <button onclick="submitNewSchedule()" style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor:pointer; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">スケジュールを登録</button>
+            </div>
+        `;
+    }
+
     function generateScheduleId() {
         const dateInput = document.getElementById('newDate').value;
         if (!dateInput) return;
-
-        // YYYY-MM-DD を YYYYMMDD に変換
         const dateStr = dateInput.replace(/-/g, '');
-    
-        // ※今回は画面上での仮生成として「001」をつけます。
-        // 本当はGAS側でその日の登録件数をカウントして連番を振るのが安全です。
         const newId = `S${dateStr}001`; 
         document.getElementById('newScheduleId').value = newId;
     }
 
-    // 募集項目の有無によってステータスを「募集中」にするか判定
     function updateStatus() {
-        // チェックボックスの選択を取得
         const checkboxes = document.querySelectorAll('.role-check:checked');
-        // 自由記述欄の入力を取得
         const extraRoles = document.getElementById('newExtraRoles').value.trim();
-
-        // どちらかに入力・チェックがあれば「募集中」にする
         if (checkboxes.length > 0 || extraRoles !== "") {
             document.getElementById('newStatus').value = "募集中";
         } else {
-            document.getElementById('newStatus').value = ""; // なければ空
+            document.getElementById('newStatus').value = ""; 
         }
     }
 
-    // 送信ボタンを押した時の処理（GASに送るためのデータまとめ）
     function submitNewSchedule() {
-        // 1. 募集項目を一つの文字列（カンマ区切り）にまとめる
         const checkedRoles = Array.from(document.querySelectorAll('.role-check:checked')).map(cb => cb.value);
         const extraRolesText = document.getElementById('newExtraRoles').value.trim();
     
         let allRolesArray = [...checkedRoles];
         if (extraRolesText) {
-            // カンマ区切りの自由記述を配列にして追加
             const extraRolesList = extraRolesText.split(',').map(r => r.trim()).filter(r => r !== "");
             allRolesArray = allRolesArray.concat(extraRolesList);
         }
         const finalRecruitRoles = allRolesArray.join(',');
 
-        // 2. 送信用のデータを作成
         const newScheduleData = {
             schedule_id: document.getElementById('newScheduleId').value,
             date: document.getElementById('newDate').value,
@@ -1071,19 +1041,15 @@
             location: document.getElementById('newLocation').value,
             description: document.getElementById('newDescription').value,
             recruit_roles: finalRecruitRoles
-     };
+        };
 
-        // 必須項目のチェック
         if (!newScheduleData.date || !newScheduleData.tab_name) {
             alert("日付と予定の種類(タブ名)は必須です！");
             return;
         }
 
-        // ★ここでGASへ送信する処理を書きます（今はコンソールに表示するだけ）
         console.log("送信するデータ:", newScheduleData);
-        alert("データをまとめました！裏側でGASと連携させる準備が整っています。");
-    
-        // google.script.run.withSuccessHandler(...).saveNewSchedule(newScheduleData);
+        alert("データをまとめました！");
     }
 </script>
 </body>
