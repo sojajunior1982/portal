@@ -235,6 +235,30 @@
         .loading { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; color: #64748b; font-weight: 500; gap: 12px; }
         .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top: 3px solid #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* 全員表示ポップアップ用CSS */
+        .all-res-overlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 150;
+            justify-content: center; align-items: flex-end; padding: 16px; 
+        }
+        .sort-toggle-box {
+            display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 14px;
+        }
+        .sort-btn {
+            flex: 1; text-align: center; font-size: 12px; font-weight: bold; padding: 8px;
+            color: #64748b; cursor: pointer; border-radius: 8px; transition: 0.2s;
+        }
+        .sort-btn.active { background: #ffffff; color: #1e3a8a; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        
+        .list-group { margin-bottom: 16px; }
+        .list-group-title { font-size: 13.5px; font-weight: 800; color: #475569; margin-bottom: 6px; }
+        .list-group-content { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; font-size: 13.5px; line-height: 1.6; }
+        .area-badge { font-size: 10px; background: #cbd5e1; color: #334155; padding: 2px 6px; border-radius: 4px; margin-right: 6px; font-weight:bold; }
+        .role-block { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #cbd5e1; }
+        .role-block:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .role-name { font-size: 12.5px; font-weight: bold; color: #0284c7; margin-bottom: 4px; }
+        
     </style>
 </head>
 <body>
@@ -250,15 +274,25 @@
 </div>
 
 <div class="toast" id="toast">保存しました！</div>
+<div class="all-res-overlay" id="allResponseModal">
+    <div class="modal" style="max-height: 85%;">
+        <div id="allResponseModalContent" style="display:flex; flex-direction:column; height:100%;">
+            <!-- ここに全員の回答データが挿入されます -->
+        </div>
+    </div>
+</div>
 
 <script>
     let currentUser = null;
     let rawSchedules = [];
     let myAttendances = []; 
+    let allAttendances = [];
     let groupedSchedules = {}; 
     let currentActiveDate = null;
     let currentActiveTabIndex = 0;
     let tempAttendances = [];
+    let currentAllResSort = 'number';
+    let currentAllResScheduleId = null;
 
     // 子供一覧を配列で取得するヘルパー関数（カンマ・全角カンマ対応）
     function getChildrenList() {
@@ -360,7 +394,8 @@
             let schedResult = await res.json();
             if (schedResult.success) {
                 rawSchedules = schedResult.schedules; 
-                myAttendances = schedResult.attendances; 
+                myAttendances = schedResult.myAttendances || schedResult.attendances;
+                allAttendances = schedResult.allAttendances || [];
                 groupSchedulesByDate();
                 
                 if (currentActiveDate !== null) { 
@@ -465,7 +500,10 @@
                     <div class="detail-item"><div class="detail-label">📍 場所</div><div class="detail-value" style="font-weight:600;">${event.location || '未定'}</div></div>
                     <div class="detail-item"><div class="detail-label">📝 スケジュール・連絡</div><div class="detail-value" style="color:#475569; font-size:14.5px;">${event.description || '詳細なし'}</div></div>
                     <div class="summary-status-bar">
-                        <div style="font-weight:bold; color:#334155; margin-bottom:6px; font-size:11.5px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🙋‍♀️ わが家の今の回答</div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
+                            <span style="font-weight:bold; color:#334155; font-size:11.5px;">🙋‍♀️ わが家の今の回答</span>
+                            <button onclick="openAllResponseModal('${event.schedule_id}')" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:bold; cursor:pointer;">👥 全員の回答</button>
+                        </div>
                         ${childrenStatusRowsHtml}
                         <div class="summary-row"><span style="color:#64748b;">保護者 (${currentUser.user_name}):</span><span style="font-weight:bold; color: ${parentStatusText === '不参加' || parentStatusText.includes('不参加') ? '#64748b' : '#0284c7'};">${parentStatusText}</span></div>
                     </div>
@@ -703,6 +741,136 @@
 
         showToast("保存完了！");
         renderDetailView(currentActiveDate);
+    }
+
+    function openAllResponseModal(scheduleId) {
+        currentAllResScheduleId = scheduleId;
+        renderAllResponseContent();
+        document.getElementById('allResponseModal').style.display = 'flex';
+    }
+
+    function closeAllResponseModal() {
+        document.getElementById('allResponseModal').style.display = 'none';
+    }
+
+    function toggleAllResSort(type) {
+        currentAllResSort = type;
+        renderAllResponseContent();
+    }
+
+    function renderAllResponseContent() {
+        const event = rawSchedules.find(s => String(s.schedule_id) === String(currentAllResScheduleId));
+        if (!event) return;
+
+        // 対象スケジュールの回答を抽出
+        const atts = allAttendances.filter(a => String(a.schedule_id) === String(currentAllResScheduleId));
+        const childrenAtts = atts.filter(a => a.type === '子供');
+        const parentAtts = atts.filter(a => a.type === '保護者');
+
+        // 子供のソート処理（背番号順 or エリア順）
+        childrenAtts.sort((a, b) => {
+            if (currentAllResSort === 'area') {
+                if (a.area_id !== b.area_id) return a.area_id.localeCompare(b.area_id, 'ja');
+            }
+            // 背番号 "[X]" を賢く抽出して数値比較 (例: [10] と [2] なら 2 -> 10 の順になる)
+            let numA = 9999, numB = 9999;
+            const matchA = a.name.match(/\[(\d+)\]/);
+            const matchB = b.name.match(/\[(\d+)\]/);
+            if (matchA) numA = parseInt(matchA[1], 10);
+            if (matchB) numB = parseInt(matchB[1], 10);
+            
+            // 背番号が違う場合は数値順、同じ（または未設定）なら名前のあいうえお順
+            if (numA !== numB) return numA - numB;
+            return a.name.localeCompare(b.name, 'ja');
+        });
+
+        // 団員の出欠振り分け
+        const cGroups = { '出席': [], 'お休み': [], '遅刻': [], '早退': [] };
+        childrenAtts.forEach(att => {
+            let res = att.response;
+            let displayStr = att.name;
+
+            // エリア順の時は目印としてエリアバッジを付ける
+            if (currentAllResSort === 'area' && att.area_id) {
+                displayStr = `<span class="area-badge">${att.area_id}</span>` + displayStr;
+            }
+
+            if (res.includes('出席')) {
+                if (res.includes('自転車')) displayStr += ' 🚲'; // 自転車ならアイコン追加
+                cGroups['出席'].push(displayStr);
+            } else if (res === '欠席' || res.includes('お休み')) {
+                cGroups['お休み'].push(displayStr);
+            } else if (res.includes('遅刻')) {
+                cGroups['遅刻'].push(displayStr);
+            } else if (res.includes('早退')) {
+                cGroups['早退'].push(displayStr);
+            }
+        });
+
+        // 保護者の振り分け（募集項目ごとに抽出して名前順）
+        let parentsHtml = '';
+        const roles = event.recruit_roles ? event.recruit_roles.split(',').map(r => r.trim()).filter(r => r !== "") : [];
+        if (roles.length > 0) {
+            roles.forEach(role => {
+                // その役回りにエントリーしている人を抽出
+                const assigned = parentAtts.filter(a => a.response.includes(role));
+                assigned.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+                
+                const namesStr = assigned.length > 0 ? assigned.map(p => p.name).join('、 ') : '<span style="color:#94a3b8; font-size:12px;">なし</span>';
+                parentsHtml += `
+                    <div class="role-block">
+                        <div class="role-name">✔️ ${role} (${assigned.length}名)</div>
+                        <div style="padding-left:8px;">${namesStr}</div>
+                    </div>`;
+            });
+        } else {
+            parentsHtml = '<div style="color:#94a3b8; font-size:12px;">今回は募集項目はありません</div>';
+        }
+
+        // 全体のステータス判定
+        const statusBadgeClass = event.status === '確定' ? 'status-confirmed' : 'status-recruiting';
+        const statusText = event.status === '確定' ? '確定！' : '募集中';
+
+        // HTML流し込み
+        document.getElementById('allResponseModalContent').innerHTML = `
+            <div class="modal-header" style="margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
+                <div class="modal-title" style="font-size:16px;">${event.tab_name} の状況</div>
+                <div style="margin-top:8px;"><span class="status-badge ${statusBadgeClass}">${statusText}</span></div>
+            </div>
+            
+            <div class="modal-body" style="text-align:left; padding-top:4px; padding-right:6px;">
+                <div class="sort-toggle-box">
+                    <div class="sort-btn ${currentAllResSort === 'number' ? 'active' : ''}" onclick="toggleAllResSort('number')">背番号・名前順</div>
+                    <div class="sort-btn ${currentAllResSort === 'area' ? 'active' : ''}" onclick="toggleAllResSort('area')">エリア順</div>
+                </div>
+
+                <div class="list-group">
+                    <div class="list-group-title">🧒 団員の回答</div>
+                    <div class="list-group-content">
+                        <div style="color:#059669; font-weight:bold; margin-bottom:4px;">出席 (${cGroups['出席'].length}名)</div>
+                        <div style="margin-bottom:12px; padding-left:8px;">${cGroups['出席'].length > 0 ? cGroups['出席'].join('<br>') : '<span style="color:#94a3b8;">なし</span>'}</div>
+                        
+                        <div style="color:#ef4444; font-weight:bold; margin-bottom:4px;">お休み (${cGroups['お休み'].length}名)</div>
+                        <div style="margin-bottom:12px; padding-left:8px;">${cGroups['お休み'].length > 0 ? cGroups['お休み'].join('<br>') : '<span style="color:#94a3b8;">なし</span>'}</div>
+                        
+                        <div style="color:#d97706; font-weight:bold; margin-bottom:4px;">遅刻 (${cGroups['遅刻'].length}名)</div>
+                        <div style="margin-bottom:12px; padding-left:8px;">${cGroups['遅刻'].length > 0 ? cGroups['遅刻'].join('<br>') : '<span style="color:#94a3b8;">なし</span>'}</div>
+                        
+                        <div style="color:#2563eb; font-weight:bold; margin-bottom:4px;">早退 (${cGroups['早退'].length}名)</div>
+                        <div style="padding-left:8px;">${cGroups['早退'].length > 0 ? cGroups['早退'].join('<br>') : '<span style="color:#94a3b8;">なし</span>'}</div>
+                    </div>
+                </div>
+
+                <div class="list-group">
+                    <div class="list-group-title">🙋‍♂️ パパママの協力</div>
+                    <div class="list-group-content">${parentsHtml}</div>
+                </div>
+            </div>
+            
+            <div class="modal-footer" style="padding-top:12px;">
+                <button class="modal-footer-btn m-btn-cancel" style="width:100%; background:#f1f5f9; color:#475569;" onclick="closeAllResponseModal()">閉じる</button>
+            </div>
+        `;
     }
 </script>
 </body>
