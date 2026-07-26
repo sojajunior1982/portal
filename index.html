@@ -220,7 +220,7 @@
         .modal-header { text-align: center; margin-bottom: 14px; flex-shrink: 0; }
         .modal-title { font-size: 17px; font-weight: 800; color: #0f172a; }
         .modal-subtitle { font-size: 12.5px; color: #64748b; margin-top: 2px; }
-        .modal-body { flex: 1; overflow-y: auto; padding-right: 2px; }
+        .modal-body { flex: 1; overflow-y: auto; padding-right: 2px; -webkit-overflow-scrolling: touch; }
         .modal-schedule-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; margin-bottom: 12px; }
         .row-title { font-size: 13.5px; font-weight: bold; color: #1e3a8a; margin-bottom: 8px; }
 
@@ -228,7 +228,7 @@
         .child-name-badge { font-size: 12px; font-weight: 700; color: #1d4ed8; margin-bottom: 6px; display: inline-block; background: #eff6ff; padding: 2px 8px; border-radius: 6px; }
 
         .selector-group { display: flex; gap: 6px; margin-bottom: 8px; width: 100%; }
-        .sel-btn { flex: 1; padding: 10px 2px; border: 1.5px solid #cbd5e1; border-radius: 10px; background: #ffffff; color: #475569; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; }
+        .sel-btn { flex: 1; padding: 10px 2px; border: 1.5px solid #cbd5e1; border-radius: 10px; background: #ffffff; color: #475569; font-size: 13px; font-weight: 700; cursor: pointer; text-align: center; }
         .sel-btn-full { width: 100%; margin-bottom: 8px; padding: 11px; box-sizing: border-box; }
 
         .sel-btn.active-green { background: #ecfdf5; border-color: #10b981; color: #047857; }
@@ -248,14 +248,21 @@
         .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top: 3px solid #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* 全員表示ポップアップ用CSS */
+        /* 全員表示ポップアップ用CSS（スクロール改善） */
         .all-res-overlay {
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 150;
             justify-content: center; align-items: flex-end; padding: 16px; 
         }
+        .all-res-overlay .modal {
+            max-height: calc(100% - 40px); /* 画面外へのはみ出し防止 */
+            padding: 0; 
+            overflow: hidden; /* 外側は固定 */
+            display: flex;
+            flex-direction: column;
+        }
         .sort-toggle-box {
-            display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 14px;
+            display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 14px; flex-shrink: 0;
         }
         .sort-btn {
             flex: 1; text-align: center; font-size: 12px; font-weight: bold; padding: 8px;
@@ -272,22 +279,16 @@
         .role-name { font-size: 12.5px; font-weight: bold; color: #0284c7; margin-bottom: 4px; }
         
         /* サイドメニューのスタイル */
-        #sideMenuOverlay {
-            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;
-        }
-        #sideMenu {
-            position: absolute; top: 0; left: -280px; width: 280px; height: 100%; background: white; z-index: 1000; transition: left 0.3s ease; box-shadow: 2px 0 8px rgba(0,0,0,0.15); display: flex; flex-direction: column;
-        }
+        #sideMenuOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        #sideMenu { position: absolute; top: 0; left: -280px; width: 280px; height: 100%; background: white; z-index: 1000; transition: left 0.3s ease; box-shadow: 2px 0 8px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
     </style>
 </head>
 <body>
 
-<!-- スマホ風アプリの全体コンテナ -->
 <div class="app-container" id="app">
     <!-- 動的描画エリア -->
 </div>
 
-<!-- サイドメニュー関連（アプリコンテナ内に収納して崩れを防止） -->
 <div id="sideMenuOverlay" onclick="toggleSideMenu()"></div>
 <div id="sideMenu">
     <div style="padding: 24px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
@@ -298,8 +299,8 @@
         <a href="#" onclick="navigateMenu('schedule'); return false;" style="display: block; padding: 14px 20px; color: #2563eb; font-weight: bold; background: #eff6ff; text-decoration: none; border-left: 4px solid #2563eb;">
             スケジュール
         </a>
-        <a href="#" onclick="navigateMenu('addSchedule'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
-            ➕ スケジュール追加
+        <a href="#" onclick="navigateMenu('manageSchedule'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
+            ⚙️ 予定の追加・管理
         </a>
         <a href="#" onclick="navigateMenu('documents'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
             各種資料
@@ -322,7 +323,7 @@
 <div class="toast" id="toast">保存しました！</div>
 
 <div class="all-res-overlay" id="allResponseModal">
-    <div class="modal" style="max-height: 85%; padding: 0; overflow: hidden;">
+    <div class="modal">
         <div id="allResponseModalContent" style="display:flex; flex-direction:column; width:100%; height:100%;">
             <!-- 全員の回答データ挿入 -->
         </div>
@@ -634,6 +635,7 @@
                     `;
                 });
             } else {
+                // ★ 修正：保護者の募集項目を縦並びに変更
                 const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === '保護者');
                 let currentResponse = existing ? existing.response : "不参加";
                 let currentComment = existing ? existing.comment || "" : "";
@@ -649,14 +651,16 @@
                     
                     const activeRoles = currentResponse.split(',').map(r => r.trim());
                     
-                    btnsHtml += `<div class="selector-group">`;
+                    // フレックス方向をカラムにして縦に並べる
+                    btnsHtml += `<div class="selector-group" style="flex-direction: column; gap: 8px;">`;
                     availableRoles.forEach(role => {
                         const isSelected = activeRoles.includes(role);
-                        let friendlyRoleText = `👍${role}`;
-                        if (role.includes("車")) friendlyRoleText = "🚗車出せる！";
-                        if (role.includes("当番")) friendlyRoleText = "🙋当番できる！";
+                        let friendlyRoleText = `👍 ${role}`;
+                        if (role.includes("車")) friendlyRoleText = "🚗 車出せる！";
+                        if (role.includes("当番")) friendlyRoleText = "🙋 当番できる！";
                         
-                        btnsHtml += `<button class="sel-btn ${isSelected ? 'active-green' : ''}" id="btn-${event.schedule_id}-${role}" onclick="selectTempResponse('${event.schedule_id}', '${role}', '保護者', null, ${isSelected})">${friendlyRoleText}</button>`;
+                        // sel-btn-full クラスを追加して横幅一杯に広げる
+                        btnsHtml += `<button class="sel-btn sel-btn-full ${isSelected ? 'active-green' : ''}" style="margin-bottom:0;" id="btn-${event.schedule_id}-${role}" onclick="selectTempResponse('${event.schedule_id}', '${role}', '保護者', null, ${isSelected})">${friendlyRoleText}</button>`;
                     });
                     btnsHtml += `</div>`;
                     selectorContentHtml = btnsHtml;
@@ -726,7 +730,9 @@
             const activeRoles = dbResponseValue.split(',').map(r => r.trim());
             
             btns.forEach(b => {
-                b.className = b.id.includes('不参加') ? "sel-btn sel-btn-full" : "sel-btn";
+                // 修正箇所：保護者のボタンクラス判定もsel-btn-fullを維持
+                b.className = b.id.includes('不参加') ? "sel-btn sel-btn-full" : "sel-btn sel-btn-full";
+                b.style.marginBottom = b.id.includes('不参加') ? "8px" : "0";
                 const roleName = b.id.replace(`btn-${scheduleId}-`, '');
                 if (roleName === '不参加') { 
                     if (dbResponseValue === '不参加') b.classList.add('active-red'); 
@@ -868,7 +874,7 @@
         const statusBadgeClass = event.status === '確定' ? 'status-confirmed' : 'status-recruiting';
         const statusText = event.status === '確定' ? '確定！' : '募集中';
 
-        // ★ HTML流し込み（ヘッダーに×ボタンを追加）
+        // ★ HTML流し込み（スクロール崩れ解消）
         document.getElementById('allResponseModalContent').innerHTML = `
             <div class="modal-header" style="flex-shrink:0; margin-top:20px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:12px; padding-left:16px; padding-right:16px; display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
@@ -912,6 +918,7 @@
             </div>
         `;
     }
+
     function toggleSideMenu() {
         const menu = document.getElementById('sideMenu');
         const overlay = document.getElementById('sideMenuOverlay');
@@ -932,12 +939,11 @@
     }
 
     function navigateMenu(target) {
-        toggleSideMenu(); // まずメニューを閉じる
-        
+        toggleSideMenu();
         if (target === 'schedule') {
             renderListViewInstant();
-        } else if (target === 'addSchedule') {
-            renderAddScheduleView(); // 追加・更新画面の呼び出し
+        } else if (target === 'manageSchedule') {
+            renderScheduleManagerView(); // ★ 変更：管理・追加画面へ
         } else if (target === 'documents') {
             alert('各種資料ページは現在準備中です');
         } else if (target === 'admin') {
@@ -945,28 +951,97 @@
         }
     }
 
-    // 新規スケジュール追加画面をアプリ内に動的描画する関数
-    function renderAddScheduleView() {
+    // ★ 追加：スケジュール管理（日付選択＆一覧表示）画面
+    function renderScheduleManagerView() {
         currentActiveDate = null;
+        
+        let today = new Date();
+        // タイムゾーンのズレを防ぐため、文字列で作成
+        let todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
+
         let html = `
             <div class="header">
                 <button class="back-btn" onclick="renderListViewInstant()">戻る</button>
-                <span>➕ 追加・更新</span>
+                <span>📅 予定の追加・管理</span>
+            </div>
+            <div class="content" style="background: #f8fafc; flex: 1;">
+                <div style="background: #ffffff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                    <label style="font-weight:bold; font-size:14px; color:#1e293b;">管理する日付を選択</label>
+                    <input type="date" id="manageDate" value="${todayStr}" onchange="renderScheduleListForDate(this.value)" style="width:100%; padding:10px; margin-top:8px; border-radius:8px; border: 1px solid #cbd5e1;">
+                </div>
+                <div id="manageListArea"></div>
+            </div>
+        `;
+        document.getElementById('app').innerHTML = html;
+        renderScheduleListForDate(todayStr); // 初回表示
+    }
+
+    // ★ 追加：選択された日付のスケジュールを一覧表示する
+    function renderScheduleListForDate(dateStr) {
+        const listArea = document.getElementById('manageListArea');
+        if (!dateStr) { listArea.innerHTML = ""; return; }
+
+        const evts = groupedSchedules[dateStr] || [];
+        evts.sort((a,b) => a.priority - b.priority); // 優先度順
+
+        let html = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                <div style="font-weight:bold; color:#1e293b; font-size: 15px;">登録済みの予定</div>
+                <button onclick="renderScheduleForm('${dateStr}', null)" style="background:#2563eb; color:white; padding:8px 12px; border:none; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow: 0 2px 6px rgba(37,99,235,0.2);">➕ 新規追加</button>
+            </div>
+        `;
+
+        if(evts.length === 0) {
+            html += `<div style="padding:20px; text-align:center; color:#64748b; background:#fff; border-radius:12px; border:1px dashed #cbd5e1; font-size: 13px;">この日の予定はありません。<br>右上のボタンから追加してください。</div>`;
+        } else {
+            evts.forEach(ev => {
+                html += `
+                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.01);">
+                    <div>
+                        <div style="font-size:11px; color:#64748b; font-weight:bold;">表示優先度: ${ev.priority}</div>
+                        <div style="font-weight:800; font-size:15px; color:#1e3a8a; margin-top:2px;">${ev.tab_name}</div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="renderScheduleForm('${dateStr}', '${ev.schedule_id}')" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">編集</button>
+                        <button onclick="deleteSchedule('${ev.schedule_id}')" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">削除</button>
+                    </div>
+                </div>`;
+            });
+        }
+        listArea.innerHTML = html;
+    }
+
+    // ★ 修正：スケジュール追加・編集フォーム（IDを判別して動的生成）
+    function renderScheduleForm(dateStr, scheduleId = null) {
+        let isEdit = scheduleId !== null;
+        let eventData = {
+            schedule_id: "", date: dateStr, tab_name: "", priority: 1, location: "", description: "", recruit_roles: ""
+        };
+
+        if (isEdit) {
+            const evts = groupedSchedules[dateStr] || [];
+            const found = evts.find(e => String(e.schedule_id) === String(scheduleId));
+            if(found) eventData = { ...found };
+        }
+
+        let html = `
+            <div class="header">
+                <button class="back-btn" onclick="renderScheduleManagerView()">戻る</button>
+                <span>${isEdit ? "✏️ 予定の編集" : "➕ 新規追加"}</span>
             </div>
             <div class="content" style="background: #f8fafc; flex: 1;">
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                    <div style="font-size:12px; color:#64748b; margin-bottom:16px;">
-                        ※同じ「日付」と「予定の種類」で登録すると、既存データが上書き（更新）されます。
-                    </div>
+                    
+                    <input type="hidden" id="editScheduleId" value="${eventData.schedule_id}">
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">日付 <span style="color:#ef4444">*</span></label>
-                        <input type="date" id="newDate" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <input type="date" id="newDate" value="${eventData.date}" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">予定の種類 (タブ名) <span style="color:#ef4444">*</span></label>
-                        <input type="text" id="newTabName" list="tab-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <input type="text" id="newTabName" value="${eventData.tab_name}" list="tab-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
                         <datalist id="tab-defaults">
                             <option value="練習"></option>
                             <option value="練習（雨天時）"></option>
@@ -977,12 +1052,12 @@
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">優先度 (同日の表示順)</label>
-                        <input type="number" id="newPriority" value="1" min="1" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <input type="number" id="newPriority" value="${eventData.priority}" min="1" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">場所</label>
-                        <input type="text" id="newLocation" list="location-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <input type="text" id="newLocation" value="${eventData.location}" list="location-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
                         <datalist id="location-defaults">
                             <option value="小学校"></option>
                             <option value="本球場"></option>
@@ -991,48 +1066,44 @@
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">詳細・持ち物</label>
-                        <textarea id="newDescription" rows="5" placeholder="詳細やスケジュールを記入してください" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;"></textarea>
+                        <textarea id="newDescription" rows="5" placeholder="詳細やスケジュールを記入してください" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">${eventData.description}</textarea>
                     </div>
 
                     <div style="margin-bottom: 24px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">募集項目 (チェックで追加)</label>
                         <div style="margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 8px;">
-                            <label style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px;"><input type="checkbox" class="role-check" value="参加"> 参加</label>
-                            <label style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px;"><input type="checkbox" class="role-check" value="当番"> 当番</label>
-                            <label style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px;"><input type="checkbox" class="role-check" value="道具車"> 道具車</label>
-                            <label style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px;"><input type="checkbox" class="role-check" value="審判"> 審判</label>
+                            ${createCheckboxHTML("参加", eventData.recruit_roles)}
+                            ${createCheckboxHTML("当番", eventData.recruit_roles)}
+                            ${createCheckboxHTML("道具車", eventData.recruit_roles)}
+                            ${createCheckboxHTML("審判", eventData.recruit_roles)}
                         </div>
-                        <input type="text" id="newExtraRoles" placeholder="その他の募集項目 (カンマ区切り)" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <input type="text" id="newExtraRoles" placeholder="その他の募集項目 (カンマ区切り)" value="${getExtraRoles(eventData.recruit_roles)}" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
                     </div>
 
-                    <button onclick="submitNewSchedule()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: bold; box-shadow: 0 4px 10px rgba(37,99,235,0.2);">スケジュールを保存する</button>
+                    <button onclick="submitScheduleForm()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: bold; box-shadow: 0 4px 10px rgba(37,99,235,0.2); cursor:pointer;">
+                        ${isEdit ? "更新内容を保存する" : "スケジュールを登録する"}
+                    </button>
                 </div>
             </div>
         `;
         document.getElementById('app').innerHTML = html;
     }
 
-    function generateScheduleId() {
-        const dateInput = document.getElementById('newDate').value;
-        if (!dateInput) return;
-        const dateStr = dateInput.replace(/-/g, '');
-        const newId = `S${dateStr}001`; 
-        document.getElementById('newScheduleId').value = newId;
+    function createCheckboxHTML(role, currentRoles) {
+        let isChecked = (currentRoles || "").includes(role) ? "checked" : "";
+        return `<label style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px;"><input type="checkbox" class="role-check" value="${role}" ${isChecked}> ${role}</label>`;
+    }
+    function getExtraRoles(currentRoles) {
+        if (!currentRoles) return "";
+        const defaultRoles = ["参加", "当番", "道具車", "審判"];
+        return currentRoles.split(',').map(r => r.trim()).filter(r => r && !defaultRoles.includes(r)).join(', ');
     }
 
-    function updateStatus() {
-        const checkboxes = document.querySelectorAll('.role-check:checked');
-        const extraRoles = document.getElementById('newExtraRoles').value.trim();
-        if (checkboxes.length > 0 || extraRoles !== "") {
-            document.getElementById('newStatus').value = "募集中";
-        } else {
-            document.getElementById('newStatus').value = ""; 
-        }
-    }
-
-    async function submitNewSchedule() {
+    // ★ 修正：フォームの送信処理
+    async function submitScheduleForm() {
         const dateVal = document.getElementById('newDate').value;
         const tabVal = document.getElementById('newTabName').value;
+        const scheduleIdVal = document.getElementById('editScheduleId').value; // 空なら新規
 
         if (!dateVal || !tabVal) {
             alert("日付と予定の種類(タブ名)は必須です！");
@@ -1051,13 +1122,14 @@
 
         const payload = {
             action: 'save_schedule',
+            schedule_id: scheduleIdVal, // ★ IDを付与して送信
             date: dateVal,
             tab_name: tabVal,
             priority: document.getElementById('newPriority').value || 1,
             location: document.getElementById('newLocation').value,
             description: document.getElementById('newDescription').value,
             recruit_roles: finalRecruitRoles,
-            user_name: currentUser.user_name // 最終更新者として送信
+            user_name: currentUser.user_name
         };
 
         showLoading("スケジュールを保存中...");
@@ -1067,14 +1139,39 @@
             const result = await res.json();
             if (result.success) {
                 showToast("保存完了！");
-                await fetchSchedules(false); // 最新のスケジュールを再取得してリストへ
+                await fetchSchedules(false);
+                renderScheduleManagerView(); // 保存後は管理画面に戻る
             } else {
                 alert("保存に失敗しました: " + result.message);
-                renderAddScheduleView(); // エラー時はフォームに戻す
+                renderScheduleForm(dateVal, scheduleIdVal); 
             }
         } catch (e) {
             alert("通信エラーが発生しました。");
-            renderAddScheduleView();
+            renderScheduleManagerView();
+        }
+    }
+
+    // ★ 追加：予定の削除機能
+    async function deleteSchedule(scheduleId) {
+        if (!confirm("本当にこの予定を削除しますか？\n（関連する出欠回答も無効になります）")) return;
+
+        showLoading("削除中...");
+        try {
+            const payload = { action: 'delete_schedule', schedule_id: scheduleId };
+            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const result = await res.json();
+            
+            if (result.success) {
+                showToast("削除しました");
+                await fetchSchedules(false);
+                renderScheduleManagerView(); 
+            } else {
+                alert("削除エラー: " + result.message);
+                renderScheduleManagerView();
+            }
+        } catch (e) {
+            alert("通信エラーが発生しました。");
+            renderScheduleManagerView();
         }
     }
 </script>
