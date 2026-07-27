@@ -573,6 +573,15 @@
         
         // ★ 変更：タブに「New」バッジをつける
         events.forEach((event, index) => {
+
+console.log("現在のイベントデータ:", event);
+    console.log("updateの値:", event.update);
+    console.log("isNewUpdateの結果:", isNewUpdate(event.update));
+
+
+
+
+            
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
             // 2日以内の更新があればNewバッジHTMLを作成
             const newBadge = isNewUpdate(event.update) ? `<span style="background:#ef4444; color:white; font-size:9px; padding:2px 4px; border-radius:4px; margin-left:4px; vertical-align:middle; font-weight:bold;">New</span>` : '';
