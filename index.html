@@ -1607,26 +1607,26 @@
         } catch (e) { alert("通信エラー"); drawAccountForm(); }
     }
     function handleGetAccounts() {
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('accounts');
-  if (!sheet) return { success: false, message: "accountsシートが見つかりません。" };
-  const values = sheet.getDataRange().getValues();
-  let accounts = [];
+      const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('accounts');
+      if (!sheet) return { success: false, message: "accountsシートが見つかりません。" };
+      const values = sheet.getDataRange().getValues();
+      let accounts = [];
   
-  for (let i = 1; i < values.length; i++) {
-    if (!values[i][0]) continue;
-    accounts.push({
-      account: values[i][0],
-      password_hash: values[i][1],
-      user_name: values[i][2],
-      family_id: values[i][3],
-      area_id: values[i][4],
-      children: values[i][5],
-      role: values[i][6],
-      created_at: values[i][7]
-    });
-  }
-  return { success: true, accounts: accounts };
-}
+      for (let i = 1; i < values.length; i++) {
+        if (!values[i][0]) continue;
+        accounts.push({
+          account: values[i][0],
+          password_hash: values[i][1],
+          user_name: values[i][2],
+          family_id: values[i][3],
+          area_id: values[i][4],
+          children: values[i][5],
+          role: values[i][6],
+          created_at: values[i][7]
+        });
+      }
+      return { success: true, accounts: accounts };
+    }
 
 function handleSaveFamily(data) {
   const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('accounts');
