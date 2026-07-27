@@ -428,17 +428,17 @@
             let childrenStatusRowsHtml = "";
             if (childrenList.length > 0) {
                 childrenList.forEach(childName => {
-                    const childAns = myAttsForThisEvent.find(a => a.type === '子供' && a.name === childName);
+                    const childAns = myAttsForThisEvent.find(a => a.type === '団員' && a.name === childName);
                     const childStatusText = childAns ? childAns.response : "[未回答]";
                     childrenStatusRowsHtml += `
                         <div class="summary-row">
-                            <span style="color:#64748b;">子供 (${childName}):</span>
+                            <span style="color:#64748b;">団員 (${childName}):</span>
                             <span style="font-weight:bold; color: ${childStatusText.includes('出席') ? '#059669' : '#ef4444'};">${childStatusText}</span>
                         </div>
                     `;
                 });
             } else {
-                childrenStatusRowsHtml = `<div class="summary-row"><span style="color:#94a3b8;">子供の情報がありません</span></div>`;
+                childrenStatusRowsHtml = `<div class="summary-row"><span style="color:#94a3b8;">団員の情報がありません</span></div>`;
             }
 
             const updateTime = event.update ? new Date(event.update).toLocaleString('ja-JP', {month:'numeric', day:'numeric', hour:'numeric', minute:'numeric'}) : '日時不明';
@@ -475,7 +475,7 @@
                 ${myResponsePanelsHtml}
                 <div style="display: flex; gap: 10px; width: 100%;">
                     <button class="fixed-btn fixed-btn-recruit" onclick="openFullResponseModal('保護者')">🙋‍♂️ 保護者のご協力<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">できること選ぶ！</span></button>
-                    <button class="fixed-btn fixed-btn-absent" onclick="openFullResponseModal('子供')">🧒 子供の出欠連絡<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">連絡はこちらから</span></button>
+                    <button class="fixed-btn fixed-btn-absent" onclick="openFullResponseModal('団員')">🧒 団員の出欠連絡<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">連絡はこちらから</span></button>
                 </div>
             </div>
         `;
@@ -507,8 +507,8 @@
         const events = groupedSchedules[currentActiveDate]; 
         const childrenList = getChildrenList();
         
-        let title = type === '子供' ? "🧒 子供の出欠を連絡" : "🙋‍♂️ 協力パパママ募集中！";
-        let subtitle = type === '子供' ? `対象: ${childrenList.join('・')}` : `対象: ${currentUser.user_name}`;
+        let title = type === '団員' ? "🧒 団員の出欠を連絡" : "🙋‍♂️ 協力パパママ募集中！";
+        let subtitle = type === '団員' ? `対象: ${childrenList.join('・')}` : `対象: ${currentUser.user_name}`;
         
         tempAttendances = []; 
         let rowsHtml = "";
@@ -516,9 +516,9 @@
         events.forEach((event, idx) => {
             let selectorContentHtml = "";
 
-            if (type === '子供') {
+            if (type === '団員') {
                 childrenList.forEach((childName, cIdx) => {
-                    const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === '子供' && a.name === childName);
+                    const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === '団員' && a.name === childName);
                     let currentResponse = existing ? existing.response : "出席(自転車)";
                     let currentComment = existing ? existing.comment || "" : "";
                     
@@ -538,7 +538,7 @@
                         let activeClass = isActive ? (opt.key.includes("出席") ? "active-green" : opt.key === "欠席" ? "active-red" : opt.key === "遅刻" ? "active-yellow" : "active-blue") : "";
                         const btnStyle = opt.key.includes("出席") ? "flex: 1 1 45%;" : "flex: 1 1 28%;";
                         const safeChildId = encodeURIComponent(childName);
-                        btnsHtml += `<button class="sel-btn ${activeClass}" style="${btnStyle}" id="btn-${event.schedule_id}-${safeChildId}-${opt.key}" onclick="selectTempResponse('${event.schedule_id}', '${opt.key}', '子供', '${childName}')">${opt.text}</button>`;
+                        btnsHtml += `<button class="sel-btn ${activeClass}" style="${btnStyle}" id="btn-${event.schedule_id}-${safeChildId}-${opt.key}" onclick="selectTempResponse('${event.schedule_id}', '${opt.key}', '団員', '${childName}')">${opt.text}</button>`;
                     });
                     btnsHtml += `</div>`;
 
@@ -604,7 +604,7 @@
         const target = tempAttendances.find(t => String(t.schedule_id) === String(scheduleId) && (type === '保護者' || t.name === targetName)); 
         if (!target) return;
 
-        if (type === '子供') {
+        if (type === '団員') {
             target.response = opt; 
             const safeChildId = encodeURIComponent(targetName);
             const btns = document.querySelectorAll(`[id^="btn-${scheduleId}-${safeChildId}-"]`);
@@ -658,7 +658,7 @@
         showToast("保存中...");
 
         for (let item of tempAttendances) {
-            let sendVal = type === '子供' ? item.response : stringifyRolesWithStatus(item.roles);
+            let sendVal = type === '団員' ? item.response : stringifyRolesWithStatus(item.roles);
             const payload = {
                 action: 'submit_attendance',
                 schedule_id: item.schedule_id,
@@ -692,7 +692,7 @@
         if (!event) return;
 
         const atts = allAttendances.filter(a => String(a.schedule_id) === String(currentAllResScheduleId));
-        const childrenAtts = atts.filter(a => a.type === '子供');
+        const childrenAtts = atts.filter(a => a.type === '団員');
         const parentAtts = atts.filter(a => a.type === '保護者');
 
         childrenAtts.sort((a, b) => {
@@ -1372,7 +1372,7 @@
         });
 
         let familyList = Object.values(families);
-        // 子供の背番号（文字列内の数字）でソート
+        // 団員の背番号（文字列内の数字）でソート
         familyList.sort((a, b) => {
             let numA = 9999, numB = 9999;
             let mA = (a.children || "").match(/\[(\d+)\]/);
@@ -1395,7 +1395,7 @@
 
         familyList.forEach(fam => {
             let names = fam.members.map(m => m.user_name).join(', ');
-            let childrenDisp = fam.children || "子供未登録";
+            let childrenDisp = fam.children || "団員未登録";
             let areaDisp = fam.area_id ? `<span style="font-size:10px; background:#cbd5e1; color:#334155; padding:2px 6px; border-radius:4px; font-weight:bold;">${fam.area_id}</span>` : "";
             
             html += `
@@ -1507,9 +1507,9 @@
                     </div>
 
                     <div style="margin-bottom:24px; padding-bottom:16px; border-bottom:1px dashed #cbd5e1;">
-                        <label style="font-size:14px; color:#1e3a8a; font-weight:bold; display:block; margin-bottom:8px;">🧒 団員 (子供)</label>
+                        <label style="font-size:14px; color:#1e3a8a; font-weight:bold; display:block; margin-bottom:8px;">🧒 団員</label>
                         <div id="childrenContainer">${childrenHtml}</div>
-                        <button type="button" onclick="addChild()" style="width:100%; padding:10px; background:#eff6ff; color:#2563eb; border:1px dashed #93c5fd; border-radius:8px; font-size:13px; font-weight:bold; margin-top:4px;">➕ 子供を追加</button>
+                        <button type="button" onclick="addChild()" style="width:100%; padding:10px; background:#eff6ff; color:#2563eb; border:1px dashed #93c5fd; border-radius:8px; font-size:13px; font-weight:bold; margin-top:4px;">➕ 団員を追加</button>
                     </div>
 
                     <div style="margin-bottom:24px;">
