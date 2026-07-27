@@ -674,8 +674,8 @@
             } catch(e) { console.error("保存エラー", e); }
         }
 
+        await fetchSchedules(false);
         showToast("保存完了！");
-        await fetchSchedules(false); // ★最新状態を読み込み直す
     }
 
     function openAllResponseModal(scheduleId) {
@@ -1021,8 +1021,9 @@
             let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'save_confirmations', updates: updates }) });
             let result = await res.json();
             if (result.success) {
-                showToast("保存完了！");
-                await fetchSchedules(false); // 最新データを再取得
+                // ★順番を入れ替える
+                await fetchSchedules(false); // 先にリロード
+                showToast("保存完了！");       // 次にトースト
                 renderConfirmRolesListView();
             } else {
                 alert("保存エラー: " + result.message);
