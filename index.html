@@ -1606,133 +1606,6 @@
             else { alert("エラー: " + result.message); drawAccountForm(); }
         } catch (e) { alert("通信エラー"); drawAccountForm(); }
     }
-    function handleGetAccounts() {
-      const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('accounts');
-      if (!sheet) return { success: false, message: "accountsシートが見つかりません。" };
-      const values = sheet.getDataRange().getValues();
-      let accounts = [];
-  
-      for (let i = 1; i < values.length; i++) {
-        if (!values[i][0]) continue;
-        accounts.push({
-          account: values[i][0],
-          password_hash: values[i][1],
-          user_name: values[i][2],
-          family_id: values[i][3],
-          area_id: values[i][4],
-          children: values[i][5],
-          role: values[i][6],
-          created_at: values[i][7]
-        });
-      }
-      return { success: true, accounts: accounts };
-    }
-
-function handleSaveFamily(data) {
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('accounts');
-  if (!sheet) return { success: false, message: "accountsシートがありません" };
-  const values = sheet.getDataRange().getValues();
-  
-  let familyId = data.family_id;
-  const now = new Date();
-  let currentAccounts = data.accounts; 
-  
-  // 新規アカウントのログインID重複チェック
-  for (let accData of currentAccounts) {
-    if (accData.isNew) {
-      for (let i = 1; i < values.length; i++) {
-        if (String(values[i][0]).trim() === String(accData.account).trim()) {
-          return { success: false, message: `ログインID「${accData.account}」は既に使われています。別のIDを指定してください。` };
-        }
-      }
-    }
-  }
-
-  // 新規採番 (F0001〜の最大値+1)
-  if (!familyId) {
-    let maxNum = 0;
-    for (let i = 1; i < values.length; i++) {
-      let fId = String(values[i][3]).trim();
-      if (fId.startsWith('F')) {
-        let num = parseInt(fId.substring(1), 10);
-        if (!isNaN(num) && num > maxNum) maxNum = num;
-      }
-    }
-    maxNum++;
-    familyId = 'F' + ('0000' + maxNum).slice(-4);
-  }
-
-  let rowsToDelete = [];
-  
-  // 既存行の更新・削除判定
-  for (let i = values.length - 1; i >= 1; i--) {
-    if (String(values[i][3]).trim() === familyId) {
-      let accId = String(values[i][0]).trim();
-      let accData = currentAccounts.find(a => a.account === accId);
-      
-      if (accData) {
-        // 更新 (パスワードは入力がある場合のみ上書き)
-        let pw = accData.password_hash ? accData.password_hash : values[i][1];
-        sheet.getRange(i + 1, 2).setValue(pw); // password_hash
-        sheet.getRange(i + 1, 3).setValue(accData.user_name); // user_name
-        sheet.getRange(i + 1, 5).setValue(data.area_id); // area_id
-        sheet.getRange(i + 1, 6).setValue(data.children); // children
-        sheet.getRange(i + 1, 8).setValue(now); // created_at(更新日)
-        accData._processed = true; 
-      } else {
-        // フロント側で削除されたアカウント（同じfamily_id内で消されたもの）
-        rowsToDelete.push(i + 1);
-      }
-    }
-  }
-  
-  // 削除の実行 (行ズレ防止のため下から消す)
-  rowsToDelete.sort((a,b) => b - a).forEach(rIdx => {
-    sheet.deleteRow(rIdx);
-  });
-  
-  // 新規追加分の処理
-  let newRows = [];
-  currentAccounts.forEach(accData => {
-    if (!accData._processed) {
-      newRows.push([
-        accData.account,
-        accData.password_hash,
-        accData.user_name,
-        familyId,
-        data.area_id,
-        data.children,
-        accData.role || 'user',
-        now
-      ]);
-    }
-  });
-  
-  if (newRows.length > 0) {
-    sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, 8).setValues(newRows);
-  }
-  
-  return { success: true, message: "保存しました", family_id: familyId };
-}
-
-function handleDeleteFamily(data) {
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('accounts');
-  const values = sheet.getDataRange().getValues();
-  let familyId = data.family_id;
-  
-  let rowsToDelete = [];
-  for (let i = values.length - 1; i >= 1; i--) {
-    if (String(values[i][3]).trim() === familyId) {
-      rowsToDelete.push(i + 1);
-    }
-  }
-  
-  rowsToDelete.forEach(rIdx => {
-    sheet.deleteRow(rIdx);
-  });
-  
-  return { success: true, message: "家族データを削除しました" };
-}
     function renderDefaultForm(oldValue, type) {
         let isEdit = oldValue !== "";
         document.getElementById('app').innerHTML = `
@@ -1743,10 +1616,7 @@ function handleDeleteFamily(data) {
             <div class="content" style="background:#f8fafc;">
                 <div style="background:#fff; padding:16px; border-radius:12px;">
                     <label style="font-weight:bold; font-size:14px;">項目名</label>
-                    <input type="text" id="defNewValue" value="${oldValue}" style="width:100%; padding:10px; margin-top:8px; border:1px solid #cbd5e1; border-radius:8px;">
-                    <input type="hidden" id="defOldValue" value="${oldValue}">
-                    <input type="hidden" id="defType" value="${type}">
-                    <button onclick="submitDefaultForm()" style="width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:8px; font-weight:bold; margin-top:24px;">保存する</button>
+                    <input type="text" id="defNewValue" value="${oldValue}">
                 </div>
             </div>
         `;
