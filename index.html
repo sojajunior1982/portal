@@ -877,24 +877,26 @@
         document.getElementById('app').innerHTML = html;
     }
 
-    function renderConfirmRolesDetailView(date) {
+    function renderConfirmRolesDetailView(date, initMap = true) {
         currentActiveDate = date;
         const events = groupedSchedules[date];
         const d = new Date(date);
         const titleStr = `${d.getMonth() + 1}/${d.getDate()} パパママ確定`;
 
-        // 一時状態保持用マップを構築
-        confirmStateMap = {};
-        events.forEach(ev => {
-            const atts = allAttendances.filter(a => String(a.schedule_id) === String(ev.schedule_id) && a.type === '保護者');
-            confirmStateMap[ev.schedule_id] = {};
-            atts.forEach(att => {
-                confirmStateMap[ev.schedule_id][att.family_id] = {
-                    name: att.name,
-                    roles: parseRolesWithStatus(att.response) // [{role, status}]
-                };
+        // ★ initMap が true のときだけマップを初期化するよう if文で囲みます
+        if (initMap) {
+            confirmStateMap = {};
+            events.forEach(ev => {
+                const atts = allAttendances.filter(a => String(a.schedule_id) === String(ev.schedule_id) && a.type === '保護者');
+                confirmStateMap[ev.schedule_id] = {};
+                atts.forEach(att => {
+                    confirmStateMap[ev.schedule_id][att.family_id] = {
+                        name: att.name,
+                        roles: parseRolesWithStatus(att.response)
+                    };
+                });
             });
-        });
+        }
 
         let html = `
             <div class="header confirm-mode">
@@ -981,8 +983,9 @@
         if (!person) return;
         const targetRole = person.roles.find(r => r.role === role);
         if (targetRole) {
-            targetRole.status = targetRole.status === 1 ? 0 : 1; // 0 <-> 1 切り替え
-            renderConfirmRolesDetailView(currentActiveDate);
+            targetRole.status = targetRole.status === 1 ? 0 : 1; 
+            // ★ 第二引数に false を渡す
+            renderConfirmRolesDetailView(currentActiveDate, false);
         }
     }
 
@@ -991,9 +994,10 @@
         Object.keys(scheduleState).forEach(fId => {
             const person = scheduleState[fId];
             const targetRole = person.roles.find(r => r.role === role);
-            if (targetRole) targetRole.status = 1; // 全員 1 にする
+            if (targetRole) targetRole.status = 1;
         });
-        renderConfirmRolesDetailView(currentActiveDate);
+        // ★ 第二引数に false を渡す
+        renderConfirmRolesDetailView(currentActiveDate, false);
     }
 
     async function submitConfirmations() {
