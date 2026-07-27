@@ -7,132 +7,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sojajunior1982/portal/main/logo_01.png">
     <script>
-        // ★★★ あなたのGASの「ウェブアプリURL」 ★★★
         const GAS_URL = "https://script.google.com/macros/s/AKfycbz2c7_4BqzbAcnj90yWS-e5iJ7ZMCtNbzuaQztCKTuRzd30tcT0eIFjBvymUI_t2LecQw/exec";
     </script>
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif; -webkit-tap-highlight-color: transparent; }
+        html, body { width: 100%; height: 100dvh; margin: 0; padding: 0; background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); overflow: hidden; }
+        body { display: flex; justify-content: center; align-items: center; }
         
-        html, body {
-            width: 100%;
-           height: 100dvh; 
-           margin: 0;
-           padding: 0;
-           background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-           overflow: hidden; /* position: fixed; を削除しました */
-       }
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .app-container {
-            background: #fafbfe;
-            width: 100%;
-            max-width: 390px;
-            height: 100%;
-            max-height: 844px;
-            border-radius: 32px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            border: 4px solid #ffffff;
-            overflow: hidden;
-        }
+        .app-container { background: #fafbfe; width: 100%; max-width: 390px; height: 100%; max-height: 844px; border-radius: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; position: relative; border: 4px solid #ffffff; overflow: hidden; }
+        @media (max-width: 480px) { .app-container { max-width: 100%; height: 100dvh; max-height: 100dvh; border-radius: 0; border: none; box-shadow: none; } }
 
-        @media (max-width: 480px) {
-            .app-container {
-                max-width: 100%;
-                height: 100dvh;
-                max-height: 100dvh;
-                border-radius: 0;
-                border: none;
-                box-shadow: none;
-            }
-        }
+        .header { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 18px 16px; text-align: center; font-size: 17px; font-weight: 700; position: relative; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); flex-shrink: 0; z-index: 10; }
+        .header.confirm-mode { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15); } /* パパママ確定モードのヘッダー色 */
 
-        .header {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: white;
-            padding: 18px 16px;
-            text-align: center;
-            font-size: 17px;
-            font-weight: 700;
-            position: relative;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
-            flex-shrink: 0;
-            z-index: 10;
-        }
-        .back-btn {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: white;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .logout-btn {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: white;
-            background: rgba(255,255,255,0.15);
-            border: none;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            cursor: pointer;
-        }
-        .menu-btn {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: white;
-            background: none;
-            border: none;
-            font-size: 22px;
-            cursor: pointer;
-            padding: 0;
-        }
+        .back-btn { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: white; background: rgba(255,255,255,0.2); border: none; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .logout-btn { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: white; background: rgba(255,255,255,0.15); border: none; padding: 6px 12px; border-radius: 20px; font-size: 11px; cursor: pointer; }
+        .menu-btn { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: white; background: none; border: none; font-size: 22px; cursor: pointer; padding: 0; }
 
-        .content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            -webkit-overflow-scrolling: touch;
-        }
+        .content { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
 
-        .login-box {
-            padding: 20px 16px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-        }
-        .login-logo-img {
-            width: 100px;
-            height: 100px;
-            border-radius: 22px;
-            object-fit: cover;
-            margin-bottom: 12px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-        }
+        .login-box { padding: 20px 16px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; }
+        .login-logo-img { width: 100px; height: 100px; border-radius: 22px; object-fit: cover; margin-bottom: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
         .login-logo { font-size: 24px; font-weight: 800; color: #1e3a8a; margin-bottom: 4px; }
         .login-subtitle { font-size: 13px; color: #64748b; margin-bottom: 25px; }
         .login-box input { width: 100%; padding: 14px 16px; margin-bottom: 16px; border: 1.5px solid #e2e8f0; border-radius: 14px; font-size: 15px; outline: none; background: #fff; }
@@ -152,17 +47,7 @@
         .tab { padding: 10px 18px; border-radius: 14px 14px 0 0; font-size: 13px; font-weight: 700; cursor: pointer; background: #e2e8f0; color: #475569; border: 1.5px solid #cbd5e1; border-bottom: none; white-space: nowrap; }
         .tab.active { background: #ffffff; color: #1e3a8a; border-color: #94a3b8; padding-bottom: 11px; margin-bottom: -1px; position: relative; z-index: 2; }
         
-        .tab-content-box { 
-            background: #ffffff; 
-            border: 1.5px solid #cbd5e1; 
-            border-radius: 0 16px 16px 16px; 
-            padding: 16px; 
-            flex: 1; 
-            overflow-y: auto;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.01); 
-            margin-top: -1px; 
-            margin-bottom: 12px;
-        }
+        .tab-content-box { background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 0 16px 16px 16px; padding: 16px; flex: 1; overflow-y: auto; box-shadow: 0 6px 12px rgba(0,0,0,0.01); margin-top: -1px; margin-bottom: 12px; }
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
         .detail-item { margin-bottom: 16px; }
@@ -171,68 +56,19 @@
         .summary-status-bar { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-top: 16px; font-size: 12.5px; }
         .summary-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
 
-        .bottom-action-bar { 
-            background: #ffffff; 
-            border-top: 1.5px solid #cbd5e1; 
-            padding: 12px 16px 20px 16px; 
-            display: flex; 
-            gap: 10px; 
-            flex-shrink: 0;
-            z-index: 10; 
-        }
+        .bottom-action-bar { background: #ffffff; border-top: 1.5px solid #cbd5e1; padding: 12px 16px 20px 16px; display: flex; gap: 10px; flex-shrink: 0; z-index: 10; }
         .fixed-btn { flex: 1; padding: 12px 4px; border-radius: 14px; font-size: 13.5px; font-weight: bold; cursor: pointer; text-align: center; border: none; line-height: 1.4; }
         .fixed-btn-recruit { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; box-shadow: 0 4px 10px rgba(234, 88, 12, 0.2); }
         .fixed-btn-absent { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(4px);
-            z-index: 100;
-            justify-content: center;
-            align-items: flex-end;
-            padding: 16px; 
-        }
-        
-        /* ★変更：モーダル本体を「画面の80%まで」にし、下の余白を自動調整 */
-        .modal {
-            background: #ffffff;
-            width: 100%;
-            max-width: 358px;
-            border-radius: 24px;
-            box-shadow: 0 -4px 30px rgba(0,0,0,0.15);
-            box-sizing: border-box;
-            padding: 20px 16px;
-            
-            /* ここから下がスマホ対応のええ感じ設定 */
-            max-height: 80dvh; 
-            margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); 
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* はみ出た分をカットして内部スクロールさせる */
-            
-            animation: slideUp 0.25s cubic-bezier(0.1, 0.76, 0.55, 0.94);
-        }
-        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 100; justify-content: center; align-items: flex-end; padding: 16px; }
+        .modal { background: #ffffff; width: 100%; max-width: 358px; border-radius: 24px; box-shadow: 0 -4px 30px rgba(0,0,0,0.15); box-sizing: border-box; padding: 20px 16px; max-height: 80dvh; margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); display: flex; flex-direction: column; overflow: hidden; animation: slideUp 0.25s cubic-bezier(0.1, 0.76, 0.55, 0.94); }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
         .modal-header { text-align: center; margin-bottom: 14px; flex-shrink: 0; }
         .modal-title { font-size: 17px; font-weight: 800; color: #0f172a; }
         .modal-subtitle { font-size: 12.5px; color: #64748b; margin-top: 2px; }
-        
-        /* ★変更：モーダルの中身（スクロールする部分） */
-        .modal-body { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding-right: 2px; 
-            -webkit-overflow-scrolling: touch; /* スマホで滑らかにスクロール */
-        }
-        
+        .modal-body { flex: 1; overflow-y: auto; padding-right: 2px; -webkit-overflow-scrolling: touch; }
         .modal-schedule-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; margin-bottom: 12px; }
         .row-title { font-size: 13.5px; font-weight: bold; color: #1e3a8a; margin-bottom: 8px; }
 
@@ -242,14 +78,12 @@
         .selector-group { display: flex; gap: 6px; margin-bottom: 8px; width: 100%; }
         .sel-btn { flex: 1; padding: 10px 2px; border: 1.5px solid #cbd5e1; border-radius: 10px; background: #ffffff; color: #475569; font-size: 13px; font-weight: 700; cursor: pointer; text-align: center; }
         .sel-btn-full { width: 100%; margin-bottom: 8px; padding: 11px; box-sizing: border-box; }
-
         .sel-btn.active-green { background: #ecfdf5; border-color: #10b981; color: #047857; }
         .sel-btn.active-red { background: #fef2f2; border-color: #f87171; color: #b91c1c; }
         .sel-btn.active-yellow { background: #fffbeb; border-color: #fbbf24; color: #b45309; }
         .sel-btn.active-blue { background: #eff6ff; border-color: #60a5fa; color: #1d4ed8; }
         .modal-comment { width: 100%; padding: 10px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; box-sizing: border-box; background: #fff; }
 
-        /* モーダルの下のボタン固定エリア */
         .modal-footer { padding-top: 12px; display: flex; gap: 10px; flex-shrink: 0; }
         .modal-footer-btn { flex: 1; padding: 13px; border-radius: 12px; font-weight: bold; font-size: 14px; border: none; text-align: center; cursor: pointer; }
         .m-btn-cancel { background: #f1f5f9; color: #475569; }
@@ -261,38 +95,12 @@
         .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top: 3px solid #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* 全員表示ポップアップ用CSS（スクロール改善） */
-        .all-res-overlay {
-            display: none; position:fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 150;
-            justify-content: center; align-items: flex-end; padding: 16px; 
-        }
+        .all-res-overlay { display: none; position:fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 150; justify-content: center; align-items: flex-end; padding: 16px; }
+        .all-res-overlay .modal { max-height: 80dvh; margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+        #allResponseModalContent { display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; }
         
-        /* ★変更：全員表示用のモーダルもええ感じに調整 */
-        .all-res-overlay .modal {
-            max-height: 80dvh; 
-            margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); 
-            padding: 0; 
-            overflow: hidden; 
-            display: flex;
-            flex-direction: column;
-        }
-        
-        #allResponseModalContent {
-            display: flex; 
-            flex-direction: column; 
-            width: 100%; 
-            height: 100%; 
-            overflow: hidden; 
-        }
-        
-        .sort-toggle-box {
-            display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 14px; flex-shrink: 0;
-        }
-        .sort-btn {
-            flex: 1; text-align: center; font-size: 12px; font-weight: bold; padding: 8px;
-            color: #64748b; cursor: pointer; border-radius: 8px; transition: 0.2s;
-        }
+        .sort-toggle-box { display: flex; background: #f1f5f9; border-radius: 10px; padding: 4px; margin-bottom: 14px; flex-shrink: 0; }
+        .sort-btn { flex: 1; text-align: center; font-size: 12px; font-weight: bold; padding: 8px; color: #64748b; cursor: pointer; border-radius: 8px; transition: 0.2s; }
         .sort-btn.active { background: #ffffff; color: #1e3a8a; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
         
         .list-group { margin-bottom: 16px; }
@@ -303,16 +111,17 @@
         .role-block:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
         .role-name { font-size: 12.5px; font-weight: bold; color: #0284c7; margin-bottom: 4px; }
         
-        /* サイドメニューのスタイル */
         #sideMenuOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
         #sideMenu { position: absolute; top: 0; left: -280px; width: 280px; height: 100%; background: white; z-index: 1000; transition: left 0.3s ease; box-shadow: 2px 0 8px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+
+        /* 確定トグルスイッチ風ボタン */
+        .confirm-toggle-btn { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid #cbd5e1; background: #f1f5f9; color: #64748b; font-weight: bold; cursor: pointer; }
+        .confirm-toggle-btn.is-confirmed { background: #ecfdf5; border-color: #10b981; color: #047857; }
     </style>
 </head>
 <body>
 
-<div class="app-container" id="app">
-    <!-- 動的描画エリア -->
-</div>
+<div class="app-container" id="app"></div>
 
 <div id="sideMenuOverlay" onclick="toggleSideMenu()"></div>
 <div id="sideMenu">
@@ -322,10 +131,13 @@
     </div>
     <div style="flex: 1; padding: 12px 0; overflow-y: auto;">
         <a href="#" onclick="navigateMenu('schedule'); return false;" style="display: block; padding: 14px 20px; color: #2563eb; font-weight: bold; background: #eff6ff; text-decoration: none; border-left: 4px solid #2563eb;">
-            スケジュール
+            📅 スケジュール
         </a>
         <a href="#" onclick="navigateMenu('manageSchedule'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
             ⚙️ 予定の追加・管理
+        </a>
+        <a href="#" onclick="navigateMenu('confirmRoles'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9; background: #fefce8;">
+            🤝 協力パパママ確定
         </a>
         <a href="#" onclick="navigateMenu('documents'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
             各種資料
@@ -340,17 +152,13 @@
 </div>
 
 <div class="modal-overlay" id="responseModal">
-    <div class="modal" id="modalContent">
-        <!-- ポップアップ内容 -->
-    </div>
+    <div class="modal" id="modalContent"></div>
 </div>
 
 <div class="toast" id="toast">保存しました！</div>
 
 <div class="all-res-overlay" id="allResponseModal">
-    <div class="modal" id="allResponseModalContent">
-        <!-- JSでここにコンテンツが流し込まれます -->
-    </div>
+    <div class="modal" id="allResponseModalContent"></div>
 </div>
 
 <script>
@@ -364,10 +172,10 @@
     let tempAttendances = [];
     let currentAllResSort = 'number';
     let currentAllResScheduleId = null;
-    let appDefaultsFull = []; // 編集・並び替え用フルデータ保持用
-    let currentDefaultType = 'tab'; // マスタ管理の現在開いているタブ
+    let appDefaultsFull = [];
+    let currentDefaultType = 'tab';
+    let confirmStateMap = {}; // 確定画面用一時状態マップ
     
-    // ★ 追加：マスタデータを保持する変数（念のため空になっても大丈夫なように初期値を入れています）
     let appDefaults = {
         tab: ["練習", "練習（雨天時）", "練習試合", "試合"],
         place: ["小学校", "本球場"],
@@ -379,22 +187,34 @@
         return currentUser.children.split(/[,、]/).map(c => c.trim()).filter(c => c !== "");
     }
 
-    (function() {
-        if (window.top !== window.self) {
-            try {
-                window.top.document.querySelector('body > table').style.display = 'none';
-                window.top.document.querySelector('body > div').style.paddingTop = '0px';
-            } catch (e) {}
+    // 役割文字列 (例: "🙆 参加,0, 🙋 当番,1") をオブジェクト配列にパースするヘルパー
+    function parseRolesWithStatus(responseStr) {
+        if (!responseStr || responseStr === '不参加' || responseStr === 'unselected') return [];
+        const parts = responseStr.split(',').map(s => s.trim()).filter(s => s !== '');
+        let result = [];
+        for (let i = 0; i < parts.length; i++) {
+            let p = parts[i];
+            if (p === '0' || p === '1') continue;
+            let next = parts[i + 1];
+            if (next === '0' || next === '1') {
+                result.push({ role: p, status: parseInt(next, 10) });
+                i++;
+            } else {
+                result.push({ role: p, status: 0 }); // 互換性維持
+            }
         }
-    })();
+        return result;
+    }
+
+    // オブジェクト配列 [{role, status}] を文字列 "🙆 参加,0, 🙋 当番,1" に変換
+    function stringifyRolesWithStatus(rolesArr) {
+        if (!rolesArr || rolesArr.length === 0) return "不参加";
+        return rolesArr.map(r => `${r.role},${r.status}`).join(', ');
+    }
 
     window.onload = function() {
         const token = localStorage.getItem('my_token');
-        if (!token) { 
-            renderLoginView(); 
-        } else { 
-            fetchUserData(token); 
-        }
+        if (!token) { renderLoginView(); } else { fetchUserData(token); }
     };
 
     function showToast(msg) {
@@ -442,8 +262,7 @@
                 localStorage.setItem('my_token', result.token); 
                 currentUser = result.user; 
                 await fetchSchedules(); 
-            } 
-            else { messageDiv.style.color = "#ef4444"; messageDiv.innerText = result.message; }
+            } else { messageDiv.style.color = "#ef4444"; messageDiv.innerText = result.message; }
         } catch (error) { messageDiv.style.color = "#ef4444"; messageDiv.innerText = "通信エラーが発生しました。"; }
     }
 
@@ -455,27 +274,19 @@
             if (loginResult && loginResult.success) {
                 currentUser = loginResult.user; 
                 await fetchSchedules();
-            } else { 
-                localStorage.removeItem('my_token'); 
-                renderLoginView(); 
-            }
-        } catch (e) { 
-            localStorage.removeItem('my_token'); 
-            renderLoginView(); 
-        }
+            } else { localStorage.removeItem('my_token'); renderLoginView(); }
+        } catch (e) { localStorage.removeItem('my_token'); renderLoginView(); }
     }
-    // 日付文字列を受け取り、現在から48時間(2日)以内かどうかを判定する
+
     function isNewUpdate(updateStr) {
         if (!updateStr) return false;
         const updateDate = new Date(updateStr);
-        if (isNaN(updateDate.getTime())) return false; // 無効なデータはスキップ
-        
+        if (isNaN(updateDate.getTime())) return false;
         const now = new Date();
-        const diffTime = now - updateDate; // 現在時刻との差（ミリ秒）
-        const diffDays = diffTime / (1000 * 60 * 60 * 24); // 日数に変換
-        
-        return diffDays >= 0 && diffDays <= 2; // 2日以内ならtrue
+        const diffDays = (now - updateDate) / (1000 * 60 * 60 * 24);
+        return diffDays >= 0 && diffDays <= 2;
     }
+
     async function fetchSchedules(isInitial = true) {
         if (isInitial) { showLoading("予定を読み込み中..."); }
         try {
@@ -483,10 +294,9 @@
             let schedResult = await res.json();
             if (schedResult.success) {
                 rawSchedules = schedResult.schedules; 
-                myAttendances = schedResult.myAttendances || schedResult.attendances;
+                myAttendances = schedResult.myAttendances || [];
                 allAttendances = schedResult.allAttendances || [];
                 
-                // ★ 修正：defaultsFull も受け取る
                 if (schedResult.defaults) {
                     appDefaults = {
                         tab: schedResult.defaults.tab || appDefaults.tab,
@@ -502,6 +312,7 @@
             }
         } catch (e) { document.getElementById('app').innerHTML = `<div class="content"><p>データ取得エラー</p></div>`; }
     }
+
     function showLoading(msg) {
         document.getElementById('app').innerHTML = `
             <div class="header"><span>総社ジュニアポータル</span></div>
@@ -517,6 +328,22 @@
         for (let date in groupedSchedules) { groupedSchedules[date].sort((a, b) => a.priority - b.priority); }
     }
 
+    // スケジュールに募集中の項目があるか判定する関数
+    function hasRecruitingRoles(schedule) {
+        const roles = schedule.recruit_roles ? schedule.recruit_roles.split(',').map(r => r.trim()).filter(r => r !== "") : [];
+        if (roles.length === 0) return false;
+
+        const atts = allAttendances.filter(a => String(a.schedule_id) === String(schedule.schedule_id) && a.type === '保護者');
+        for (let role of roles) {
+            let isConfirmed = atts.some(a => {
+                let parsed = parseRolesWithStatus(a.response);
+                return parsed.some(p => p.role === role && p.status === 1);
+            });
+            if (!isConfirmed) return true; // 一つでも未確定があれば「募集項目あり」
+        }
+        return false;
+    }
+
     function renderListView() {
         currentActiveDate = null;
         let html = `
@@ -530,7 +357,6 @@
         `;
         
         const sortedDates = Object.keys(groupedSchedules).sort();
-        
         if (sortedDates.length === 0) { 
             html += `<p style="text-align:center; color:#94a3b8; margin-top:40px;">登録されている予定はありません</p>`; 
         } else {
@@ -542,22 +368,18 @@
                 const weekDays = ["日", "月", "火", "水", "木", "金", "土"]; 
                 const weekStr = `(${weekDays[d.getDay()]})`;
                 
-                let badgeClass = mainEvent.status === '確定' ? 'status-confirmed' : 'status-recruiting';
-                let statusText = mainEvent.status === '確定' ? '確定！' : '要協力';
+                // 動的募集状態チェック
+                let isRecruiting = events.some(ev => hasRecruitingRoles(ev));
+                let badgeHtml = isRecruiting ? `<span class="status-badge status-recruiting">募集項目あり</span>` : '';
                 
                 const eventCountBadge = events.length > 1 ? `<span style="font-size:11px; background:#e2e8f0; color:#475569; padding:2px 6px; border-radius:6px; margin-left:6px;">他${events.length - 1}件</span>` : '';
-
-                // ★ 追加：その日の予定(events)の中に、1つでも2日以内更新のものがあるかチェック！
                 const hasNewUpdate = events.some(event => isNewUpdate(event.update));
-                
-                // ★ 追加：あればNewバッジのHTMLを作成
-                const newBadgeHtml = hasNewUpdate ? `<span style="background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:10px; margin-left:8px; font-weight:bold; vertical-align:middle; box-shadow:0 2px 4px rgba(239, 68, 68, 0.3);">New!</span>` : '';
+                const newBadgeHtml = hasNewUpdate ? `<span style="background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:10px; margin-left:8px; font-weight:bold; vertical-align:middle;">New!</span>` : '';
 
-                // ★ 修正：date-textの中に newBadgeHtml を差し込む
                 html += `
                     <div class="date-card" onclick="goToDetail('${date}')">
                         <span class="date-text">${dayStr} ${weekStr} ${mainEvent.tab_name}${eventCountBadge} ${newBadgeHtml}</span>
-                        <span class="status-badge ${badgeClass}">${statusText}</span>
+                        ${badgeHtml}
                     </div>
                 `;
             });
@@ -566,12 +388,9 @@
         html += `</div>`; 
         document.getElementById('app').innerHTML = html;
     }
-    function goToDetail(date) { currentActiveTabIndex = 0; renderDetailView(date); }
 
-    function renderListViewInstant() {
-        currentActiveDate = null;
-        renderListView();
-    }
+    function goToDetail(date) { currentActiveTabIndex = 0; renderDetailView(date); }
+    function renderListViewInstant() { currentActiveDate = null; renderListView(); }
 
     function renderDetailView(date) {
         currentActiveDate = date; 
@@ -586,19 +405,8 @@
                 <div class="tab-container">
         `;
         
-        // ★ 変更：タブに「New」バッジをつける
         events.forEach((event, index) => {
-
-console.log("現在のイベントデータ:", event);
-    console.log("updateの値:", event.update);
-    console.log("isNewUpdateの結果:", isNewUpdate(event.update));
-
-
-
-
-            
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
-            // 2日以内の更新があればNewバッジHTMLを作成
             const newBadge = isNewUpdate(event.update) ? `<span style="background:#ef4444; color:white; font-size:9px; padding:2px 4px; border-radius:4px; margin-left:4px; vertical-align:middle; font-weight:bold;">New</span>` : '';
             html += `<div class="tab ${activeClass}" id="tab-${index}" onclick="switchTab(${index}, ${events.length})">${event.tab_name}${newBadge}</div>`;
         });
@@ -610,7 +418,12 @@ console.log("現在のイベントデータ:", event);
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
             const myAttsForThisEvent = myAttendances.filter(a => String(a.schedule_id) === String(event.schedule_id));
             const parentAns = myAttsForThisEvent.find(a => a.type === '保護者');
-            const parentStatusText = parentAns ? parentAns.response : "不参加 (未回答)";
+            
+            let parentStatusText = "不参加 (未回答)";
+            if (parentAns) {
+                let parsed = parseRolesWithStatus(parentAns.response);
+                parentStatusText = parsed.length > 0 ? parsed.map(p => p.role).join(', ') : "不参加";
+            }
 
             let childrenStatusRowsHtml = "";
             if (childrenList.length > 0) {
@@ -628,7 +441,6 @@ console.log("現在のイベントデータ:", event);
                 childrenStatusRowsHtml = `<div class="summary-row"><span style="color:#94a3b8;">子供の情報がありません</span></div>`;
             }
 
-            // ★ 変更：更新日と更新者のテキストを作成
             const updateTime = event.update ? new Date(event.update).toLocaleString('ja-JP', {month:'numeric', day:'numeric', hour:'numeric', minute:'numeric'}) : '日時不明';
             const updaterName = event.updater ? `by ${event.updater}` : '';
 
@@ -637,8 +449,6 @@ console.log("現在のイベントデータ:", event);
                     <div class="detail-item"><div class="detail-value" style="font-size: 19px; font-weight: 800; color:#1e3b8a; margin-bottom:10px;">${event.tab_name}</div></div>
                     <div class="detail-item"><div class="detail-label">📍 場所</div><div class="detail-value" style="font-weight:600;">${event.location || '未定'}</div></div>
                     <div class="detail-item"><div class="detail-label">📝 スケジュール・連絡</div><div class="detail-value" style="color:#475569; font-size:14.5px;">${event.description || '詳細なし'}</div></div>
-                    
-                    <!-- ⬇️ ここに最終更新情報を追加 -->
                     <div style="margin-top: 24px; text-align: right; font-size: 11px; color: #94a3b8; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
                         🔄 最終更新: ${updateTime} ${updaterName}
                     </div>
@@ -653,7 +463,7 @@ console.log("現在のイベントデータ:", event);
                             <button onclick="openAllResponseModal('${event.schedule_id}')" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:bold; cursor:pointer;">👥 全員の回答</button>
                         </div>
                         ${childrenStatusRowsHtml}
-                        <div class="summary-row"><span style="color:#64748b;">保護者 (${currentUser.user_name}):</span><span style="font-weight:bold; color: ${parentStatusText === '不参加' || parentStatusText.includes('不参加') ? '#64748b' : '#0284c7'};">${parentStatusText}</span></div>
+                        <div class="summary-row"><span style="color:#64748b;">保護者 (${currentUser.user_name}):</span><span style="font-weight:bold; color: ${parentStatusText === '不参加' ? '#64748b' : '#0284c7'};">${parentStatusText}</span></div>
                     </div>
                 </div>
             `;
@@ -671,21 +481,22 @@ console.log("現在のイベントデータ:", event);
         `;
         html += `</div>`; document.getElementById('app').innerHTML = html;
     }
+
     function switchTab(activeIndex, totalTabs) {
         currentActiveTabIndex = activeIndex;
         for (let i = 0; i < totalTabs; i++) {
             const tab = document.getElementById(`tab-${i}`); 
             const panel = document.getElementById(`tab-panel-${i}`);
-            const myResPanel = document.getElementById(`my-response-panel-${i}`); // ★追加
+            const myResPanel = document.getElementById(`my-response-panel-${i}`);
             
             if (i === activeIndex) { 
                 tab.classList.add('active'); 
                 panel.classList.add('active'); 
-                if (myResPanel) myResPanel.style.display = 'block'; // ★追加
+                if (myResPanel) myResPanel.style.display = 'block';
             } else { 
                 tab.classList.remove('active'); 
                 panel.classList.remove('active'); 
-                if (myResPanel) myResPanel.style.display = 'none'; // ★追加
+                if (myResPanel) myResPanel.style.display = 'none';
             }
         }
     }
@@ -706,7 +517,6 @@ console.log("現在のイベントデータ:", event);
             let selectorContentHtml = "";
 
             if (type === '子供') {
-                // 子供の処理は変更なし
                 childrenList.forEach((childName, cIdx) => {
                     const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === '子供' && a.name === childName);
                     let currentResponse = existing ? existing.response : "出席(自転車)";
@@ -725,13 +535,7 @@ console.log("現在のイベントデータ:", event);
                     let btnsHtml = `<div class="selector-group" style="flex-wrap: wrap;">`;
                     opts.forEach(opt => {
                         const isActive = currentResponse === opt.key || (currentResponse === '出席' && opt.key === '出席(自転車)');
-                        let activeClass = "";
-                        if (isActive) {
-                            if (opt.key.includes("出席")) activeClass = "active-green"; 
-                            if (opt.key === "欠席") activeClass = "active-red";
-                            if (opt.key === "遅刻") activeClass = "active-yellow"; 
-                            if (opt.key === "早退") activeClass = "active-blue";
-                        }
+                        let activeClass = isActive ? (opt.key.includes("出席") ? "active-green" : opt.key === "欠席" ? "active-red" : opt.key === "遅刻" ? "active-yellow" : "active-blue") : "";
                         const btnStyle = opt.key.includes("出席") ? "flex: 1 1 45%;" : "flex: 1 1 28%;";
                         const safeChildId = encodeURIComponent(childName);
                         btnsHtml += `<button class="sel-btn ${activeClass}" style="${btnStyle}" id="btn-${event.schedule_id}-${safeChildId}-${opt.key}" onclick="selectTempResponse('${event.schedule_id}', '${opt.key}', '子供', '${childName}')">${opt.text}</button>`;
@@ -747,37 +551,30 @@ console.log("現在のイベントデータ:", event);
                     `;
                 });
             } else {
-                // 保護者の処理
+                // 保護者（役割選択 + 0/1保持）
                 const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === '保護者');
-                let currentResponse = existing ? existing.response : "不参加";
+                let parsedRoles = existing ? parseRolesWithStatus(existing.response) : [];
                 let currentComment = existing ? existing.comment || "" : "";
                 
-                tempAttendances.push({ schedule_id: String(event.schedule_id), name: currentUser.user_name, response: currentResponse, comment: currentComment });
+                tempAttendances.push({ schedule_id: String(event.schedule_id), name: currentUser.user_name, roles: parsedRoles, comment: currentComment });
 
                 const availableRoles = event.recruit_roles ? event.recruit_roles.split(',').map(r => r.trim()).filter(r => r !== "") : [];
                 if (availableRoles.length === 0) {
                     selectorContentHtml = `<div style="font-size:12px; color:#94a3b8; text-align:center; padding:6px 0;">🤝 お手伝いは不要な予定です</div>`;
                 } else {
-                    const isUnused = currentResponse === "不参加" || currentResponse === "";
+                    const isUnused = parsedRoles.length === 0;
                     let btnsHtml = `<button class="sel-btn sel-btn-full ${isUnused ? 'active-red' : ''}" id="btn-${event.schedule_id}-不参加" onclick="selectTempResponse('${event.schedule_id}', '不参加', '保護者')">❌ 今回はムリです泣</button>`;
-                    
-                    const activeRoles = currentResponse.split(',').map(r => r.trim());
                     
                     btnsHtml += `<div class="selector-group" style="flex-direction: column; gap: 8px;">`;
                     availableRoles.forEach(role => {
-                        const isSelected = activeRoles.includes(role);
-                        
-                        // ★ やりたいこと2: スプレッドシートの文字を変換せず、そのままボタンの文字として使う！
-                        let friendlyRoleText = role; 
-                        
-                        btnsHtml += `<button class="sel-btn sel-btn-full ${isSelected ? 'active-green' : ''}" style="margin-bottom:0;" id="btn-${event.schedule_id}-${role}" onclick="selectTempResponse('${event.schedule_id}', '${role}', '保護者', null, ${isSelected})">${friendlyRoleText}</button>`;
+                        const isSelected = parsedRoles.some(p => p.role === role);
+                        btnsHtml += `<button class="sel-btn sel-btn-full ${isSelected ? 'active-green' : ''}" style="margin-bottom:0;" id="btn-${event.schedule_id}-${role}" onclick="selectTempResponse('${event.schedule_id}', '${role}', '保護者', null, ${isSelected})">${role}</button>`;
                     });
                     btnsHtml += `</div>`;
                     selectorContentHtml = btnsHtml;
                 }
 
-                const hasNoRoles = (!event.recruit_roles || event.recruit_roles.trim() === "");
-                if (!hasNoRoles) {
+                if (availableRoles.length > 0) {
                     selectorContentHtml += `<input type="text" class="modal-comment" id="modal-cmt-${event.schedule_id}-${currentUser.user_name}" placeholder="理由や連絡（あればでOK）" value="${currentComment}" oninput="updateTempComment('${event.schedule_id}', '${currentUser.user_name}', this.value)">`;
                 }
             }
@@ -801,9 +598,7 @@ console.log("現在のイベントデータ:", event);
         modalOverlay.style.display = 'flex';
     }
 
-    function closeFullResponseModal() {
-        document.getElementById('responseModal').style.display = 'none';
-    }
+    function closeFullResponseModal() { document.getElementById('responseModal').style.display = 'none'; }
 
     function selectTempResponse(scheduleId, opt, type, targetName = null, isSelectedAlready = false) {
         const target = tempAttendances.find(t => String(t.schedule_id) === String(scheduleId) && (type === '保護者' || t.name === targetName)); 
@@ -823,31 +618,26 @@ console.log("現在のイベントデータ:", event);
                 }
             });
         } else {
-            if (opt === '不参加') { 
-                target.response = "unselected"; 
+            if (opt === '不参加') {
+                target.roles = [];
             } else {
-                let currentRoles = target.response.split(',').map(r => r.trim()).filter(r => r !== "" && r !== "unselected" && r !== "不参加");
-                if (isSelectedAlready) { 
-                    currentRoles = currentRoles.filter(r => r !== opt); 
-                } else { 
-                    currentRoles.push(opt); 
+                if (isSelectedAlready) {
+                    target.roles = target.roles.filter(r => r.role !== opt);
+                } else {
+                    target.roles.push({ role: opt, status: 0 }); // 新規選択時は 0 で登録
                 }
-                target.response = currentRoles.length > 0 ? currentRoles.join(', ') : "unselected";
             }
             
-            const dbResponseValue = target.response === "unselected" ? "不参加" : target.response;
             const btns = document.querySelectorAll(`[id^="btn-${scheduleId}-"]`);
-            const activeRoles = dbResponseValue.split(',').map(r => r.trim());
-            
             btns.forEach(b => {
-                // 修正箇所：保護者のボタンクラス判定もsel-btn-fullを維持
-                b.className = b.id.includes('不参加') ? "sel-btn sel-btn-full" : "sel-btn sel-btn-full";
+                b.className = "sel-btn sel-btn-full";
                 b.style.marginBottom = b.id.includes('不参加') ? "8px" : "0";
                 const roleName = b.id.replace(`btn-${scheduleId}-`, '');
                 if (roleName === '不参加') { 
-                    if (dbResponseValue === '不参加') b.classList.add('active-red'); 
+                    if (target.roles.length === 0) b.classList.add('active-red'); 
                 } else {
-                    if (activeRoles.includes(roleName)) { 
+                    const found = target.roles.find(r => r.role === roleName);
+                    if (found) { 
                         b.classList.add('active-green'); 
                         b.setAttribute('onclick', `selectTempResponse('${scheduleId}', '${roleName}', '保護者', null, true)`); 
                     } else { 
@@ -868,7 +658,7 @@ console.log("現在のイベントデータ:", event);
         showToast("保存中...");
 
         for (let item of tempAttendances) {
-            const sendVal = (type === '保護者' && item.response === 'unselected') ? '不参加' : item.response;
+            let sendVal = type === '子供' ? item.response : stringifyRolesWithStatus(item.roles);
             const payload = {
                 action: 'submit_attendance',
                 schedule_id: item.schedule_id,
@@ -879,30 +669,13 @@ console.log("現在のイベントデータ:", event);
                 comment: item.comment
             };
 
-            const existingIndex = myAttendances.findIndex(a => String(a.schedule_id) === String(item.schedule_id) && a.type === type && a.name === item.name);
-            if (existingIndex >= 0) {
-                myAttendances[existingIndex].response = sendVal;
-                myAttendances[existingIndex].comment = item.comment;
-            } else {
-                myAttendances.push({
-                    schedule_id: String(item.schedule_id),
-                    family_id: String(currentUser.family_id),
-                    name: item.name,
-                    type: type,
-                    response: sendVal,
-                    comment: item.comment
-                });
-            }
-
             try {
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-            } catch(e) {
-                console.error("保存時にエラーが発生しました", e);
-            }
+            } catch(e) { console.error("保存エラー", e); }
         }
 
         showToast("保存完了！");
-        renderDetailView(currentActiveDate);
+        await fetchSchedules(false); // ★最新状態を読み込み直す
     }
 
     function openAllResponseModal(scheduleId) {
@@ -911,14 +684,8 @@ console.log("現在のイベントデータ:", event);
         document.getElementById('allResponseModal').style.display = 'flex';
     }
 
-    function closeAllResponseModal() {
-        document.getElementById('allResponseModal').style.display = 'none';
-    }
-
-    function toggleAllResSort(type) {
-        currentAllResSort = type;
-        renderAllResponseContent();
-    }
+    function closeAllResponseModal() { document.getElementById('allResponseModal').style.display = 'none'; }
+    function toggleAllResSort(type) { currentAllResSort = type; renderAllResponseContent(); }
 
     function renderAllResponseContent() {
         const event = rawSchedules.find(s => String(s.schedule_id) === String(currentAllResScheduleId));
@@ -930,14 +697,13 @@ console.log("現在のイベントデータ:", event);
 
         childrenAtts.sort((a, b) => {
             if (currentAllResSort === 'area') {
-                if (a.area_id !== b.area_id) return a.area_id.localeCompare(b.area_id, 'ja');
+                if (a.area_id !== b.area_id) return (a.area_id || '').localeCompare(b.area_id || '', 'ja');
             }
             let numA = 9999, numB = 9999;
             const matchA = a.name.match(/\[(\d+)\]/);
             const matchB = b.name.match(/\[(\d+)\]/);
             if (matchA) numA = parseInt(matchA[1], 10);
             if (matchB) numB = parseInt(matchB[1], 10);
-            
             if (numA !== numB) return numA - numB;
             return a.name.localeCompare(b.name, 'ja');
         });
@@ -946,11 +712,9 @@ console.log("現在のイベントデータ:", event);
         childrenAtts.forEach(att => {
             let res = att.response;
             let displayStr = att.name;
-
             if (currentAllResSort === 'area' && att.area_id) {
                 displayStr = `<span class="area-badge">${att.area_id}</span>` + displayStr;
             }
-
             if (res.includes('出席')) {
                 if (res.includes('自転車')) displayStr += ' 🚲'; 
                 cGroups['出席'].push(displayStr);
@@ -964,16 +728,32 @@ console.log("現在のイベントデータ:", event);
         });
 
         let parentsHtml = '';
+        let recruitingRolesList = []; // 募集中の項目名
         const roles = event.recruit_roles ? event.recruit_roles.split(',').map(r => r.trim()).filter(r => r !== "") : [];
+
         if (roles.length > 0) {
             roles.forEach(role => {
-                const assigned = parentAtts.filter(a => a.response.includes(role));
-                assigned.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
-                
-                const namesStr = assigned.length > 0 ? assigned.map(p => p.name).join('、 ') : '<span style="color:#94a3b8; font-size:12px;">なし</span>';
+                let assigned = [];
+                parentAtts.forEach(p => {
+                    let parsed = parseRolesWithStatus(p.response);
+                    let found = parsed.find(item => item.role === role);
+                    if (found) {
+                        assigned.push({ name: p.name, status: found.status });
+                    }
+                });
+
+                // 確定(1)が上にくるようソート
+                assigned.sort((a, b) => b.status - a.status || a.name.localeCompare(b.name, 'ja'));
+
+                let isConfirmedRole = assigned.some(a => a.status === 1);
+                if (!isConfirmedRole) recruitingRolesList.push(role);
+
+                let namesStr = assigned.length > 0 ? assigned.map(a => `${a.status === 1 ? '💮 ' : ''}${a.name}`).join('、 ') : '<span style="color:#94a3b8; font-size:12px;">なし</span>';
+                let statusBadge = isConfirmedRole ? `<span style="color:#059669; font-size:11px; margin-left:6px; font-weight:bold;">[確定]</span>` : `<span style="color:#d97706; font-size:11px; margin-left:6px; font-weight:bold;">[募集中]</span>`;
+
                 parentsHtml += `
                     <div class="role-block">
-                        <div class="role-name">✔️ ${role} (${assigned.length}名)</div>
+                        <div class="role-name">✔️ ${role} (${assigned.length}名) ${statusBadge}</div>
                         <div style="padding-left:8px;">${namesStr}</div>
                     </div>`;
             });
@@ -981,20 +761,21 @@ console.log("現在のイベントデータ:", event);
             parentsHtml = '<div style="color:#94a3b8; font-size:12px;">今回は募集項目はありません</div>';
         }
 
-        const statusBadgeClass = event.status === '確定' ? 'status-confirmed' : 'status-recruiting';
-        const statusText = event.status === '確定' ? '確定！' : '募集中';
+        let recruitingHeaderHtml = recruitingRolesList.length > 0 
+            ? `<div style="background:#fffbeb; border:1px solid #fde68a; color:#b45309; padding:8px 12px; border-radius:8px; font-size:12px; margin-bottom:12px; font-weight:bold;">📢 募集中: ${recruitingRolesList.join(', ')}</div>`
+            : `<div style="background:#ecfdf5; border:1px solid #a7f3d0; color:#047857; padding:8px 12px; border-radius:8px; font-size:12px; margin-bottom:12px; font-weight:bold;">🎉 すべての役割が確定しました！</div>`;
 
-        // ★ HTML流し込み（スクロール崩れ解消）
         document.getElementById('allResponseModalContent').innerHTML = `
             <div class="modal-header" style="flex-shrink:0; margin-top:20px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:12px; padding-left:16px; padding-right:16px; display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
-                    <div class="modal-title" style="font-size:16px; text-align: left;">${event.tab_name} の状況</div>
-                    <div style="margin-top:8px; text-align: left;"><span class="status-badge ${statusBadgeClass}">${statusText}</span></div>
+                    <div class="modal-title" style="font-size:16px; text-align: left;">${event.tab_name} の回答状況</div>
                 </div>
                 <button onclick="closeAllResponseModal()" style="background: none; border: none; font-size: 26px; font-weight: bold; color: #94a3b8; cursor: pointer; padding: 0 4px; line-height: 1;">×</button>
             </div>
             
             <div class="modal-body" style="flex:1; overflow-y:auto; min-height:0; text-align:left; padding:4px 16px; -webkit-overflow-scrolling: touch;">
+                ${recruitingHeaderHtml}
+
                 <div class="sort-toggle-box">
                     <div class="sort-btn ${currentAllResSort === 'number' ? 'active' : ''}" onclick="toggleAllResSort('number')">背番号・名前順</div>
                     <div class="sort-btn ${currentAllResSort === 'area' ? 'active' : ''}" onclick="toggleAllResSort('area')">エリア順</div>
@@ -1032,38 +813,226 @@ console.log("現在のイベントデータ:", event);
     function toggleSideMenu() {
         const menu = document.getElementById('sideMenu');
         const overlay = document.getElementById('sideMenuOverlay');
-    
         if (menu.style.left === '0px') {
             menu.style.left = '-280px';
             overlay.style.display = 'none';
         } else {
             menu.style.left = '0px';
             overlay.style.display = 'block';
-        
-            if (typeof currentUser !== 'undefined' && currentUser && currentUser.user_name) {
+            if (currentUser && currentUser.user_name) {
                 document.getElementById('menuUserName').innerText = currentUser.user_name + ' さん';
-            } else {
-                document.getElementById('menuUserName').innerText = 'ゲスト さん';
             }
         }
     }
 
     function navigateMenu(target) {
         toggleSideMenu();
-        if (target === 'schedule') {
-            renderListViewInstant();
-        } else if (target === 'manageSchedule') {
-            renderScheduleManagerView();
-        } else if (target === 'documents') {
-            alert('各種資料ページは現在準備中です');
-        } else if (target === 'admin') {
-            renderDefaultManagerView('tab'); 
+        if (target === 'schedule') renderListViewInstant();
+        else if (target === 'manageSchedule') renderScheduleManagerView();
+        else if (target === 'confirmRoles') renderConfirmRolesListView(); // ★協力パパママ確定へ
+        else if (target === 'documents') alert('各種資料ページは現在準備中です');
+        else if (target === 'admin') renderDefaultManagerView('tab');
+    }
+
+    // ==========================================
+    // 🤝 協力パパママ確定機能 (新規)
+    // ==========================================
+    function renderConfirmRolesListView() {
+        currentActiveDate = null;
+        let html = `
+            <div class="header confirm-mode">
+                <button class="menu-btn" onclick="toggleSideMenu()">☰</button>
+                <span style="margin-left: 24px;">🤝 協力パパママ確定</span>
+                <button class="logout-btn" onclick="handleLogout()">ログアウト</button>
+            </div>
+            <div class="content">
+                <div class="month-selector"><span class="arrow">◀</span><span class="month-title">日付を選択</span><span class="arrow">▶</span></div>
+        `;
+        
+        const sortedDates = Object.keys(groupedSchedules).sort();
+        if (sortedDates.length === 0) { 
+            html += `<p style="text-align:center; color:#94a3b8; margin-top:40px;">予定はありません</p>`; 
+        } else {
+            sortedDates.forEach(date => {
+                const events = groupedSchedules[date]; 
+                const mainEvent = events[0];
+                const d = new Date(date); 
+                const dayStr = `${d.getMonth() + 1}/${d.getDate()}`;
+                const weekDays = ["日", "月", "火", "水", "木", "金", "土"]; 
+                const weekStr = `(${weekDays[d.getDay()]})`;
+
+                let isRecruiting = events.some(ev => hasRecruitingRoles(ev));
+                let badgeHtml = isRecruiting ? `<span class="status-badge status-recruiting">未確定あり</span>` : `<span class="status-badge status-confirmed">確定済み</span>`;
+
+                html += `
+                    <div class="date-card" onclick="renderConfirmRolesDetailView('${date}')">
+                        <span class="date-text">${dayStr} ${weekStr} ${mainEvent.tab_name}</span>
+                        ${badgeHtml}
+                    </div>
+                `;
+            });
+        }
+        
+        html += `</div>`; 
+        document.getElementById('app').innerHTML = html;
+    }
+
+    function renderConfirmRolesDetailView(date) {
+        currentActiveDate = date;
+        const events = groupedSchedules[date];
+        const d = new Date(date);
+        const titleStr = `${d.getMonth() + 1}/${d.getDate()} パパママ確定`;
+
+        // 一時状態保持用マップを構築
+        confirmStateMap = {};
+        events.forEach(ev => {
+            const atts = allAttendances.filter(a => String(a.schedule_id) === String(ev.schedule_id) && a.type === '保護者');
+            confirmStateMap[ev.schedule_id] = {};
+            atts.forEach(att => {
+                confirmStateMap[ev.schedule_id][att.family_id] = {
+                    name: att.name,
+                    roles: parseRolesWithStatus(att.response) // [{role, status}]
+                };
+            });
+        });
+
+        let html = `
+            <div class="header confirm-mode">
+                <button class="back-btn" onclick="renderConfirmRolesListView()">戻る</button>
+                <span>${titleStr}</span>
+            </div>
+            <div class="content" style="display: flex; flex-direction: column;">
+                <div class="tab-container">
+        `;
+
+        events.forEach((event, index) => {
+            const activeClass = index === currentActiveTabIndex ? 'active' : '';
+            html += `<div class="tab ${activeClass}" id="tab-${index}" onclick="switchTab(${index}, ${events.length})">${event.tab_name}</div>`;
+        });
+
+        html += `</div><div class="tab-content-box" style="flex:1;">`;
+
+        events.forEach((event, index) => {
+            const activeClass = index === currentActiveTabIndex ? 'active' : '';
+            const roles = event.recruit_roles ? event.recruit_roles.split(',').map(r => r.trim()).filter(r => r !== "") : [];
+
+            let rolesBlockHtml = "";
+            if (roles.length === 0) {
+                rolesBlockHtml = `<p style="color:#94a3b8; text-align:center; padding:20px;">この予定に募集項目はありません</p>`;
+            } else {
+                roles.forEach(role => {
+                    let applicants = [];
+                    const scheduleState = confirmStateMap[event.schedule_id] || {};
+                    
+                    Object.keys(scheduleState).forEach(fId => {
+                        const person = scheduleState[fId];
+                        const foundRole = person.roles.find(r => r.role === role);
+                        if (foundRole) {
+                            applicants.push({ family_id: fId, name: person.name, status: foundRole.status });
+                        }
+                    });
+
+                    // 1（確定）を上にソート
+                    applicants.sort((a, b) => b.status - a.status || a.name.localeCompare(b.name, 'ja'));
+
+                    let rowsHtml = "";
+                    if (applicants.length === 0) {
+                        rowsHtml = `<div style="font-size:12px; color:#94a3b8; padding:6px 0;">希望者なし</div>`;
+                    } else {
+                        applicants.forEach(app => {
+                            const isConfirmed = app.status === 1;
+                            rowsHtml += `
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed #f1f5f9;">
+                                    <span style="font-size:14px; font-weight:bold; color:#1e293b;">${isConfirmed ? '💮 ' : ''}${app.name}</span>
+                                    <button class="confirm-toggle-btn ${isConfirmed ? 'is-confirmed' : ''}" onclick="toggleRoleConfirmation('${event.schedule_id}', '${app.family_id}', '${role}')">
+                                        ${isConfirmed ? '確定中 ✓' : '確定する'}
+                                    </button>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    rolesBlockHtml += `
+                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-weight:800; font-size:14px; color:#1e3a8a;">✔️ ${role} (${applicants.length}名)</span>
+                                <button onclick="selectAllForRole('${event.schedule_id}', '${role}')" style="font-size:11px; background:#eff6ff; color:#2563eb; border:1px solid #93c5fd; padding:3px 8px; border-radius:6px; font-weight:bold; cursor:pointer;">全員確定</button>
+                            </div>
+                            ${rowsHtml}
+                        </div>
+                    `;
+                });
+            }
+
+            html += `<div class="tab-panel ${activeClass}" id="tab-panel-${index}">${rolesBlockHtml}</div>`;
+        });
+
+        html += `</div>
+            <div style="padding:12px 16px 20px 16px; background:#fff; border-top:1px solid #e2e8f0;">
+                <button onclick="submitConfirmations()" style="width:100%; padding:14px; background:linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color:white; border:none; border-radius:12px; font-weight:bold; font-size:15px; box-shadow:0 4px 10px rgba(124,58,237,0.3); cursor:pointer;">確定状況を保存する！</button>
+            </div>
+        </div>`;
+
+        document.getElementById('app').innerHTML = html;
+    }
+
+    function toggleRoleConfirmation(scheduleId, familyId, role) {
+        const person = confirmStateMap[scheduleId][familyId];
+        if (!person) return;
+        const targetRole = person.roles.find(r => r.role === role);
+        if (targetRole) {
+            targetRole.status = targetRole.status === 1 ? 0 : 1; // 0 <-> 1 切り替え
+            renderConfirmRolesDetailView(currentActiveDate);
         }
     }
 
+    function selectAllForRole(scheduleId, role) {
+        const scheduleState = confirmStateMap[scheduleId] || {};
+        Object.keys(scheduleState).forEach(fId => {
+            const person = scheduleState[fId];
+            const targetRole = person.roles.find(r => r.role === role);
+            if (targetRole) targetRole.status = 1; // 全員 1 にする
+        });
+        renderConfirmRolesDetailView(currentActiveDate);
+    }
+
+    async function submitConfirmations() {
+        showToast("確定状況を保存中...");
+        let updates = [];
+
+        Object.keys(confirmStateMap).forEach(sId => {
+            const sMap = confirmStateMap[sId];
+            Object.keys(sMap).forEach(fId => {
+                const person = sMap[fId];
+                updates.push({
+                    schedule_id: sId,
+                    family_id: fId,
+                    name: person.name,
+                    response: stringifyRolesWithStatus(person.roles)
+                });
+            });
+        });
+
+        try {
+            let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'save_confirmations', updates: updates }) });
+            let result = await res.json();
+            if (result.success) {
+                showToast("保存完了！");
+                await fetchSchedules(false); // 最新データを再取得
+                renderConfirmRolesListView();
+            } else {
+                alert("保存エラー: " + result.message);
+            }
+        } catch (e) {
+            alert("通信エラーが発生しました。");
+        }
+    }
+
+    // ==========================================
+    // ⚙️ スケジュール管理 / マスタ管理
+    // ==========================================
     function renderScheduleManagerView() {
         currentActiveDate = null;
-        
         let today = new Date();
         let todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
 
@@ -1075,7 +1044,6 @@ console.log("現在のイベントデータ:", event);
             <div class="content" style="background: #f8fafc; flex: 1;">
                 <div style="background: #ffffff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     <label style="font-weight:bold; font-size:14px; color:#1e293b;">管理する日付を選択</label>
-                    <!-- ★ 修正：日付入力を大きく見やすく変更 -->
                     <input type="date" id="manageDate" value="${todayStr}" onchange="renderScheduleListForDate(this.value)" style="width:100%; padding:14px 10px; margin-top:8px; border-radius:8px; border: 2px solid #cbd5e1; font-size: 20px; font-weight: bold; text-align: center; color: #1e3a8a; background: #f8fafc;">
                 </div>
                 <div id="manageListArea"></div>
@@ -1085,7 +1053,6 @@ console.log("現在のイベントデータ:", event);
         renderScheduleListForDate(todayStr);
     }
 
-    // ★ 追加：選択された日付のスケジュールを一覧表示する
     function renderScheduleListForDate(dateStr) {
         const listArea = document.getElementById('manageListArea');
         if (!dateStr) { listArea.innerHTML = ""; return; }
@@ -1096,7 +1063,7 @@ console.log("現在のイベントデータ:", event);
         let html = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
                 <div style="font-weight:bold; color:#1e293b; font-size: 15px;">登録済みの予定</div>
-                <button onclick="renderScheduleForm('${dateStr}', null)" style="background:#2563eb; color:white; padding:8px 12px; border:none; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow: 0 2px 6px rgba(37,99,235,0.2);">➕ 新規追加</button>
+                <button onclick="renderScheduleForm('${dateStr}', null)" style="background:#2563eb; color:white; padding:8px 12px; border:none; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">➕ 新規追加</button>
             </div>
         `;
 
@@ -1105,18 +1072,15 @@ console.log("現在のイベントデータ:", event);
         } else {
             evts.forEach((ev, index) => {
                 html += `
-                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.01);">
-                    <!-- ★ 追加：順序入れ替え用の▲▼ボタン -->
+                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
                     <div style="display:flex; flex-direction:column; gap:4px; margin-right: 12px;">
                         <button onclick="moveSchedulePriority('${dateStr}', ${index}, 'up')" style="background:#f1f5f9; border:none; padding:6px 12px; border-radius:6px; color:#475569; font-size:12px; cursor:pointer;" ${index === 0 ? 'disabled style="opacity:0.3;"' : ''}>▲</button>
                         <button onclick="moveSchedulePriority('${dateStr}', ${index}, 'down')" style="background:#f1f5f9; border:none; padding:6px 12px; border-radius:6px; color:#475569; font-size:12px; cursor:pointer;" ${index === evts.length - 1 ? 'disabled style="opacity:0.3;"' : ''}>▼</button>
                     </div>
-                    
                     <div style="flex: 1;">
                         <div style="font-weight:800; font-size:15px; color:#1e3a8a; margin-top:2px;">${ev.tab_name}</div>
                         <div style="font-size:11px; color:#64748b; font-weight:bold;">表示優先度: ${ev.priority}</div>
                     </div>
-                    
                     <div style="display:flex; gap:8px;">
                         <button onclick="renderScheduleForm('${dateStr}', '${ev.schedule_id}')" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">編集</button>
                         <button onclick="deleteSchedule('${ev.schedule_id}')" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">削除</button>
@@ -1131,51 +1095,28 @@ console.log("現在のイベントデータ:", event);
         const evts = groupedSchedules[dateStr];
         if (!evts || evts.length < 2) return;
 
-        // 配列内の要素を入れ替える
         if (direction === 'up' && index > 0) {
-            const temp = evts[index];
-            evts[index] = evts[index - 1];
-            evts[index - 1] = temp;
+            const temp = evts[index]; evts[index] = evts[index - 1]; evts[index - 1] = temp;
         } else if (direction === 'down' && index < evts.length - 1) {
-            const temp = evts[index];
-            evts[index] = evts[index + 1];
-            evts[index + 1] = temp;
-        } else {
-            return;
-        }
+            const temp = evts[index]; evts[index] = evts[index + 1]; evts[index + 1] = temp;
+        } else return;
 
-        // priority を上から順に振り直す
         const updates = [];
         evts.forEach((ev, i) => {
             ev.priority = i + 1;
             updates.push({ schedule_id: ev.schedule_id, priority: ev.priority });
         });
 
-        // 画面を即座に再描画（UX向上）
         renderScheduleListForDate(dateStr);
-
-        // 裏でサーバーに保存
         try {
-            await fetch(GAS_URL, { 
-                method: 'POST', 
-                body: JSON.stringify({ action: 'update_priorities', updates: updates }) 
-            });
-            // 生データ側にも反映させておく
-            updates.forEach(u => {
-                const target = rawSchedules.find(r => String(r.schedule_id) === String(u.schedule_id));
-                if(target) target.priority = u.priority;
-            });
-        } catch (e) {
-            console.error("順序の保存に失敗", e);
-        }
+            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_priorities', updates: updates }) });
+            await fetchSchedules(false);
+        } catch (e) { console.error("優先順位保存エラー", e); }
     }
-    
-    // ★ 修正：スケジュール追加・編集フォーム（IDを判別して動的生成）
+
     function renderScheduleForm(dateStr, scheduleId = null) {
         let isEdit = scheduleId !== null;
-        let eventData = {
-            schedule_id: "", date: dateStr, tab_name: "", priority: 1, location: "", description: "", recruit_roles: ""
-        };
+        let eventData = { schedule_id: "", date: dateStr, tab_name: "", priority: 1, location: "", description: "", recruit_roles: "" };
 
         if (isEdit) {
             const evts = groupedSchedules[dateStr] || [];
@@ -1186,9 +1127,7 @@ console.log("現在のイベントデータ:", event);
             eventData.priority = evts.length + 1;
         }
 
-        // --- ★やりたいこと3：マスタデータ（defaults）を使ってリストやボタンを作る ---
         const defaultRoles = appDefaults.support; 
-        
         let currentRolesArr = eventData.recruit_roles ? eventData.recruit_roles.split(',').map(r => r.trim()) : [];
         let extraRolesArr = currentRolesArr.filter(r => r !== "" && !defaultRoles.includes(r));
         
@@ -1207,9 +1146,9 @@ console.log("現在のイベントデータ:", event);
         
         let checkboxesHtml = "";
         defaultRoles.forEach(role => {
-            checkboxesHtml += createCheckboxHTML(role, eventData.recruit_roles);
+            let isChecked = eventData.recruit_roles.includes(role) ? "checked" : "";
+            checkboxesHtml += `<label style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px;"><input type="checkbox" class="role-check" value="${role}" ${isChecked}> ${role}</label>`;
         });
-        // ----------------------------------------------------------------------
 
         let html = `
             <div class="header">
@@ -1217,55 +1156,43 @@ console.log("現在のイベントデータ:", event);
                 <span>${isEdit ? "✏️ 予定の編集" : "➕ 新規追加"}</span>
             </div>
             <div class="content" style="background: #f8fafc; flex: 1;">
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                    
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;">
                     <input type="hidden" id="editScheduleId" value="${eventData.schedule_id}">
                     <input type="hidden" id="newPriority" value="${eventData.priority}">
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">日付 <span style="color:#ef4444">*</span></label>
-                        <input type="date" id="newDate" value="${eventData.date}" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <input type="date" id="newDate" value="${eventData.date}" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">予定の種類 (タブ名) <span style="color:#ef4444">*</span></label>
-                        <input type="text" id="newTabName" value="${eventData.tab_name}" list="tab-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
-                        <datalist id="tab-defaults">
-                            ${tabOptionsHtml}
-                        </datalist>
+                        <input type="text" id="newTabName" value="${eventData.tab_name}" list="tab-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <datalist id="tab-defaults">${tabOptionsHtml}</datalist>
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">場所</label>
-                        <input type="text" id="newLocation" value="${eventData.location}" list="location-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
-                        <datalist id="location-defaults">
-                            ${placeOptionsHtml}
-                        </datalist>
+                        <input type="text" id="newLocation" value="${eventData.location}" list="location-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <datalist id="location-defaults">${placeOptionsHtml}</datalist>
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">詳細・持ち物</label>
-                        <textarea id="newDescription" rows="5" placeholder="詳細やスケジュールを記入してください" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">${eventData.description}</textarea>
+                        <textarea id="newDescription" rows="5" placeholder="詳細やスケジュールを記入してください" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">${eventData.description}</textarea>
                     </div>
 
                     <div style="margin-bottom: 24px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">募集項目 (チェックで追加)</label>
-                        <div style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px;">
-                            ${checkboxesHtml}
-                        </div>
-                        
+                        <div style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px;">${checkboxesHtml}</div>
                         <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
                             <label style="display: block; font-size: 12px; font-weight: bold; color:#475569; margin-bottom: 8px;">その他の項目</label>
-                            <div id="customRolesContainer">
-                                ${extraRolesHtml}
-                            </div>
-                            <button type="button" onclick="addCustomRoleInput()" style="background:#ffffff; color:#2563eb; border:1px dashed #93c5fd; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%; text-align:center;">
-                                ＋ 項目を追加する
-                            </button>
+                            <div id="customRolesContainer">${extraRolesHtml}</div>
+                            <button type="button" onclick="addCustomRoleInput()" style="background:#ffffff; color:#2563eb; border:1px dashed #93c5fd; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%;">＋ 項目を追加する</button>
                         </div>
                     </div>
 
-                    <button onclick="submitScheduleForm()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: bold; box-shadow: 0 4px 10px rgba(37,99,235,0.2); cursor:pointer;">
+                    <button onclick="submitScheduleForm()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: bold; cursor:pointer;">
                         ${isEdit ? "更新内容を保存する" : "スケジュールを登録する"}
                     </button>
                 </div>
@@ -1273,44 +1200,29 @@ console.log("現在のイベントデータ:", event);
         `;
         document.getElementById('app').innerHTML = html;
     }
-    function createCheckboxHTML(role, currentRoles) {
-        let isChecked = (currentRoles || "").includes(role) ? "checked" : "";
-        return `<label style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px;"><input type="checkbox" class="role-check" value="${role}" ${isChecked}> ${role}</label>`;
-    }
 
-    // ★ 追加：動的に募集項目の入力欄を増やす関数
     function addCustomRoleInput() {
         const container = document.getElementById('customRolesContainer');
         const div = document.createElement('div');
         div.className = 'custom-role-item';
         div.style.cssText = 'display:flex; gap:8px; margin-bottom:8px;';
         div.innerHTML = `
-            <input type="text" class="custom-role-input" value="" placeholder="募集項目名 (例: お茶当番)" style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            <input type="text" class="custom-role-input" value="" placeholder="募集項目名" style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
             <button type="button" onclick="this.parentElement.remove()" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding:0 12px; border-radius:8px; cursor:pointer; font-weight:bold;">×</button>
         `;
         container.appendChild(div);
     }
-    
-    // ★ 修正：フォームの送信処理
+
     async function submitScheduleForm() {
         const dateVal = document.getElementById('newDate').value;
         const tabVal = document.getElementById('newTabName').value;
-        const scheduleIdVal = document.getElementById('editScheduleId').value; // 空なら新規
+        const scheduleIdVal = document.getElementById('editScheduleId').value;
 
-        if (!dateVal || !tabVal) {
-            alert("日付と予定の種類(タブ名)は必須です！");
-            return;
-        }
+        if (!dateVal || !tabVal) return alert("日付と予定の種類(タブ名)は必須です！");
 
-        // --- ★変更箇所：チェックボックスと自由入力欄をすべて取得して結合 ---
         const checkedRoles = Array.from(document.querySelectorAll('.role-check:checked')).map(cb => cb.value);
-        const customInputs = Array.from(document.querySelectorAll('.custom-role-input'))
-                                  .map(input => input.value.trim())
-                                  .filter(val => val !== ""); // 空欄は無視する
-    
-        const allRolesArray = [...checkedRoles, ...customInputs];
-        const finalRecruitRoles = allRolesArray.join(',');
-        // ------------------------------------------------------------------
+        const customInputs = Array.from(document.querySelectorAll('.custom-role-input')).map(i => i.value.trim()).filter(v => v !== "");
+        const finalRecruitRoles = [...checkedRoles, ...customInputs].join(',');
 
         const payload = {
             action: 'save_schedule',
@@ -1325,17 +1237,16 @@ console.log("現在のイベントデータ:", event);
         };
 
         showLoading("スケジュールを保存中...");
-
         try {
             const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
             const result = await res.json();
             if (result.success) {
                 showToast("保存完了！");
                 await fetchSchedules(false);
-                renderScheduleManagerView(); // 保存後は管理画面に戻る
+                renderScheduleManagerView();
             } else {
-                alert("保存に失敗しました: " + result.message);
-                renderScheduleForm(dateVal, scheduleIdVal); 
+                alert("保存エラー: " + result.message);
+                renderScheduleForm(dateVal, scheduleIdVal);
             }
         } catch (e) {
             alert("通信エラーが発生しました。");
@@ -1343,124 +1254,60 @@ console.log("現在のイベントデータ:", event);
         }
     }
 
-    // ★ 追加：予定の削除機能
     async function deleteSchedule(scheduleId) {
-        if (!confirm("本当にこの予定を削除しますか？\n（関連する出欠回答も無効になります）")) return;
-
+        if (!confirm("本当にこの予定を削除しますか？")) return;
         showLoading("削除中...");
         try {
-            const payload = { action: 'delete_schedule', schedule_id: scheduleId };
-            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_schedule', schedule_id: scheduleId }) });
             const result = await res.json();
-            
             if (result.success) {
                 showToast("削除しました");
                 await fetchSchedules(false);
-                renderScheduleManagerView(); 
-            } else {
-                alert("削除エラー: " + result.message);
                 renderScheduleManagerView();
-            }
-        } catch (e) {
-            alert("通信エラーが発生しました。");
-            renderScheduleManagerView();
-        }
+            } else alert("削除エラー: " + result.message);
+        } catch (e) { alert("通信エラーが発生しました。"); renderScheduleManagerView(); }
     }
-    // ==========================================
-    // ⚙️ マスタデータ管理画面 (スケジュール画面丸パクリ)
-    // ==========================================
+
+    // マスタ管理画面
     function renderDefaultManagerView(type = 'tab') {
         currentDefaultType = type;
         const typeLabels = { 'tab': '内容 (タブ)', 'place': '場所', 'support': '保護者協力' };
-        
         let tabsHtml = Object.keys(typeLabels).map(tKey => {
             const isActive = tKey === type;
             return `<button onclick="renderDefaultManagerView('${tKey}')" style="flex:1; padding:10px; border:none; border-bottom:${isActive ? '3px solid #2563eb' : '3px solid transparent'}; background:transparent; font-weight:bold; color:${isActive ? '#2563eb' : '#64748b'};">${typeLabels[tKey]}</button>`;
         }).join('');
 
         const items = appDefaultsFull.filter(d => d.type === type);
-        let listHtml = "";
+        let listHtml = items.length === 0 ? `<p style="text-align:center; color:#94a3b8; padding:20px;">登録されていません</p>` : "";
 
-        if (items.length === 0) {
-            listHtml = `<p style="text-align:center; color:#94a3b8; padding:20px;">登録されていません</p>`;
-        } else {
-            items.forEach((item, index) => {
-                listHtml += `
-                    <div class="default-drag-item" draggable="true" data-value="${item.value}" data-type="${item.type}" style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); cursor:grab;">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <div style="color:#cbd5e1;">☰</div>
-                            <div style="font-weight:bold;">${item.value}</div>
-                        </div>
-                        <div style="display:flex; gap:8px;">
-                            <button onclick="renderDefaultForm('${item.value}', '${item.type}')" style="padding:6px 12px; background:#f1f5f9; border:none; border-radius:6px; color:#475569; font-size:12px; font-weight:bold;">編集</button>
-                            <button onclick="deleteDefaultItem('${item.value}', '${item.type}')" style="padding:6px 12px; background:#fef2f2; border:none; border-radius:6px; color:#ef4444; font-size:12px; font-weight:bold;">削除</button>
-                        </div>
+        items.forEach((item) => {
+            listHtml += `
+                <div class="default-drag-item" data-value="${item.value}" data-type="${item.type}" style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:8px;">
+                    <div style="font-weight:bold;">${item.value}</div>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="renderDefaultForm('${item.value}', '${item.type}')" style="padding:6px 12px; background:#f1f5f9; border:none; border-radius:6px; font-weight:bold;">編集</button>
+                        <button onclick="deleteDefaultItem('${item.value}', '${item.type}')" style="padding:6px 12px; background:#fef2f2; color:#ef4444; border:none; border-radius:6px; font-weight:bold;">削除</button>
                     </div>
-                `;
-            });
-        }
+                </div>
+            `;
+        });
 
-        let html = `
+        document.getElementById('app').innerHTML = `
             <div class="header">
                 <button class="back-btn" onclick="renderListView()">戻る</button>
                 <span>⚙️ マスタデータ管理</span>
             </div>
             <div class="content" style="background:#f8fafc;">
-                <div style="display:flex; background:#fff; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                    ${tabsHtml}
-                </div>
-                
-                <div style="margin-bottom:16px;">
-                    <button onclick="renderDefaultForm('', '${type}')" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold;">➕ 新しい項目を追加</button>
-                </div>
-
-                <p style="font-size:12px; color:#64748b; margin-bottom:8px;">※「☰」をドラッグして表示順を変更できます</p>
-                <div id="default-sortable-list">
-                    ${listHtml}
-                </div>
-                
-                <button onclick="saveDefaultOrder()" style="width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:8px; font-weight:bold; margin-top:16px;">並び順を保存する</button>
+                <div style="display:flex; background:#fff; margin-bottom:16px;">${tabsHtml}</div>
+                <button onclick="renderDefaultForm('', '${type}')" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:16px;">➕ 新しい項目を追加</button>
+                <div>${listHtml}</div>
             </div>
         `;
-        document.getElementById('app').innerHTML = html;
-
-        // ドラッグ＆ドロップのイベント設定
-        const listContainer = document.getElementById('default-sortable-list');
-        let dragSrcEl = null;
-
-        document.querySelectorAll('.default-drag-item').forEach(item => {
-            item.addEventListener('dragstart', function(e) {
-                dragSrcEl = this;
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/html', this.outerHTML);
-                this.style.opacity = '0.4';
-            });
-            item.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.style.borderTop = '2px solid #2563eb';
-            });
-            item.addEventListener('dragleave', function(e) {
-                this.style.borderTop = '1px solid #e2e8f0';
-            });
-            item.addEventListener('drop', function(e) {
-                e.stopPropagation();
-                this.style.borderTop = '1px solid #e2e8f0';
-                if (dragSrcEl !== this) {
-                    listContainer.insertBefore(dragSrcEl, this.nextSibling || this);
-                }
-                return false;
-            });
-            item.addEventListener('dragend', function(e) {
-                this.style.opacity = '1.0';
-                document.querySelectorAll('.default-drag-item').forEach(el => el.style.borderTop = '1px solid #e2e8f0');
-            });
-        });
     }
 
-    // 追加・編集フォーム
     function renderDefaultForm(oldValue, type) {
         let isEdit = oldValue !== "";
-        let html = `
+        document.getElementById('app').innerHTML = `
             <div class="header">
                 <button class="back-btn" onclick="renderDefaultManagerView('${type}')">戻る</button>
                 <span>${isEdit ? '✏️ 編集' : '➕ 追加'}</span>
@@ -1471,53 +1318,32 @@ console.log("現在のイベントデータ:", event);
                     <input type="text" id="defNewValue" value="${oldValue}" style="width:100%; padding:10px; margin-top:8px; border:1px solid #cbd5e1; border-radius:8px;">
                     <input type="hidden" id="defOldValue" value="${oldValue}">
                     <input type="hidden" id="defType" value="${type}">
-                    
                     <button onclick="submitDefaultForm()" style="width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:8px; font-weight:bold; margin-top:24px;">保存する</button>
                 </div>
             </div>
         `;
-        document.getElementById('app').innerHTML = html;
     }
 
-    // サーバーへの通信処理群
     async function submitDefaultForm() {
         const newValue = document.getElementById('defNewValue').value;
         const oldValue = document.getElementById('defOldValue').value;
         const type = document.getElementById('defType').value;
-        if(!newValue) return showToast("項目名を入力してください", "error");
+        if(!newValue) return alert("項目名を入力してください");
 
         showLoading("保存中...");
         let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'save_default', old_value: oldValue, new_value: newValue, type: type }) });
         let result = await res.json();
-        if (result.success) { showToast(result.message); await fetchSchedules(false); renderDefaultManagerView(type); } 
-        else { showToast(result.message, "error"); }
+        if (result.success) { showToast(result.message); await fetchSchedules(false); renderDefaultManagerView(type); }
+        else alert(result.message);
     }
 
     async function deleteDefaultItem(value, type) {
-        if(!confirm(`「${value}」を削除しますか？\n※既に登録されているスケジュール等からは消えませんが、選択肢からは消えます。`)) return;
+        if(!confirm(`「${value}」を削除しますか？`)) return;
         showLoading("削除中...");
         let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_default', value: value, type: type }) });
         let result = await res.json();
-        if (result.success) { showToast(result.message); await fetchSchedules(false); renderDefaultManagerView(type); } 
-        else { showToast(result.message, "error"); }
-    }
-
-    async function saveDefaultOrder() {
-        const items = document.querySelectorAll('.default-drag-item');
-        let updates = [];
-        items.forEach((item, index) => {
-            updates.push({
-                value: item.getAttribute('data-value'),
-                type: item.getAttribute('data-type'),
-                order: index + 1 // 表示順を上から1, 2, 3...と設定
-            });
-        });
-
-        showLoading("順序を保存中...");
-        let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_default_priorities', updates: updates }) });
-        let result = await res.json();
-        if (result.success) { showToast(result.message); await fetchSchedules(false); renderDefaultManagerView(currentDefaultType); } 
-        else { showToast(result.message, "error"); }
+        if (result.success) { showToast(result.message); await fetchSchedules(false); renderDefaultManagerView(type); }
+        else alert(result.message);
     }
 </script>
 </body>
