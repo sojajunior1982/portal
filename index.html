@@ -1113,7 +1113,6 @@
     function renderScheduleForm(dateStr, scheduleId = null) {
         let isEdit = scheduleId !== null;
         let eventData = {
-            // ★ 修正：新規作成時は「参加」をデフォルトでチェック状態にする
             schedule_id: "", date: dateStr, tab_name: "", priority: 1, location: "", description: "", recruit_roles: "参加"
         };
 
@@ -1122,10 +1121,25 @@
             const found = evts.find(e => String(e.schedule_id) === String(scheduleId));
             if(found) eventData = { ...found };
         } else {
-            // 新規作成時は一番最後に優先度を設定
             const evts = groupedSchedules[dateStr] || [];
             eventData.priority = evts.length + 1;
         }
+
+        // --- ★ここから追加：既存の「その他の項目」を配列化して入力欄を作る処理 ---
+        const defaultRoles = ["参加", "当番", "道具車", "審判"];
+        let currentRolesArr = eventData.recruit_roles ? eventData.recruit_roles.split(',').map(r => r.trim()) : [];
+        let extraRolesArr = currentRolesArr.filter(r => r !== "" && !defaultRoles.includes(r));
+        
+        let extraRolesHtml = "";
+        extraRolesArr.forEach(role => {
+            extraRolesHtml += `
+                <div class="custom-role-item" style="display:flex; gap:8px; margin-bottom:8px;">
+                    <input type="text" class="custom-role-input" value="${role}" placeholder="募集項目名" style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+                    <button type="button" onclick="this.parentElement.remove()" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding:0 12px; border-radius:8px; cursor:pointer; font-weight:bold;">×</button>
+                </div>
+            `;
+        });
+        // ----------------------------------------------------------------------
 
         let html = `
             <div class="header">
@@ -1136,7 +1150,6 @@
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     
                     <input type="hidden" id="editScheduleId" value="${eventData.schedule_id}">
-                    <!-- ★ 修正：優先度の入力欄を削除し、内部値として保持 -->
                     <input type="hidden" id="newPriority" value="${eventData.priority}">
 
                     <div style="margin-bottom: 12px;">
@@ -1171,13 +1184,23 @@
 
                     <div style="margin-bottom: 24px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">募集項目 (チェックで追加)</label>
-                        <div style="margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 8px;">
+                        <div style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px;">
                             ${createCheckboxHTML("参加", eventData.recruit_roles)}
                             ${createCheckboxHTML("当番", eventData.recruit_roles)}
                             ${createCheckboxHTML("道具車", eventData.recruit_roles)}
                             ${createCheckboxHTML("審判", eventData.recruit_roles)}
                         </div>
-                        <input type="text" id="newExtraRoles" placeholder="その他の募集項目 (カンマ区切り)" value="${getExtraRoles(eventData.recruit_roles)}" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        
+                        <!-- ★ここから変更：項目追加UI -->
+                        <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <label style="display: block; font-size: 12px; font-weight: bold; color:#475569; margin-bottom: 8px;">その他の項目</label>
+                            <div id="customRolesContainer">
+                                ${extraRolesHtml}
+                            </div>
+                            <button type="button" onclick="addCustomRoleInput()" style="background:#ffffff; color:#2563eb; border:1px dashed #93c5fd; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%; text-align:center;">
+                                ＋ 項目を追加する
+                            </button>
+                        </div>
                     </div>
 
                     <button onclick="submitScheduleForm()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: bold; box-shadow: 0 4px 10px rgba(37,99,235,0.2); cursor:pointer;">
@@ -1193,12 +1216,20 @@
         let isChecked = (currentRoles || "").includes(role) ? "checked" : "";
         return `<label style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px;"><input type="checkbox" class="role-check" value="${role}" ${isChecked}> ${role}</label>`;
     }
-    function getExtraRoles(currentRoles) {
-        if (!currentRoles) return "";
-        const defaultRoles = ["参加", "当番", "道具車", "審判"];
-        return currentRoles.split(',').map(r => r.trim()).filter(r => r && !defaultRoles.includes(r)).join(', ');
-    }
 
+    // ★ 追加：動的に募集項目の入力欄を増やす関数
+    function addCustomRoleInput() {
+        const container = document.getElementById('customRolesContainer');
+        const div = document.createElement('div');
+        div.className = 'custom-role-item';
+        div.style.cssText = 'display:flex; gap:8px; margin-bottom:8px;';
+        div.innerHTML = `
+            <input type="text" class="custom-role-input" value="" placeholder="募集項目名 (例: お茶当番)" style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+            <button type="button" onclick="this.parentElement.remove()" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding:0 12px; border-radius:8px; cursor:pointer; font-weight:bold;">×</button>
+        `;
+        container.appendChild(div);
+    }
+    
     // ★ 修正：フォームの送信処理
     async function submitScheduleForm() {
         const dateVal = document.getElementById('newDate').value;
@@ -1210,19 +1241,19 @@
             return;
         }
 
+        // --- ★変更箇所：チェックボックスと自由入力欄をすべて取得して結合 ---
         const checkedRoles = Array.from(document.querySelectorAll('.role-check:checked')).map(cb => cb.value);
-        const extraRolesText = document.getElementById('newExtraRoles').value.trim();
+        const customInputs = Array.from(document.querySelectorAll('.custom-role-input'))
+                                  .map(input => input.value.trim())
+                                  .filter(val => val !== ""); // 空欄は無視する
     
-        let allRolesArray = [...checkedRoles];
-        if (extraRolesText) {
-            const extraRolesList = extraRolesText.split(',').map(r => r.trim()).filter(r => r !== "");
-            allRolesArray = allRolesArray.concat(extraRolesList);
-        }
+        const allRolesArray = [...checkedRoles, ...customInputs];
         const finalRecruitRoles = allRolesArray.join(',');
+        // ------------------------------------------------------------------
 
         const payload = {
             action: 'save_schedule',
-            schedule_id: scheduleIdVal, // ★ IDを付与して送信
+            schedule_id: scheduleIdVal,
             date: dateVal,
             tab_name: tabVal,
             priority: document.getElementById('newPriority').value || 1,
