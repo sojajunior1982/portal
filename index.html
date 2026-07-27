@@ -760,7 +760,7 @@
                         baseStr += `<span style="cursor: pointer; font-size: 1.1em; margin-left: 5px;" onclick="alert('${a.name}さんのコメント:\\n${safeComment}')">💬</span>`;
                     }
                     return baseStr;
-                }).join('、 ') : '<span style="color:#94a3b8; font-size:12px;">なし</span>';
+                }).join('<br>') : '<span style="color:#94a3b8; font-size:12px;">なし</span>';
                 let statusBadge = isConfirmedRole ? `<span style="color:#059669; font-size:11px; margin-left:6px; font-weight:bold;">[確定]</span>` : `<span style="color:#d97706; font-size:11px; margin-left:6px; font-weight:bold;">[募集中]</span>`;
 
                 parentsHtml += `
