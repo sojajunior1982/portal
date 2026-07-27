@@ -136,7 +136,7 @@
         <a href="#" onclick="navigateMenu('manageSchedule'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
             ⚙️ 予定の追加・管理
         </a>
-        <a href="#" onclick="navigateMenu('confirmRoles'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9; background: #fefce8;">
+        <a href="#" onclick="navigateMenu('confirmRoles'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
             🤝 協力パパママ確定
         </a>
         <a href="#" onclick="navigateMenu('documents'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
@@ -474,7 +474,7 @@
             <div class="bottom-action-bar" style="flex-direction: column;">
                 ${myResponsePanelsHtml}
                 <div style="display: flex; gap: 10px; width: 100%;">
-                    <button class="fixed-btn fixed-btn-recruit" onclick="openFullResponseModal('保護者')">🙋‍♂️ 保護者のお手伝い<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">できること選ぶ！</span></button>
+                    <button class="fixed-btn fixed-btn-recruit" onclick="openFullResponseModal('保護者')">🙋‍♂️ 保護者のご協力<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">できること選ぶ！</span></button>
                     <button class="fixed-btn fixed-btn-absent" onclick="openFullResponseModal('子供')">🧒 子供の出欠連絡<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">連絡はこちらから</span></button>
                 </div>
             </div>
@@ -507,7 +507,7 @@
         const events = groupedSchedules[currentActiveDate]; 
         const childrenList = getChildrenList();
         
-        let title = type === '子供' ? "🧒 子供の出欠を教えてね" : "🙋‍♂️ 協力パパママ募集中！";
+        let title = type === '子供' ? "🧒 子供の出欠を連絡" : "🙋‍♂️ 協力パパママ募集中！";
         let subtitle = type === '子供' ? `対象: ${childrenList.join('・')}` : `対象: ${currentUser.user_name}`;
         
         tempAttendances = []; 
@@ -563,7 +563,7 @@
                     selectorContentHtml = `<div style="font-size:12px; color:#94a3b8; text-align:center; padding:6px 0;">🤝 お手伝いは不要な予定です</div>`;
                 } else {
                     const isUnused = parsedRoles.length === 0;
-                    let btnsHtml = `<button class="sel-btn sel-btn-full ${isUnused ? 'active-red' : ''}" id="btn-${event.schedule_id}-不参加" onclick="selectTempResponse('${event.schedule_id}', '不参加', '保護者')">❌ 今回はムリです泣</button>`;
+                    let btnsHtml = `<button class="sel-btn sel-btn-full ${isUnused ? 'active-red' : ''}" id="btn-${event.schedule_id}-不参加" onclick="selectTempResponse('${event.schedule_id}', '不参加', '保護者')">❌ 今回は協力難しいです泣</button>`;
                     
                     btnsHtml += `<div class="selector-group" style="flex-direction: column; gap: 8px;">`;
                     availableRoles.forEach(role => {
@@ -592,7 +592,7 @@
             <div class="modal-body">${rowsHtml}</div>
             <div class="modal-footer">
                 <button class="modal-footer-btn m-btn-cancel" onclick="closeFullResponseModal()">やめる</button>
-                <button class="modal-footer-btn m-btn-submit" onclick="submitAllResponses('${type}')">一括送信する！</button>
+                <button class="modal-footer-btn m-btn-submit" onclick="submitAllResponses('${type}')">回答する！</button>
             </div>
         `;
         modalOverlay.style.display = 'flex';
@@ -775,7 +775,7 @@
 
         let recruitingHeaderHtml = recruitingRolesList.length > 0 
             ? `<div style="background:#fffbeb; border:1px solid #fde68a; color:#b45309; padding:8px 12px; border-radius:8px; font-size:12px; margin-bottom:12px; font-weight:bold;">📢 募集中: ${recruitingRolesList.join(', ')}</div>`
-            : `<div style="background:#ecfdf5; border:1px solid #a7f3d0; color:#047857; padding:8px 12px; border-radius:8px; font-size:12px; margin-bottom:12px; font-weight:bold;">🎉 すべての役割が確定しました！</div>`;
+            : `<div style="background:#ecfdf5; border:1px solid #a7f3d0; color:#047857; padding:8px 12px; border-radius:8px; font-size:12px; margin-bottom:12px; font-weight:bold;">🎉 すべての協力パパママが確定しました！</div>`;
 
         document.getElementById('allResponseModalContent').innerHTML = `
             <div class="modal-header" style="flex-shrink:0; margin-top:20px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:12px; padding-left:16px; padding-right:16px; display: flex; justify-content: space-between; align-items: flex-start;">
