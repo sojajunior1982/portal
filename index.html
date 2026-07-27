@@ -841,14 +841,32 @@
         toggleSideMenu();
         if (target === 'schedule') renderListViewInstant();
         else if (target === 'manageSchedule') renderScheduleManagerView();
-        else if (target === 'confirmRoles') renderConfirmRolesListView(); // ★協力パパママ確定へ
+        else if (target === 'confirmRoles') renderConfirmRolesListView();
         else if (target === 'documents') alert('各種資料ページは現在準備中です');
-        else if (target === 'admin') renderDefaultManagerView('tab');
+        else if (target === 'admin') renderAdminMenu(); // ★ここを変更
     }
 
-    // ==========================================
-    // 🤝 協力パパママ確定機能 (新規)
-    // ==========================================
+    function renderAdminMenu() {
+        currentActiveDate = null;
+        let html = `
+            <div class="header">
+                <button class="menu-btn" onclick="toggleSideMenu()">☰</button>
+                <span style="margin-left: 24px;">⚙️ 管理者メニュー</span>
+            </div>
+            <div class="content" style="background:#f8fafc;">
+                <div style="display:flex; flex-direction:column; gap:16px; padding:16px;">
+                    <button onclick="renderDefaultManagerView('tab')" style="padding:16px; background:#fff; border:1px solid #e2e8f0; border-radius:12px; font-size:16px; font-weight:bold; color:#1e293b; text-align:left; box-shadow:0 4px 6px rgba(0,0,0,0.02); display:flex; justify-content:space-between;">
+                        <span>🗂️ マスターデータ管理</span><span style="color:#94a3b8;">▶</span>
+                    </button>
+                    <button onclick="renderAccountManagerView()" style="padding:16px; background:#fff; border:1px solid #e2e8f0; border-radius:12px; font-size:16px; font-weight:bold; color:#1e293b; text-align:left; box-shadow:0 4px 6px rgba(0,0,0,0.02); display:flex; justify-content:space-between;">
+                        <span>👥 団員/保護者管理</span><span style="color:#94a3b8;">▶</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        document.getElementById('app').innerHTML = html;
+    }
+
     function renderConfirmRolesListView() {
         currentActiveDate = null;
         let html = `
@@ -1288,10 +1306,10 @@
     // マスタ管理画面
     function renderDefaultManagerView(type = 'tab') {
         currentDefaultType = type;
-        const typeLabels = { 'tab': '内容 (タブ)', 'place': '場所', 'support': '保護者協力' };
+        const typeLabels = { 'tab': '内容 (タブ)', 'place': '場所', 'support': '保護者協力', 'area': 'エリア' }; // ★areaを追加
         let tabsHtml = Object.keys(typeLabels).map(tKey => {
             const isActive = tKey === type;
-            return `<button onclick="renderDefaultManagerView('${tKey}')" style="flex:1; padding:10px; border:none; border-bottom:${isActive ? '3px solid #2563eb' : '3px solid transparent'}; background:transparent; font-weight:bold; color:${isActive ? '#2563eb' : '#64748b'};">${typeLabels[tKey]}</button>`;
+            return `<button onclick="renderDefaultManagerView('${tKey}')" style="flex:1; padding:10px; border:none; border-bottom:${isActive ? '3px solid #2563eb' : '3px solid transparent'}; background:transparent; font-weight:bold; color:${isActive ? '#2563eb' : '#64748b'}; font-size:12px;">${typeLabels[tKey]}</button>`;
         }).join('');
 
         const items = appDefaultsFull.filter(d => d.type === type);
@@ -1311,7 +1329,7 @@
 
         document.getElementById('app').innerHTML = `
             <div class="header">
-                <button class="back-btn" onclick="renderListView()">戻る</button>
+                <button class="back-btn" onclick="renderAdminMenu()">戻る</button>
                 <span>⚙️ マスタデータ管理</span>
             </div>
             <div class="content" style="background:#f8fafc;">
@@ -1322,6 +1340,399 @@
         `;
     }
 
+    // ==========================================
+    // 👥 団員/保護者管理
+    // ==========================================
+    let allAccounts = [];
+    let currentEditFamily = null;
+
+    async function fetchAccounts() {
+        showLoading("アカウント情報を読み込み中...");
+        try {
+            let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'get_accounts' }) });
+            let result = await res.json();
+            if (result.success) {
+                allAccounts = result.accounts;
+                renderAccountManagerView(true);
+            } else {
+                alert("エラー: " + result.message);
+                renderAdminMenu();
+            }
+        } catch (e) { alert("通信エラー"); renderAdminMenu(); }
+    }
+    function renderAccountManagerView(isFetched = false) {
+        if (!isFetched) { fetchAccounts(); return; }
+
+        let families = {};
+        allAccounts.forEach(acc => {
+            if (!families[acc.family_id]) {
+                families[acc.family_id] = { family_id: acc.family_id, children: acc.children, area_id: acc.area_id, members: [] };
+            }
+            families[acc.family_id].members.push(acc);
+        });
+
+        let familyList = Object.values(families);
+        // 子供の背番号（文字列内の数字）でソート
+        familyList.sort((a, b) => {
+            let numA = 9999, numB = 9999;
+            let mA = (a.children || "").match(/\[(\d+)\]/);
+            let mB = (b.children || "").match(/\[(\d+)\]/);
+            if (mA) numA = parseInt(mA[1], 10);
+            if (mB) numB = parseInt(mB[1], 10);
+            if (numA !== numB) return numA - numB;
+            return (a.children || "").localeCompare(b.children || "", 'ja');
+        });
+
+        let html = `
+            <div class="header">
+                <button class="back-btn" onclick="renderAdminMenu()">戻る</button>
+                <span>👥 団員/保護者管理</span>
+            </div>
+            <div class="content" style="background:#f8fafc; padding: 16px;">
+                <button onclick="renderAccountForm(null)" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:16px;">➕ 新規家族・アカウント追加</button>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+        `;
+
+        familyList.forEach(fam => {
+            let names = fam.members.map(m => m.user_name).join(', ');
+            let childrenDisp = fam.children || "子供未登録";
+            let areaDisp = fam.area_id ? `<span style="font-size:10px; background:#cbd5e1; color:#334155; padding:2px 6px; border-radius:4px; font-weight:bold;">${fam.area_id}</span>` : "";
+            
+            html += `
+                <div onclick="renderAccountForm('${fam.family_id}')" style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:12px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="font-size:12px; color:#64748b; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+                        <span>ID: ${fam.family_id}</span>${areaDisp}
+                    </div>
+                    <div style="font-weight:bold; color:#1d4ed8; font-size:15px; margin-bottom:6px;">🧒 ${childrenDisp}</div>
+                    <div style="font-size:13px; color:#334155;">👤 保護者: ${names}</div>
+                </div>
+            `;
+        });
+
+        html += `</div></div>`;
+        document.getElementById('app').innerHTML = html;
+    }
+
+    function renderAccountForm(familyId) {
+        let fam = { family_id: familyId || "新規採番(保存時に決定)", area_id: "", childrenList: [], accounts: [] };
+
+        if (familyId) {
+            let members = allAccounts.filter(a => a.family_id === familyId);
+            if (members.length > 0) {
+                fam.area_id = members[0].area_id;
+                let cStr = members[0].children || "";
+                let parts = cStr.split(',').filter(s=>s.trim());
+                parts.forEach(p => {
+                    let m = p.match(/\[(.*?)\](.*)/);
+                    if (m) fam.childrenList.push({ number: m[1], name: m[2] });
+                    else fam.childrenList.push({ number: "", name: p });
+                });
+                fam.accounts = members.map(m => ({
+                    account: m.account, password_hash: m.password_hash, user_name: m.user_name,
+                    role: m.role || 'user', created_at: m.created_at || '', isNew: false
+                }));
+            }
+        } else {
+            fam.childrenList.push({ number: "", name: "" });
+            fam.accounts.push({ account: "", password_hash: "", user_name: "", role: "user", isNew: true });
+        }
+
+        currentEditFamily = fam;
+        drawAccountForm();
+    }
+
+    function drawAccountForm() {
+        let fam = currentEditFamily;
+        let isNewFamily = fam.family_id === "新規採番(保存時に決定)";
+
+        let areaItems = appDefaultsFull.filter(d => d.type === 'area');
+        let areaOptionsHtml = areaItems.map(a => `<option value="${a.value}" ${fam.area_id === a.value ? 'selected' : ''}>${a.value}</option>`).join('');
+
+        let childrenHtml = "";
+        fam.childrenList.forEach((c, idx) => {
+            childrenHtml += `
+                <div style="display:flex; gap:8px; margin-bottom:8px;">
+                    <input type="text" id="childNum_${idx}" value="${c.number}" placeholder="背番号" style="width:60px; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+                    <input type="text" id="childName_${idx}" value="${c.name}" placeholder="名前" style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+                    <button type="button" onclick="removeChild(${idx})" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding:0 12px; border-radius:8px; font-weight:bold;">×</button>
+                </div>`;
+        });
+
+        let accountsHtml = "";
+        fam.accounts.forEach((acc, idx) => {
+            accountsHtml += `
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; margin-bottom:12px; border:1px solid #e2e8f0;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="font-weight:bold; font-size:14px; color:#334155;">👤 保護者アカウント ${idx + 1}</span>
+                        ${acc.isNew ? `<button type="button" onclick="removeAccount(${idx})" style="color:#ef4444; background:none; border:none; font-size:12px; font-weight:bold; cursor:pointer;">削除</button>` : ''}
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <label style="font-size:12px; color:#64748b;">ログインID (account) ${acc.isNew ? '' : '※変更不可'}</label>
+                        <input type="text" id="accId_${idx}" value="${acc.account}" ${acc.isNew ? '' : 'readonly style="background:#e2e8f0; color:#64748b;"'} class="modal-comment">
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <label style="font-size:12px; color:#64748b;">パスワード ${acc.isNew ? '' : '(※変更時のみ入力)'}</label>
+                        <input type="text" id="accPw_${idx}" value="${acc.isNew ? acc.password_hash : ''}" placeholder="${acc.isNew ? '初期パスワード' : '変更しない場合は空欄'}" class="modal-comment">
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <label style="font-size:12px; color:#64748b;">表示名 (user_name)</label>
+                        <input type="text" id="accName_${idx}" value="${acc.user_name}" class="modal-comment">
+                    </div>
+                    <div style="margin-bottom:4px;">
+                        <label style="font-size:12px; color:#64748b;">権限 (role) ※変更不可</label>
+                        <input type="text" value="${acc.role}" readonly style="background:#e2e8f0; color:#64748b; width:100%; padding:10px; font-size:12px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;">
+                    </div>
+                    ${acc.created_at ? `<div style="text-align:right; font-size:10px; color:#94a3b8; margin-top:4px;">更新日: ${new Date(acc.created_at).toLocaleDateString()}</div>` : ''}
+                </div>`;
+        });
+
+        let html = `
+            <div class="header">
+                <button class="back-btn" onclick="renderAccountManagerView(true)">戻る</button>
+                <span>${isNewFamily ? '➕ 新規家族登録' : '✏️ 家族データ編集'}</span>
+            </div>
+            <div class="content" style="background:#f8fafc;">
+                <div style="background:#fff; padding:16px; border-radius:12px;">
+                    <div style="margin-bottom:12px;">
+                        <label style="font-size:12px; color:#64748b;">Family ID</label>
+                        <input type="text" value="${fam.family_id}" readonly style="width:100%; padding:10px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; color:#475569;">
+                    </div>
+                    
+                    <div style="margin-bottom:16px;">
+                        <label style="font-size:12px; color:#64748b; font-weight:bold;">エリア (area_id)</label>
+                        <select id="editAreaId" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px;">
+                            <option value="">未選択</option>
+                            ${areaOptionsHtml}
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom:24px; padding-bottom:16px; border-bottom:1px dashed #cbd5e1;">
+                        <label style="font-size:14px; color:#1e3a8a; font-weight:bold; display:block; margin-bottom:8px;">🧒 団員 (子供)</label>
+                        <div id="childrenContainer">${childrenHtml}</div>
+                        <button type="button" onclick="addChild()" style="width:100%; padding:10px; background:#eff6ff; color:#2563eb; border:1px dashed #93c5fd; border-radius:8px; font-size:13px; font-weight:bold; margin-top:4px;">➕ 子供を追加</button>
+                    </div>
+
+                    <div style="margin-bottom:24px;">
+                        <label style="font-size:14px; color:#1e3a8a; font-weight:bold; display:block; margin-bottom:8px;">👥 保護者アカウント</label>
+                        ${accountsHtml}
+                        <button type="button" onclick="addAccount()" style="width:100%; padding:10px; background:#eff6ff; color:#2563eb; border:1px dashed #93c5fd; border-radius:8px; font-size:13px; font-weight:bold;">➕ アカウント(保護者)を追加</button>
+                    </div>
+
+                    <button onclick="saveFamilyData()" style="width:100%; padding:14px; background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color:white; border:none; border-radius:12px; font-size:15px; font-weight:bold; box-shadow:0 4px 10px rgba(37,99,235,0.2);">
+                        保存する
+                    </button>
+                    
+                    ${!isNewFamily ? `
+                    <div style="margin-top:24px; text-align:center;">
+                        <button onclick="deleteFamily('${fam.family_id}')" style="background:none; border:none; color:#ef4444; font-size:13px; font-weight:bold; text-decoration:underline; cursor:pointer;">
+                            この家族を全て削除する（退団処理）
+                        </button>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        document.getElementById('app').innerHTML = html;
+    }
+
+    function addChild() { syncFormToCurrentEditFamily(); currentEditFamily.childrenList.push({ number: "", name: "" }); drawAccountForm(); }
+    function removeChild(idx) { syncFormToCurrentEditFamily(); currentEditFamily.childrenList.splice(idx, 1); drawAccountForm(); }
+    function addAccount() { syncFormToCurrentEditFamily(); currentEditFamily.accounts.push({ account: "", password_hash: "", user_name: "", role: "user", isNew: true }); drawAccountForm(); }
+    function removeAccount(idx) { syncFormToCurrentEditFamily(); currentEditFamily.accounts.splice(idx, 1); drawAccountForm(); }
+
+    function syncFormToCurrentEditFamily() {
+        let fam = currentEditFamily;
+        fam.area_id = document.getElementById('editAreaId').value;
+        fam.childrenList.forEach((c, idx) => {
+            let numEl = document.getElementById(`childNum_${idx}`);
+            let nameEl = document.getElementById(`childName_${idx}`);
+            if (numEl) c.number = numEl.value;
+            if (nameEl) c.name = nameEl.value;
+        });
+        fam.accounts.forEach((acc, idx) => {
+            let idEl = document.getElementById(`accId_${idx}`);
+            let pwEl = document.getElementById(`accPw_${idx}`);
+            let nameEl = document.getElementById(`accName_${idx}`);
+            if (idEl) acc.account = idEl.value;
+            if (pwEl && pwEl.value) acc.password_hash = pwEl.value; 
+            if (nameEl) acc.user_name = nameEl.value;
+        });
+    }
+    async function saveFamilyData() {
+        syncFormToCurrentEditFamily();
+        let fam = currentEditFamily;
+        
+        if (fam.accounts.length === 0) return alert("最低1つの保護者アカウントが必要です。");
+        let hasError = false;
+        fam.accounts.forEach(acc => {
+            if (!acc.account) hasError = true;
+            if (acc.isNew && !acc.password_hash) hasError = true;
+            if (!acc.user_name) hasError = true;
+        });
+        if (hasError) return alert("アカウントID、パスワード(新規時)、表示名は必須です。");
+
+        let childrenStrs = [];
+        fam.childrenList.forEach(c => {
+            if (c.name) {
+                if (c.number) childrenStrs.push(`[${c.number}]${c.name}`);
+                else childrenStrs.push(`${c.name}`);
+            }
+        });
+
+        let payload = {
+            action: 'save_family',
+            family_id: fam.family_id === "新規採番(保存時に決定)" ? "" : fam.family_id,
+            area_id: fam.area_id,
+            children: childrenStrs.join(','),
+            accounts: fam.accounts
+        };
+
+        showLoading("保存中...");
+        try {
+            let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+            let result = await res.json();
+            if (result.success) { showToast("保存完了！"); fetchAccounts(); }
+            else { alert("エラー: " + result.message); drawAccountForm(); }
+        } catch (e) { alert("通信エラー"); drawAccountForm(); }
+    }
+
+    async function deleteFamily(familyId) {
+        if (!confirm("本当にこの家族のデータを全て削除しますか？\n（これまでのスケジュール等の参加データは残りますが、ログインできなくなります）")) return;
+        showLoading("削除中...");
+        try {
+            let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_family', family_id: familyId }) });
+            let result = await res.json();
+            if (result.success) { showToast("削除しました"); fetchAccounts(); }
+            else { alert("エラー: " + result.message); drawAccountForm(); }
+        } catch (e) { alert("通信エラー"); drawAccountForm(); }
+    }
+    function handleGetAccounts() {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('accounts');
+  if (!sheet) return { success: false, message: "accountsシートが見つかりません。" };
+  const values = sheet.getDataRange().getValues();
+  let accounts = [];
+  
+  for (let i = 1; i < values.length; i++) {
+    if (!values[i][0]) continue;
+    accounts.push({
+      account: values[i][0],
+      password_hash: values[i][1],
+      user_name: values[i][2],
+      family_id: values[i][3],
+      area_id: values[i][4],
+      children: values[i][5],
+      role: values[i][6],
+      created_at: values[i][7]
+    });
+  }
+  return { success: true, accounts: accounts };
+}
+
+function handleSaveFamily(data) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('accounts');
+  if (!sheet) return { success: false, message: "accountsシートがありません" };
+  const values = sheet.getDataRange().getValues();
+  
+  let familyId = data.family_id;
+  const now = new Date();
+  let currentAccounts = data.accounts; 
+  
+  // 新規アカウントのログインID重複チェック
+  for (let accData of currentAccounts) {
+    if (accData.isNew) {
+      for (let i = 1; i < values.length; i++) {
+        if (String(values[i][0]).trim() === String(accData.account).trim()) {
+          return { success: false, message: `ログインID「${accData.account}」は既に使われています。別のIDを指定してください。` };
+        }
+      }
+    }
+  }
+
+  // 新規採番 (F0001〜の最大値+1)
+  if (!familyId) {
+    let maxNum = 0;
+    for (let i = 1; i < values.length; i++) {
+      let fId = String(values[i][3]).trim();
+      if (fId.startsWith('F')) {
+        let num = parseInt(fId.substring(1), 10);
+        if (!isNaN(num) && num > maxNum) maxNum = num;
+      }
+    }
+    maxNum++;
+    familyId = 'F' + ('0000' + maxNum).slice(-4);
+  }
+
+  let rowsToDelete = [];
+  
+  // 既存行の更新・削除判定
+  for (let i = values.length - 1; i >= 1; i--) {
+    if (String(values[i][3]).trim() === familyId) {
+      let accId = String(values[i][0]).trim();
+      let accData = currentAccounts.find(a => a.account === accId);
+      
+      if (accData) {
+        // 更新 (パスワードは入力がある場合のみ上書き)
+        let pw = accData.password_hash ? accData.password_hash : values[i][1];
+        sheet.getRange(i + 1, 2).setValue(pw); // password_hash
+        sheet.getRange(i + 1, 3).setValue(accData.user_name); // user_name
+        sheet.getRange(i + 1, 5).setValue(data.area_id); // area_id
+        sheet.getRange(i + 1, 6).setValue(data.children); // children
+        sheet.getRange(i + 1, 8).setValue(now); // created_at(更新日)
+        accData._processed = true; 
+      } else {
+        // フロント側で削除されたアカウント（同じfamily_id内で消されたもの）
+        rowsToDelete.push(i + 1);
+      }
+    }
+  }
+  
+  // 削除の実行 (行ズレ防止のため下から消す)
+  rowsToDelete.sort((a,b) => b - a).forEach(rIdx => {
+    sheet.deleteRow(rIdx);
+  });
+  
+  // 新規追加分の処理
+  let newRows = [];
+  currentAccounts.forEach(accData => {
+    if (!accData._processed) {
+      newRows.push([
+        accData.account,
+        accData.password_hash,
+        accData.user_name,
+        familyId,
+        data.area_id,
+        data.children,
+        accData.role || 'user',
+        now
+      ]);
+    }
+  });
+  
+  if (newRows.length > 0) {
+    sheet.getRange(sheet.getLastRow() + 1, 1, newRows.length, 8).setValues(newRows);
+  }
+  
+  return { success: true, message: "保存しました", family_id: familyId };
+}
+
+function handleDeleteFamily(data) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('accounts');
+  const values = sheet.getDataRange().getValues();
+  let familyId = data.family_id;
+  
+  let rowsToDelete = [];
+  for (let i = values.length - 1; i >= 1; i--) {
+    if (String(values[i][3]).trim() === familyId) {
+      rowsToDelete.push(i + 1);
+    }
+  }
+  
+  rowsToDelete.forEach(rIdx => {
+    sheet.deleteRow(rIdx);
+  });
+  
+  return { success: true, message: "家族データを削除しました" };
+}
     function renderDefaultForm(oldValue, type) {
         let isEdit = oldValue !== "";
         document.getElementById('app').innerHTML = `
