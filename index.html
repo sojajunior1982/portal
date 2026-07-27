@@ -348,22 +348,9 @@
 <div class="toast" id="toast">保存しました！</div>
 
 <div class="all-res-overlay" id="allResponseModal">
-    <div class="modal">
-    
-    <!-- ⬇️ ここがスクロールする部分 -->
-    <div class="scrollable-content">
-        <h3>わが家の出欠</h3>
-        <p>長いコンテンツ...</p>
-        <p>参加者が増えても...</p>
-        <p>ここでスクロールします。</p>
+    <div class="modal" id="allResponseModalContent">
+        <!-- JSでここにコンテンツが流し込まれます -->
     </div>
-
-    <!-- ⬇️ ここは下に固定される部分（閉じるボタンなど） -->
-    <div class="modal-footer">
-        <button>閉じる</button>
-    </div>
-
-</div>
 </div>
 
 <script>
@@ -558,6 +545,9 @@
             html += `<div class="tab ${activeClass}" id="tab-${index}" onclick="switchTab(${index}, ${events.length})">${event.tab_name}</div>`;
         });
         html += `</div><div class="tab-content-box">`;
+        
+        let myResponsePanelsHtml = ""; // ★我が家の回答部分を別で保持するための変数
+
         events.forEach((event, index) => {
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
             const myAttsForThisEvent = myAttendances.filter(a => String(a.schedule_id) === String(event.schedule_id));
@@ -580,12 +570,19 @@
                 childrenStatusRowsHtml = `<div class="summary-row"><span style="color:#94a3b8;">子供の情報がありません</span></div>`;
             }
 
+            // ★詳細タブ（tab-panel）の中からは「我が家の回答」を削除
             html += `
                 <div class="tab-panel ${activeClass}" id="tab-panel-${index}">
                     <div class="detail-item"><div class="detail-value" style="font-size: 19px; font-weight: 800; color:#1e3b8a; margin-bottom:10px;">${event.tab_name}</div></div>
                     <div class="detail-item"><div class="detail-label">📍 場所</div><div class="detail-value" style="font-weight:600;">${event.location || '未定'}</div></div>
                     <div class="detail-item"><div class="detail-label">📝 スケジュール・連絡</div><div class="detail-value" style="color:#475569; font-size:14.5px;">${event.description || '詳細なし'}</div></div>
-                    <div class="summary-status-bar">
+                </div>
+            `;
+
+            // ★タブに連動して切り替わるように、専用のパネルを作成
+            myResponsePanelsHtml += `
+                <div class="my-response-panel" id="my-response-panel-${index}" style="display: ${activeClass ? 'block' : 'none'}; width: 100%;">
+                    <div class="summary-status-bar" style="margin-top: 0; margin-bottom: 12px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
                             <span style="font-weight:bold; color:#334155; font-size:11.5px;">🙋‍♀️ わが家の今の回答</span>
                             <button onclick="openAllResponseModal('${event.schedule_id}')" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:bold; cursor:pointer;">👥 全員の回答</button>
@@ -597,10 +594,15 @@
             `;
         });
         html += `</div>`;
+
+        // ★下部固定エリア（bottom-action-bar）の中に「我が家の回答」と「回答ボタン」を縦に並べる
         html += `
-            <div class="bottom-action-bar">
-                <button class="fixed-btn fixed-btn-recruit" onclick="openFullResponseModal('保護者')">🙋‍♂️ 保護者のお手伝い<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">できること選ぶ！</span></button>
-                <button class="fixed-btn fixed-btn-absent" onclick="openFullResponseModal('子供')">🧒 子供の出欠連絡<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">連絡はこちらから</span></button>
+            <div class="bottom-action-bar" style="flex-direction: column;">
+                ${myResponsePanelsHtml}
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <button class="fixed-btn fixed-btn-recruit" onclick="openFullResponseModal('保護者')">🙋‍♂️ 保護者のお手伝い<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">できること選ぶ！</span></button>
+                    <button class="fixed-btn fixed-btn-absent" onclick="openFullResponseModal('子供')">🧒 子供の出欠連絡<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">連絡はこちらから</span></button>
+                </div>
             </div>
         `;
         html += `</div>`; document.getElementById('app').innerHTML = html;
@@ -609,9 +611,19 @@
     function switchTab(activeIndex, totalTabs) {
         currentActiveTabIndex = activeIndex;
         for (let i = 0; i < totalTabs; i++) {
-            const tab = document.getElementById(`tab-${i}`); const panel = document.getElementById(`tab-panel-${i}`);
-            if (i === activeIndex) { tab.classList.add('active'); panel.classList.add('active'); } 
-            else { tab.classList.remove('active'); panel.classList.remove('active'); }
+            const tab = document.getElementById(`tab-${i}`); 
+            const panel = document.getElementById(`tab-panel-${i}`);
+            const myResPanel = document.getElementById(`my-response-panel-${i}`); // ★追加
+            
+            if (i === activeIndex) { 
+                tab.classList.add('active'); 
+                panel.classList.add('active'); 
+                if (myResPanel) myResPanel.style.display = 'block'; // ★追加
+            } else { 
+                tab.classList.remove('active'); 
+                panel.classList.remove('active'); 
+                if (myResPanel) myResPanel.style.display = 'none'; // ★追加
+            }
         }
     }
 
