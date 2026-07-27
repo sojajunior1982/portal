@@ -715,6 +715,10 @@
             if (currentAllResSort === 'area' && att.area_id) {
                 displayStr = `<span class="area-badge">${att.area_id}</span>` + displayStr;
             }
+            if (att.comment && att.comment.trim() !== "") {
+                let safeComment = att.comment.replace(/\r?\n/g, ' '); // 改行をスペースに変換
+                displayStr += `<span style="cursor: pointer; font-size: 1.1em; margin-left: 5px;" onclick="alert('${att.name}さんのコメント:\\n${safeComment}')">💬</span>`;
+            }
             if (res.includes('出席')) {
                 if (res.includes('自転車')) displayStr += ' 🚲'; 
                 cGroups['出席'].push(displayStr);
@@ -738,7 +742,8 @@
                     let parsed = parseRolesWithStatus(p.response);
                     let found = parsed.find(item => item.role === role);
                     if (found) {
-                        assigned.push({ name: p.name, status: found.status });
+                        // 👇 comment: p.comment を追加
+                        assigned.push({ name: p.name, status: found.status, comment: p.comment });
                     }
                 });
 
@@ -748,7 +753,14 @@
                 let isConfirmedRole = assigned.some(a => a.status === 1);
                 if (!isConfirmedRole) recruitingRolesList.push(role);
 
-                let namesStr = assigned.length > 0 ? assigned.map(a => `${a.status === 1 ? '💮 ' : ''}${a.name}`).join('、 ') : '<span style="color:#94a3b8; font-size:12px;">なし</span>';
+                let namesStr = assigned.length > 0 ? assigned.map(a => {
+                    let baseStr = `${a.status === 1 ? '🔔 ' : ''}${a.name}`;
+                    if (a.comment && a.comment.trim() !== "") {
+                        let safeComment = a.comment.replace(/\r?\n/g, ' ');
+                        baseStr += `<span style="cursor: pointer; font-size: 1.1em; margin-left: 5px;" onclick="alert('${a.name}さんのコメント:\\n${safeComment}')">💬</span>`;
+                    }
+                    return baseStr;
+                }).join('、 ') : '<span style="color:#94a3b8; font-size:12px;">なし</span>';
                 let statusBadge = isConfirmedRole ? `<span style="color:#059669; font-size:11px; margin-left:6px; font-weight:bold;">[確定]</span>` : `<span style="color:#d97706; font-size:11px; margin-left:6px; font-weight:bold;">[募集中]</span>`;
 
                 parentsHtml += `
@@ -945,7 +957,7 @@
                             const isConfirmed = app.status === 1;
                             rowsHtml += `
                                 <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed #f1f5f9;">
-                                    <span style="font-size:14px; font-weight:bold; color:#1e293b;">${isConfirmed ? '💮 ' : ''}${app.name}</span>
+                                    <span style="font-size:14px; font-weight:bold; color:#1e293b;">${isConfirmed ? '🔔 ' : ''}${app.name}</span>
                                     <button class="confirm-toggle-btn ${isConfirmed ? 'is-confirmed' : ''}" onclick="toggleRoleConfirmation('${event.schedule_id}', '${app.family_id}', '${role}')">
                                         ${isConfirmed ? '確定中 ✓' : '確定する'}
                                     </button>
