@@ -364,6 +364,15 @@
     let tempAttendances = [];
     let currentAllResSort = 'number';
     let currentAllResScheduleId = null;
+    let appDefaultsFull = []; // 編集・並び替え用フルデータ保持用
+    let currentDefaultType = 'tab'; // マスタ管理の現在開いているタブ
+    
+    // ★ 追加：マスタデータを保持する変数（念のため空になっても大丈夫なように初期値を入れています）
+    let appDefaults = {
+        tab: ["練習", "練習（雨天時）", "練習試合", "試合"],
+        place: ["小学校", "本球場"],
+        support: ["🙆 参加", "🙋 当番", "🚗 道具車", "⚾ 審判"]
+    };
 
     function getChildrenList() {
         if (!currentUser || !currentUser.children) return [];
@@ -476,17 +485,23 @@
                 rawSchedules = schedResult.schedules; 
                 myAttendances = schedResult.myAttendances || schedResult.attendances;
                 allAttendances = schedResult.allAttendances || [];
-                groupSchedulesByDate();
                 
-                if (currentActiveDate !== null) { 
-                    renderDetailView(currentActiveDate); 
-                } else { 
-                    renderListView(); 
+                // ★ 修正：defaultsFull も受け取る
+                if (schedResult.defaults) {
+                    appDefaults = {
+                        tab: schedResult.defaults.tab || appDefaults.tab,
+                        place: schedResult.defaults.place || appDefaults.place,
+                        support: schedResult.defaults.support || appDefaults.support
+                    };
+                    appDefaultsFull = schedResult.defaultsFull || [];
                 }
+
+                groupSchedulesByDate();
+                if (currentActiveDate !== null) { renderDetailView(currentActiveDate); } 
+                else { renderListView(); }
             }
         } catch (e) { document.getElementById('app').innerHTML = `<div class="content"><p>データ取得エラー</p></div>`; }
     }
-
     function showLoading(msg) {
         document.getElementById('app').innerHTML = `
             <div class="header"><span>総社ジュニアポータル</span></div>
@@ -691,6 +706,7 @@ console.log("現在のイベントデータ:", event);
             let selectorContentHtml = "";
 
             if (type === '子供') {
+                // 子供の処理は変更なし
                 childrenList.forEach((childName, cIdx) => {
                     const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === '子供' && a.name === childName);
                     let currentResponse = existing ? existing.response : "出席(自転車)";
@@ -731,7 +747,7 @@ console.log("現在のイベントデータ:", event);
                     `;
                 });
             } else {
-                // ★ 修正：保護者の募集項目を縦並びに変更
+                // 保護者の処理
                 const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === '保護者');
                 let currentResponse = existing ? existing.response : "不参加";
                 let currentComment = existing ? existing.comment || "" : "";
@@ -747,15 +763,13 @@ console.log("現在のイベントデータ:", event);
                     
                     const activeRoles = currentResponse.split(',').map(r => r.trim());
                     
-                    // フレックス方向をカラムにして縦に並べる
                     btnsHtml += `<div class="selector-group" style="flex-direction: column; gap: 8px;">`;
                     availableRoles.forEach(role => {
                         const isSelected = activeRoles.includes(role);
-                        let friendlyRoleText = `👍 ${role}`;
-                        if (role.includes("車")) friendlyRoleText = "🚗 車出せる！";
-                        if (role.includes("当番")) friendlyRoleText = "🙋 当番できる！";
                         
-                        // sel-btn-full クラスを追加して横幅一杯に広げる
+                        // ★ やりたいこと2: スプレッドシートの文字を変換せず、そのままボタンの文字として使う！
+                        let friendlyRoleText = role; 
+                        
                         btnsHtml += `<button class="sel-btn sel-btn-full ${isSelected ? 'active-green' : ''}" style="margin-bottom:0;" id="btn-${event.schedule_id}-${role}" onclick="selectTempResponse('${event.schedule_id}', '${role}', '保護者', null, ${isSelected})">${friendlyRoleText}</button>`;
                     });
                     btnsHtml += `</div>`;
@@ -1039,15 +1053,14 @@ console.log("現在のイベントデータ:", event);
         if (target === 'schedule') {
             renderListViewInstant();
         } else if (target === 'manageSchedule') {
-            renderScheduleManagerView(); // ★ 変更：管理・追加画面へ
+            renderScheduleManagerView();
         } else if (target === 'documents') {
             alert('各種資料ページは現在準備中です');
         } else if (target === 'admin') {
-            alert('管理者用ページへ移動します');
+            renderDefaultManagerView('tab'); 
         }
     }
 
-    // ★ 追加：スケジュール管理（日付選択＆一覧表示）画面
     function renderScheduleManagerView() {
         currentActiveDate = null;
         
@@ -1161,7 +1174,7 @@ console.log("現在のイベントデータ:", event);
     function renderScheduleForm(dateStr, scheduleId = null) {
         let isEdit = scheduleId !== null;
         let eventData = {
-            schedule_id: "", date: dateStr, tab_name: "", priority: 1, location: "", description: "", recruit_roles: "参加"
+            schedule_id: "", date: dateStr, tab_name: "", priority: 1, location: "", description: "", recruit_roles: ""
         };
 
         if (isEdit) {
@@ -1173,8 +1186,9 @@ console.log("現在のイベントデータ:", event);
             eventData.priority = evts.length + 1;
         }
 
-        // --- ★ここから追加：既存の「その他の項目」を配列化して入力欄を作る処理 ---
-        const defaultRoles = ["参加", "当番", "道具車", "審判"];
+        // --- ★やりたいこと3：マスタデータ（defaults）を使ってリストやボタンを作る ---
+        const defaultRoles = appDefaults.support; 
+        
         let currentRolesArr = eventData.recruit_roles ? eventData.recruit_roles.split(',').map(r => r.trim()) : [];
         let extraRolesArr = currentRolesArr.filter(r => r !== "" && !defaultRoles.includes(r));
         
@@ -1186,6 +1200,14 @@ console.log("現在のイベントデータ:", event);
                     <button type="button" onclick="this.parentElement.remove()" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding:0 12px; border-radius:8px; cursor:pointer; font-weight:bold;">×</button>
                 </div>
             `;
+        });
+
+        let tabOptionsHtml = appDefaults.tab.map(t => `<option value="${t}"></option>`).join('');
+        let placeOptionsHtml = appDefaults.place.map(p => `<option value="${p}"></option>`).join('');
+        
+        let checkboxesHtml = "";
+        defaultRoles.forEach(role => {
+            checkboxesHtml += createCheckboxHTML(role, eventData.recruit_roles);
         });
         // ----------------------------------------------------------------------
 
@@ -1209,10 +1231,7 @@ console.log("現在のイベントデータ:", event);
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">予定の種類 (タブ名) <span style="color:#ef4444">*</span></label>
                         <input type="text" id="newTabName" value="${eventData.tab_name}" list="tab-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
                         <datalist id="tab-defaults">
-                            <option value="練習"></option>
-                            <option value="練習（雨天時）"></option>
-                            <option value="練習試合"></option>
-                            <option value="試合"></option>
+                            ${tabOptionsHtml}
                         </datalist>
                     </div>
 
@@ -1220,8 +1239,7 @@ console.log("現在のイベントデータ:", event);
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">場所</label>
                         <input type="text" id="newLocation" value="${eventData.location}" list="location-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px;">
                         <datalist id="location-defaults">
-                            <option value="小学校"></option>
-                            <option value="本球場"></option>
+                            ${placeOptionsHtml}
                         </datalist>
                     </div>
 
@@ -1233,13 +1251,9 @@ console.log("現在のイベントデータ:", event);
                     <div style="margin-bottom: 24px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">募集項目 (チェックで追加)</label>
                         <div style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px;">
-                            ${createCheckboxHTML("参加", eventData.recruit_roles)}
-                            ${createCheckboxHTML("当番", eventData.recruit_roles)}
-                            ${createCheckboxHTML("道具車", eventData.recruit_roles)}
-                            ${createCheckboxHTML("審判", eventData.recruit_roles)}
+                            ${checkboxesHtml}
                         </div>
                         
-                        <!-- ★ここから変更：項目追加UI -->
                         <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
                             <label style="display: block; font-size: 12px; font-weight: bold; color:#475569; margin-bottom: 8px;">その他の項目</label>
                             <div id="customRolesContainer">
@@ -1259,7 +1273,6 @@ console.log("現在のイベントデータ:", event);
         `;
         document.getElementById('app').innerHTML = html;
     }
-    
     function createCheckboxHTML(role, currentRoles) {
         let isChecked = (currentRoles || "").includes(role) ? "checked" : "";
         return `<label style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px;"><input type="checkbox" class="role-check" value="${role}" ${isChecked}> ${role}</label>`;
@@ -1352,6 +1365,159 @@ console.log("現在のイベントデータ:", event);
             alert("通信エラーが発生しました。");
             renderScheduleManagerView();
         }
+    }
+    // ==========================================
+    // ⚙️ マスタデータ管理画面 (スケジュール画面丸パクリ)
+    // ==========================================
+    function renderDefaultManagerView(type = 'tab') {
+        currentDefaultType = type;
+        const typeLabels = { 'tab': '内容 (タブ)', 'place': '場所', 'support': '保護者協力' };
+        
+        let tabsHtml = Object.keys(typeLabels).map(tKey => {
+            const isActive = tKey === type;
+            return `<button onclick="renderDefaultManagerView('${tKey}')" style="flex:1; padding:10px; border:none; border-bottom:${isActive ? '3px solid #2563eb' : '3px solid transparent'}; background:transparent; font-weight:bold; color:${isActive ? '#2563eb' : '#64748b'};">${typeLabels[tKey]}</button>`;
+        }).join('');
+
+        const items = appDefaultsFull.filter(d => d.type === type);
+        let listHtml = "";
+
+        if (items.length === 0) {
+            listHtml = `<p style="text-align:center; color:#94a3b8; padding:20px;">登録されていません</p>`;
+        } else {
+            items.forEach((item, index) => {
+                listHtml += `
+                    <div class="default-drag-item" draggable="true" data-value="${item.value}" data-type="${item.type}" style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:8px; box-shadow:0 1px 3px rgba(0,0,0,0.05); cursor:grab;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="color:#cbd5e1;">☰</div>
+                            <div style="font-weight:bold;">${item.value}</div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button onclick="renderDefaultForm('${item.value}', '${item.type}')" style="padding:6px 12px; background:#f1f5f9; border:none; border-radius:6px; color:#475569; font-size:12px; font-weight:bold;">編集</button>
+                            <button onclick="deleteDefaultItem('${item.value}', '${item.type}')" style="padding:6px 12px; background:#fef2f2; border:none; border-radius:6px; color:#ef4444; font-size:12px; font-weight:bold;">削除</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        let html = `
+            <div class="header">
+                <button class="back-btn" onclick="renderListView()">戻る</button>
+                <span>⚙️ マスタデータ管理</span>
+            </div>
+            <div class="content" style="background:#f8fafc;">
+                <div style="display:flex; background:#fff; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                    ${tabsHtml}
+                </div>
+                
+                <div style="margin-bottom:16px;">
+                    <button onclick="renderDefaultForm('', '${type}')" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold;">➕ 新しい項目を追加</button>
+                </div>
+
+                <p style="font-size:12px; color:#64748b; margin-bottom:8px;">※「☰」をドラッグして表示順を変更できます</p>
+                <div id="default-sortable-list">
+                    ${listHtml}
+                </div>
+                
+                <button onclick="saveDefaultOrder()" style="width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:8px; font-weight:bold; margin-top:16px;">並び順を保存する</button>
+            </div>
+        `;
+        document.getElementById('app').innerHTML = html;
+
+        // ドラッグ＆ドロップのイベント設定
+        const listContainer = document.getElementById('default-sortable-list');
+        let dragSrcEl = null;
+
+        document.querySelectorAll('.default-drag-item').forEach(item => {
+            item.addEventListener('dragstart', function(e) {
+                dragSrcEl = this;
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', this.outerHTML);
+                this.style.opacity = '0.4';
+            });
+            item.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderTop = '2px solid #2563eb';
+            });
+            item.addEventListener('dragleave', function(e) {
+                this.style.borderTop = '1px solid #e2e8f0';
+            });
+            item.addEventListener('drop', function(e) {
+                e.stopPropagation();
+                this.style.borderTop = '1px solid #e2e8f0';
+                if (dragSrcEl !== this) {
+                    listContainer.insertBefore(dragSrcEl, this.nextSibling || this);
+                }
+                return false;
+            });
+            item.addEventListener('dragend', function(e) {
+                this.style.opacity = '1.0';
+                document.querySelectorAll('.default-drag-item').forEach(el => el.style.borderTop = '1px solid #e2e8f0');
+            });
+        });
+    }
+
+    // 追加・編集フォーム
+    function renderDefaultForm(oldValue, type) {
+        let isEdit = oldValue !== "";
+        let html = `
+            <div class="header">
+                <button class="back-btn" onclick="renderDefaultManagerView('${type}')">戻る</button>
+                <span>${isEdit ? '✏️ 編集' : '➕ 追加'}</span>
+            </div>
+            <div class="content" style="background:#f8fafc;">
+                <div style="background:#fff; padding:16px; border-radius:12px;">
+                    <label style="font-weight:bold; font-size:14px;">項目名</label>
+                    <input type="text" id="defNewValue" value="${oldValue}" style="width:100%; padding:10px; margin-top:8px; border:1px solid #cbd5e1; border-radius:8px;">
+                    <input type="hidden" id="defOldValue" value="${oldValue}">
+                    <input type="hidden" id="defType" value="${type}">
+                    
+                    <button onclick="submitDefaultForm()" style="width:100%; padding:14px; background:#2563eb; color:white; border:none; border-radius:8px; font-weight:bold; margin-top:24px;">保存する</button>
+                </div>
+            </div>
+        `;
+        document.getElementById('app').innerHTML = html;
+    }
+
+    // サーバーへの通信処理群
+    async function submitDefaultForm() {
+        const newValue = document.getElementById('defNewValue').value;
+        const oldValue = document.getElementById('defOldValue').value;
+        const type = document.getElementById('defType').value;
+        if(!newValue) return showToast("項目名を入力してください", "error");
+
+        showLoading("保存中...");
+        let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'save_default', old_value: oldValue, new_value: newValue, type: type }) });
+        let result = await res.json();
+        if (result.success) { showToast(result.message); await fetchSchedules(false); renderDefaultManagerView(type); } 
+        else { showToast(result.message, "error"); }
+    }
+
+    async function deleteDefaultItem(value, type) {
+        if(!confirm(`「${value}」を削除しますか？\n※既に登録されているスケジュール等からは消えませんが、選択肢からは消えます。`)) return;
+        showLoading("削除中...");
+        let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_default', value: value, type: type }) });
+        let result = await res.json();
+        if (result.success) { showToast(result.message); await fetchSchedules(false); renderDefaultManagerView(type); } 
+        else { showToast(result.message, "error"); }
+    }
+
+    async function saveDefaultOrder() {
+        const items = document.querySelectorAll('.default-drag-item');
+        let updates = [];
+        items.forEach((item, index) => {
+            updates.push({
+                value: item.getAttribute('data-value'),
+                type: item.getAttribute('data-type'),
+                order: index + 1 // 表示順を上から1, 2, 3...と設定
+            });
+        });
+
+        showLoading("順序を保存中...");
+        let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_default_priorities', updates: updates }) });
+        let result = await res.json();
+        if (result.success) { showToast(result.message); await fetchSchedules(false); renderDefaultManagerView(currentDefaultType); } 
+        else { showToast(result.message, "error"); }
     }
 </script>
 </body>
