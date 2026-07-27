@@ -455,7 +455,18 @@
             renderLoginView(); 
         }
     }
-
+    // 日付文字列を受け取り、現在から48時間(2日)以内かどうかを判定する
+    function isNewUpdate(updateStr) {
+        if (!updateStr) return false;
+        const updateDate = new Date(updateStr);
+        if (isNaN(updateDate.getTime())) return false; // 無効なデータはスキップ
+        
+        const now = new Date();
+        const diffTime = now - updateDate; // 現在時刻との差（ミリ秒）
+        const diffDays = diffTime / (1000 * 60 * 60 * 24); // 日数に変換
+        
+        return diffDays >= 0 && diffDays <= 2; // 2日以内ならtrue
+    }
     async function fetchSchedules(isInitial = true) {
         if (isInitial) { showLoading("予定を読み込み中..."); }
         try {
@@ -502,27 +513,44 @@
             <div class="content">
                 <div class="month-selector"><span class="arrow">◀</span><span class="month-title">今月の予定</span><span class="arrow">▶</span></div>
         `;
+        
         const sortedDates = Object.keys(groupedSchedules).sort();
-        if (sortedDates.length === 0) { html += `<p style="text-align:center; color:#94a3b8; margin-top:40px;">登録されている予定はありません</p>`; } 
-        else {
+        
+        if (sortedDates.length === 0) { 
+            html += `<p style="text-align:center; color:#94a3b8; margin-top:40px;">登録されている予定はありません</p>`; 
+        } else {
             sortedDates.forEach(date => {
-                const events = groupedSchedules[date]; const mainEvent = events[0];
-                const d = new Date(date); const dayStr = `${d.getMonth() + 1}/${d.getDate()}`;
-                const weekDays = ["日", "月", "火", "水", "木", "金", "土"]; const weekStr = `(${weekDays[d.getDay()]})`;
+                const events = groupedSchedules[date]; 
+                const mainEvent = events[0];
+                const d = new Date(date); 
+                const dayStr = `${d.getMonth() + 1}/${d.getDate()}`;
+                const weekDays = ["日", "月", "火", "水", "木", "金", "土"]; 
+                const weekStr = `(${weekDays[d.getDay()]})`;
+                
                 let badgeClass = mainEvent.status === '確定' ? 'status-confirmed' : 'status-recruiting';
                 let statusText = mainEvent.status === '確定' ? '確定！' : '要協力';
+                
                 const eventCountBadge = events.length > 1 ? `<span style="font-size:11px; background:#e2e8f0; color:#475569; padding:2px 6px; border-radius:6px; margin-left:6px;">他${events.length - 1}件</span>` : '';
+
+                // ★ 追加：その日の予定(events)の中に、1つでも2日以内更新のものがあるかチェック！
+                const hasNewUpdate = events.some(event => isNewUpdate(event.update));
+                
+                // ★ 追加：あればNewバッジのHTMLを作成
+                const newBadgeHtml = hasNewUpdate ? `<span style="background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:10px; margin-left:8px; font-weight:bold; vertical-align:middle; box-shadow:0 2px 4px rgba(239, 68, 68, 0.3);">New!</span>` : '';
+
+                // ★ 修正：date-textの中に newBadgeHtml を差し込む
                 html += `
                     <div class="date-card" onclick="goToDetail('${date}')">
-                        <span class="date-text">${dayStr} ${weekStr} ${mainEvent.tab_name}${eventCountBadge}</span>
+                        <span class="date-text">${dayStr} ${weekStr} ${mainEvent.tab_name}${eventCountBadge} ${newBadgeHtml}</span>
                         <span class="status-badge ${badgeClass}">${statusText}</span>
                     </div>
                 `;
             });
         }
-        html += `</div>`; document.getElementById('app').innerHTML = html;
+        
+        html += `</div>`; 
+        document.getElementById('app').innerHTML = html;
     }
-
     function goToDetail(date) { currentActiveTabIndex = 0; renderDetailView(date); }
 
     function renderListViewInstant() {
@@ -531,8 +559,10 @@
     }
 
     function renderDetailView(date) {
-        currentActiveDate = date; const events = groupedSchedules[date];
-        const d = new Date(date); const titleStr = `${d.getMonth() + 1}月${d.getDate()}日の詳細`;
+        currentActiveDate = date; 
+        const events = groupedSchedules[date];
+        const d = new Date(date); 
+        const titleStr = `${d.getMonth() + 1}月${d.getDate()}日の詳細`;
         const childrenList = getChildrenList();
 
         let html = `
@@ -540,13 +570,17 @@
             <div class="content" style="display: flex; flex-direction: column;">
                 <div class="tab-container">
         `;
+        
+        // ★ 変更：タブに「New」バッジをつける
         events.forEach((event, index) => {
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
-            html += `<div class="tab ${activeClass}" id="tab-${index}" onclick="switchTab(${index}, ${events.length})">${event.tab_name}</div>`;
+            // 2日以内の更新があればNewバッジHTMLを作成
+            const newBadge = isNewUpdate(event.update) ? `<span style="background:#ef4444; color:white; font-size:9px; padding:2px 4px; border-radius:4px; margin-left:4px; vertical-align:middle; font-weight:bold;">New</span>` : '';
+            html += `<div class="tab ${activeClass}" id="tab-${index}" onclick="switchTab(${index}, ${events.length})">${event.tab_name}${newBadge}</div>`;
         });
-        html += `</div><div class="tab-content-box">`;
         
-        let myResponsePanelsHtml = ""; // ★我が家の回答部分を別で保持するための変数
+        html += `</div><div class="tab-content-box">`;
+        let myResponsePanelsHtml = ""; 
 
         events.forEach((event, index) => {
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
@@ -570,16 +604,23 @@
                 childrenStatusRowsHtml = `<div class="summary-row"><span style="color:#94a3b8;">子供の情報がありません</span></div>`;
             }
 
-            // ★詳細タブ（tab-panel）の中からは「我が家の回答」を削除
+            // ★ 変更：更新日と更新者のテキストを作成
+            const updateTime = event.update ? new Date(event.update).toLocaleString('ja-JP', {month:'numeric', day:'numeric', hour:'numeric', minute:'numeric'}) : '日時不明';
+            const updaterName = event.updater ? `by ${event.updater}` : '';
+
             html += `
                 <div class="tab-panel ${activeClass}" id="tab-panel-${index}">
                     <div class="detail-item"><div class="detail-value" style="font-size: 19px; font-weight: 800; color:#1e3b8a; margin-bottom:10px;">${event.tab_name}</div></div>
                     <div class="detail-item"><div class="detail-label">📍 場所</div><div class="detail-value" style="font-weight:600;">${event.location || '未定'}</div></div>
                     <div class="detail-item"><div class="detail-label">📝 スケジュール・連絡</div><div class="detail-value" style="color:#475569; font-size:14.5px;">${event.description || '詳細なし'}</div></div>
+                    
+                    <!-- ⬇️ ここに最終更新情報を追加 -->
+                    <div style="margin-top: 24px; text-align: right; font-size: 11px; color: #94a3b8; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
+                        🔄 最終更新: ${updateTime} ${updaterName}
+                    </div>
                 </div>
             `;
 
-            // ★タブに連動して切り替わるように、専用のパネルを作成
             myResponsePanelsHtml += `
                 <div class="my-response-panel" id="my-response-panel-${index}" style="display: ${activeClass ? 'block' : 'none'}; width: 100%;">
                     <div class="summary-status-bar" style="margin-top: 0; margin-bottom: 12px;">
@@ -595,7 +636,6 @@
         });
         html += `</div>`;
 
-        // ★下部固定エリア（bottom-action-bar）の中に「我が家の回答」と「回答ボタン」を縦に並べる
         html += `
             <div class="bottom-action-bar" style="flex-direction: column;">
                 ${myResponsePanelsHtml}
@@ -607,7 +647,6 @@
         `;
         html += `</div>`; document.getElementById('app').innerHTML = html;
     }
-
     function switchTab(activeIndex, totalTabs) {
         currentActiveTabIndex = activeIndex;
         for (let i = 0; i < totalTabs; i++) {
