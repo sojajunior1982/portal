@@ -419,7 +419,7 @@
             const myAttsForThisEvent = myAttendances.filter(a => String(a.schedule_id) === String(event.schedule_id));
             const parentAns = myAttsForThisEvent.find(a => a.type === '保護者');
             
-            let parentStatusText = "不参加 (未回答)";
+            let parentStatusText = "[未回答]";
             if (parentAns) {
                 let parsed = parseRolesWithStatus(parentAns.response);
                 parentStatusText = parsed.length > 0 ? parsed.map(p => p.role).join(', ') : "不参加";
@@ -429,7 +429,7 @@
             if (childrenList.length > 0) {
                 childrenList.forEach(childName => {
                     const childAns = myAttsForThisEvent.find(a => a.type === '子供' && a.name === childName);
-                    const childStatusText = childAns ? childAns.response : "出席 (未回答)";
+                    const childStatusText = childAns ? childAns.response : "[未回答]";
                     childrenStatusRowsHtml += `
                         <div class="summary-row">
                             <span style="color:#64748b;">子供 (${childName}):</span>
