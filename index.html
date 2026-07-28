@@ -611,6 +611,20 @@ function showLoading(msg) {
     <div class="header"><span>総社ジュニアポータル</span></div>
     <div class="content"><div class="loading"><div class="spinner"></div><div>${msg}</div></div></div>`;
 }
+async function postAction(payload) {
+    const res = await fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+
+    if (!result.success) {
+        throw new Error(result.message || "通信エラー");
+    }
+
+    return result;
+}
 function groupSchedulesByDate() {
     groupedSchedules = {};
     rawSchedules.forEach(item => {
@@ -1546,8 +1560,7 @@ async function submitScheduleForm() {
     };
     showLoading("スケジュールを保存中...");
     try {
-        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-        const result = await res.json();
+        const result = await postAction(payload);
         if (result.success) {
             showToast("保存完了！");
             await fetchSchedules(false);
@@ -1565,8 +1578,10 @@ async function deleteSchedule(scheduleId) {
     if (!confirm("本当にこの予定を削除しますか？")) return;
     showLoading("削除中...");
     try {
-        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_schedule', schedule_id: scheduleId }) });
-        const result = await res.json();
+        const result = await postAction({
+    action: 'delete_schedule',
+    schedule_id: scheduleId
+});
         if (result.success) {
             showToast("削除しました");
             await fetchSchedules(false);
