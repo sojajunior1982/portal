@@ -7,11 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sojajunior1982/portal/main/logo_01.png">
   <!-- SortableJS for robust drag & drop -->
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-
-  
-  
   <script>const GAS_URL = "https://script.google.com/macros/s/AKfycbz2c7_4BqzbAcnj90yWS-e5iJ7ZMCtNbzuaQztCKTuRzd30tcT0eIFjBvymUI_t2LecQw/exec";</script>
 
   <style>
@@ -962,7 +957,104 @@
     // Navigation helper
     // ------------------------
     function navigateMenu(target){ toggleSideMenu(); if(target==='schedule') renderListView(); else if(target==='manageSchedule') renderScheduleManagerView(); else if(target==='confirmRoles') renderConfirmRolesListView(); else if(target==='documents') alert('各種資料ページは現在準備中です'); else if(target==='admin') renderAdminMenu(); }
+    function enableNativeDnD(containerId, itemSelector, getIdFromItem, onUpdate) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
 
+      let dragId = null;
+
+      function setupItem(item) {
+        item.draggable = true;
+        item.addEventListener('dragstart', (e) => {
+          dragId = getIdFromItem(item);
+          e.dataTransfer.effectAllowed = 'move';
+          try { e.dataTransfer.setData('text/plain', dragId); } catch (err) { /* some mobile browsers */ }
+          item.classList.add('dragging');
+        });
+
+        item.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          const rect = item.getBoundingClientRect();
+          const midY = rect.top + rect.height / 2;
+          if (e.clientY > midY) {
+            item.style.borderBottom = '3px dashed #ccc';
+            item.style.borderTop = '';
+          } else {
+            item.style.borderTop = '3px dashed #ccc';
+            item.style.borderBottom = '';
+          }
+        });
+
+        item.addEventListener('dragleave', () => {
+          item.style.borderTop = item.style.borderBottom = '';
+        });
+
+        item.addEventListener('drop', async (e) => {
+          e.preventDefault();
+          item.style.borderTop = item.style.borderBottom = '';
+          const draggedId = dragId || (e.dataTransfer && e.dataTransfer.getData && e.dataTransfer.getData('text/plain'));
+          if (!draggedId) return;
+          if (draggedId === getIdFromItem(item)) return; // dropped on itself
+
+          const draggedEl = Array.from(container.querySelectorAll(itemSelector)).find(el => getIdFromItem(el) === draggedId);
+          if (!draggedEl) return;
+
+          // decide insert position based on pointer
+          const rect = item.getBoundingClientRect();
+          const after = (e.clientY > rect.top + rect.height / 2);
+          if (after && item.nextSibling) container.insertBefore(draggedEl, item.nextSibling);
+          else container.insertBefore(draggedEl, item);
+
+          // rebuild ordered ids and call onUpdate
+          const ordered = Array.from(container.querySelectorAll(itemSelector)).map(el => getIdFromItem(el));
+          if (typeof onUpdate === 'function') {
+            try { await onUpdate(ordered); } catch (err) { console.error('onUpdate error', err); }
+          }
+        });
+
+        item.addEventListener('dragend', () => {
+          item.classList.remove('dragging');
+          container.querySelectorAll(itemSelector).forEach(i => { i.style.borderTop = i.style.borderBottom = ''; });
+          dragId = null;
+        });
+      }
+
+      // attach to existing items
+      Array.from(container.querySelectorAll(itemSelector)).forEach(setupItem);
+
+      // observe future mutations (if list re-rendered)
+      const obs = new MutationObserver(() => {
+        Array.from(container.querySelectorAll(itemSelector)).forEach(el => {
+          if (!el._dnd_initialized) { setupItem(el); el._dnd_initialized = true; }
+        });
+      });
+      obs.observe(container, { childList: true, subtree: false });
+      // return a disposer
+      return () => { obs.disconnect(); };
+    }
+
+    // Example usage for schedule list (call after renderScheduleListForDate)
+    function initScheduleDnD(dateStr) {
+      enableNativeDnD('draggableScheduleList', '.draggable-item', el => el.dataset.id, async (orderedIds) => {
+        // orderedIds is array of schedule_id in new order
+        const updates = orderedIds.map((id, idx) => ({ schedule_id: id, priority: (idx + 1) * 10 }));
+        await apiPost({ action: 'update_priorities', updates });
+        // optional: refresh
+        await fetchSchedules(false);
+        renderScheduleListForDate(dateStr);
+      });
+    }
+
+    // Example usage for defaults list (call after renderDefaultManagerView)
+    function initDefaultsDnD(type) {
+      enableNativeDnD('defaultsList', '.default-item', el => el.dataset.value, async (orderedValues) => {
+        const updates = orderedValues.map((val, idx) => ({ value: val, type: type, order: (idx + 1) * 10 }));
+        await apiPost({ action: 'update_default_priorities', updates });
+        await fetchSchedules(false);
+        renderDefaultManagerView(type);
+      });
+    }
   </script>
 </body>
 </html>
