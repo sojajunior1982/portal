@@ -90,6 +90,16 @@
 
     .draggable-hint{font-size:12px;color:#64748b;margin-bottom:8px;}
     .help-box{font-size:12px;color:#64748b;background:#fff;padding:8px;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:12px;}
+
+/* 強制：通知モーダルとサイドメニューを初期で閉じる（緊急対策） */
+#notiModal, .noti-modal, #responseModal, .modal-overlay { display: none !important; }
+#allResponseModal, .all-res-overlay { display: none !important; }
+#sideMenu { left: -320px !important; transition: left 0.2s ease !important; }
+#sideMenuOverlay { display: none !important; }
+
+
+
+    
   </style>
 </head>
 <body>
@@ -1078,6 +1088,46 @@
             console.warn('error handler failed', e);
         }
     });
+
+
+
+
+
+    
+// --- 緊急：UIを強制初期化する関数 ---
+function forceHideUI() {
+  try {
+    // 通知系モーダルを隠す
+    const noti = document.getElementById('notiModal') || document.querySelector('.noti-modal');
+    if (noti) noti.style.display = 'none';
+    const responseModal = document.getElementById('responseModal');
+    if (responseModal) responseModal.style.display = 'none';
+    const allRes = document.getElementById('allResponseModal');
+    if (allRes) allRes.style.display = 'none';
+
+    // サイドメニューを閉じる
+    const menu = document.getElementById('sideMenu');
+    const overlay = document.getElementById('sideMenuOverlay');
+    if (menu) menu.style.left = '-320px';
+    if (overlay) overlay.style.display = 'none';
+
+    // notiバッジは残す（必要に応じて変更）
+    const badge = document.querySelector('.bell-icon .badge');
+    if (badge) badge.style.display = (badge.innerText && Number(badge.innerText) > 0) ? 'inline-block' : 'none';
+  } catch (e) {
+    console.warn('forceHideUI error', e);
+  }
+}
+
+// DOM読み込み後／エラー時に必ず実行（強制）
+document.addEventListener('DOMContentLoaded', () => { setTimeout(forceHideUI, 50); });
+window.addEventListener('load', () => { setTimeout(forceHideUI, 100); });
+window.addEventListener('error', () => { setTimeout(forceHideUI, 50); });
+
+
+
+
+    
   </script>
 </body>
 </html>
