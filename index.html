@@ -117,6 +117,15 @@
         /* 確定トグルスイッチ風ボタン */
         .confirm-toggle-btn { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid #cbd5e1; background: #f1f5f9; color: #64748b; font-weight: bold; cursor: pointer; }
         .confirm-toggle-btn.is-confirmed { background: #ecfdf5; border-color: #10b981; color: #047857; }
+
+        /* 通知ベルとバッジ */
+        .bell-icon { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 20px; cursor: pointer; color: white; }
+        .badge { position: absolute; top: -4px; right: -6px; background: #ef4444; color: white; font-size: 10px; font-weight: bold; padding: 2px 5px; border-radius: 10px; border: 2px solid #1d4ed8; }
+        .noti-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:200; justify-content:center; align-items:center; padding:16px; }
+        .noti-content { background:#fff; width:100%; max-width:340px; border-radius:16px; padding:20px; max-height:70dvh; overflow-y:auto; position:relative; }
+        .noti-item { border-bottom: 1px solid #e2e8f0; padding: 10px 0; font-size: 13px; line-height: 1.5; color: #334155; }
+        .noti-item:last-child { border-bottom: none; }
+        .noti-date { font-size: 11px; color: #94a3b8; font-weight: bold; margin-bottom: 2px; }
     </style>
 </head>
 <body>
@@ -146,11 +155,13 @@
             管理者用
         </a>
     </div>
+    
+    <!-- ★ここが新しいログアウト＆閉じるボタンのブロック★ -->
     <div style="padding: 16px; border-top: 1px solid #e2e8f0; text-align: center;">
-        <button onclick="toggleSideMenu()" style="background: #f1f5f9; border: none; padding: 8px 16px; border-radius: 4px; color: #64748b; font-size: 14px; width: 100%; cursor: pointer;">メニューを閉じる</button>
+        <button onclick="handleLogout()" style="background: #fee2e2; border: 1px solid #fca5a5; padding: 10px 16px; border-radius: 8px; color: #b91c1c; font-size: 14px; width: 100%; cursor: pointer; font-weight:bold; margin-bottom:10px;">ログアウト</button>
+        <button onclick="toggleSideMenu()" style="background: #f1f5f9; border: none; padding: 10px 16px; border-radius: 8px; color: #64748b; font-size: 14px; width: 100%; cursor: pointer;">メニューを閉じる</button>
     </div>
 </div>
-
 <div class="modal-overlay" id="responseModal">
     <div class="modal" id="modalContent"></div>
 </div>
@@ -345,52 +356,123 @@
     }
 
     function renderListView() {
-        currentActiveDate = null;
-        let html = `
-            <div class="header">
-                <button class="menu-btn" onclick="toggleSideMenu()">☰</button>
-                <span style="margin-left: 24px;">📅 スケジュール</span>
-                <button class="logout-btn" onclick="handleLogout()">ログアウト</button>
-            </div>
-            <div class="content">
-                <div class="month-selector"><span class="arrow">◀</span><span class="month-title">今月の予定</span><span class="arrow">▶</span></div>
-        `;
-        
-        const sortedDates = Object.keys(groupedSchedules).sort();
-        if (sortedDates.length === 0) { 
-            html += `<p style="text-align:center; color:#94a3b8; margin-top:40px;">登録されている予定はありません</p>`; 
-        } else {
-            sortedDates.forEach(date => {
-                const events = groupedSchedules[date]; 
-                const mainEvent = events[0];
-                const d = new Date(date); 
-                const dayStr = `${d.getMonth() + 1}/${d.getDate()}`;
-                const weekDays = ["日", "月", "火", "水", "木", "金", "土"]; 
-                const weekStr = `(${weekDays[d.getDay()]})`;
-                
-                // 動的募集状態チェック
-                let isRecruiting = events.some(ev => hasRecruitingRoles(ev));
-                let badgeHtml = isRecruiting ? `<span class="status-badge status-recruiting">募集項目あり</span>` : '';
-                
-                const eventCountBadge = events.length > 1 ? `<span style="font-size:11px; background:#e2e8f0; color:#475569; padding:2px 6px; border-radius:6px; margin-left:6px;">他${events.length - 1}件</span>` : '';
-                const hasNewUpdate = events.some(event => isNewUpdate(event.update));
-                const newBadgeHtml = hasNewUpdate ? `<span style="background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:10px; margin-left:8px; font-weight:bold; vertical-align:middle;">New!</span>` : '';
+    currentActiveDate = null;
+    let notiList = generateNotifications(); // 通知リスト生成
+    
+    // ★ 追加: スマホの記憶から未読数を計算
+    let unreadCount = getUnreadCount(notiList);
+    let badgeHtml = unreadCount > 0 ? `<span class="badge">${unreadCount}</span>` : '';
 
-                html += `
-                    <div class="date-card" onclick="goToDetail('${date}')">
-                        <span class="date-text">${dayStr} ${weekStr} ${mainEvent.tab_name}${eventCountBadge} ${newBadgeHtml}</span>
-                        ${badgeHtml}
-                    </div>
-                `;
-            });
-        }
-        
-        html += `</div>`; 
-        document.getElementById('app').innerHTML = html;
+    let html = `
+        <div class="header">
+            <button class="menu-btn" onclick="toggleSideMenu()">☰</button>
+            <span style="margin-left: 24px;">📅 スケジュール</span>
+            <div class="bell-icon" onclick="openNotifications()">🔔${badgeHtml}</div>
+        </div>
+        <div class="content">
+            <div class="month-selector"><span class="arrow">◀</span><span class="month-title">今月の予定</span><span class="arrow">▶</span></div>
+    `;
+    
+    const sortedDates = Object.keys(groupedSchedules).sort();
+    if (sortedDates.length === 0) { 
+        html += `<p style="text-align:center; color:#94a3b8; margin-top:40px;">登録されている予定はありません</p>`; 
+    } else {
+        sortedDates.forEach(date => {
+            const events = groupedSchedules[date]; 
+            const mainEvent = events[0];
+            const d = new Date(date); 
+            const dayStr = `${d.getMonth() + 1}/${d.getDate()}`;
+            const weekDays = ["日", "月", "火", "水", "木", "金", "土"]; 
+            const weekStr = `(${weekDays[d.getDay()]})`;
+            
+            let isRecruiting = events.some(ev => hasRecruitingRoles(ev));
+            let recruitingBadge = isRecruiting ? `<span class="status-badge status-recruiting">募集項目あり</span>` : '';
+            
+            const eventCountBadge = events.length > 1 ? `<span style="font-size:11px; background:#e2e8f0; color:#475569; padding:2px 6px; border-radius:6px; margin-left:6px;">他${events.length - 1}件</span>` : '';
+            const hasNewUpdate = events.some(event => isNewUpdate(event.update));
+            const newBadgeHtml = hasNewUpdate ? `<span style="background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:10px; margin-left:8px; font-weight:bold; vertical-align:middle;">New!</span>` : '';
+
+            html += `
+                <div class="date-card" onclick="goToDetail('${date}')">
+                    <span class="date-text">${dayStr} ${weekStr} ${mainEvent.tab_name}${eventCountBadge} ${newBadgeHtml}</span>
+                    ${recruitingBadge}
+                </div>
+            `;
+        });
     }
+    
+    html += `</div>`; 
+    // 通知モーダルHTML追加
+    html += `
+        <div class="noti-modal" id="notiModal" onclick="closeNotifications(event)">
+            <div class="noti-content" onclick="event.stopPropagation()">
+                <div style="font-size:16px; font-weight:bold; color:#1e3a8a; margin-bottom:12px; border-bottom:2px solid #e2e8f0; padding-bottom:8px;">🔔 新着通知</div>
+                <div id="notiListArea">
+                    ${notiList.length > 0 ? notiList.map(n => `<div class="noti-item"><div class="noti-date">${n.date}</div>${n.msg}</div>`).join('') : '<p style="color:#94a3b8; font-size:13px; text-align:center;">新着通知はありません</p>'}
+                </div>
+                <button onclick="closeNotifications()" style="width:100%; margin-top:16px; padding:10px; background:#f1f5f9; color:#475569; border:none; border-radius:8px; font-weight:bold;">閉じる</button>
+            </div>
+        </div>
+    `;
+    document.getElementById('app').innerHTML = html;
+}
+// 通知生成ロジック
+function generateNotifications() {
+    let notifications = [];
+    const now = new Date();
+    
+    // スケジュール全体の更新をチェック (過去3日以内)
+    rawSchedules.forEach(ev => {
+        if (!ev.update) return;
+        const upd = new Date(ev.update);
+        const diffDays = (now - upd) / (1000 * 60 * 60 * 24);
+        if (diffDays <= 3 && diffDays >= 0) {
+            let mStr = `${upd.getMonth()+1}月${upd.getDate()}日`;
+            notifications.push({ time: upd.getTime(), date: mStr, msg: `「${ev.tab_name}」の予定が追加・更新されました。` });
+        }
+    });
 
+    // 自分の未回答（個人通知）
+    rawSchedules.forEach(ev => {
+        let roles = ev.recruit_roles ? ev.recruit_roles.split(',').filter(r=>r) : [];
+        if (roles.length > 0) {
+            const parentAns = myAttendances.find(a => String(a.schedule_id) === String(ev.schedule_id) && a.type === '保護者');
+            if (!parentAns) {
+                let d = new Date(ev.date);
+                notifications.push({ time: now.getTime(), date: `${d.getMonth()+1}月${d.getDate()}日分`, msg: `【個人】「${ev.tab_name}」の協力パパママが募集中です。ご協力お願いします！` });
+            }
+        }
+    });
+
+    // ソート（新しい順）
+    notifications.sort((a,b) => b.time - a.time);
+    return notifications;
+}
+    function getUnreadCount(notifications) {
+    // 過去にベルを開いた時間（なければ0）を取得
+    const lastReadTime = Number(localStorage.getItem('lastReadTime')) || 0;
+    // 最終確認時間より「後に作られた通知」だけをカウント
+    return notifications.filter(n => n.time > lastReadTime).length;
+}
+    function openNotifications() { 
+    document.getElementById('notiModal').style.display = 'flex'; 
+    
+    // ★ 追加: ベルを開いた瞬間の時間をスマホに記憶させる
+    localStorage.setItem('lastReadTime', new Date().getTime());
+    
+    // ★ 追加: 画面上の赤いバッジをその場で非表示にする
+    const badge = document.querySelector('.bell-icon .badge');
+    if (badge) {
+        badge.style.display = 'none';
+    }
+}
     function goToDetail(date) { currentActiveTabIndex = 0; renderDetailView(date); }
     function renderListViewInstant() { currentActiveDate = null; renderListView(); }
+
+    function closeNotifications(e) { 
+    // 背景クリック時または閉じるボタン用
+    document.getElementById('notiModal').style.display = 'none'; 
+}
 
     function renderDetailView(date) {
         currentActiveDate = date; 
@@ -751,7 +833,11 @@
                 assigned.sort((a, b) => b.status - a.status || a.name.localeCompare(b.name, 'ja'));
 
                 let isConfirmedRole = assigned.some(a => a.status === 1);
-                if (!isConfirmedRole) recruitingRolesList.push(role);
+                
+                // ★ 改善4: 確定後は確定者のみを表示。人数の表示も消す。
+                if (isConfirmedRole) {
+                    assigned = assigned.filter(a => a.status === 1);
+                }
 
                 let namesStr = assigned.length > 0 ? assigned.map(a => {
                     let baseStr = `${a.status === 1 ? '🌞 ' : ''}${a.name}`;
@@ -761,11 +847,15 @@
                     }
                     return baseStr;
                 }).join('<br>') : '<span style="color:#94a3b8; font-size:12px;">なし</span>';
+                
                 let statusBadge = isConfirmedRole ? `<span style="color:#059669; font-size:11px; margin-left:6px; font-weight:bold;">[🌞確定]</span>` : `<span style="color:#d97706; font-size:11px; margin-left:6px; font-weight:bold;">[募集中]</span>`;
+                
+                // ★ 人数カウント ( ${assigned.length}名 ) を非表示にする
+                let roleTitle = isConfirmedRole ? `✔️ ${role} ${statusBadge}` : `✔️ ${role} (${assigned.length}名) ${statusBadge}`;
 
                 parentsHtml += `
                     <div class="role-block">
-                        <div class="role-name">✔️ ${role} (${assigned.length}名) ${statusBadge}</div>
+                        <div class="role-name">${roleTitle}</div>
                         <div style="padding-left:8px;">${namesStr}</div>
                     </div>`;
             });
@@ -1089,66 +1179,71 @@
     }
 
     function renderScheduleListForDate(dateStr) {
-        const listArea = document.getElementById('manageListArea');
-        if (!dateStr) { listArea.innerHTML = ""; return; }
+    const listArea = document.getElementById('manageListArea');
+    if (!dateStr) { listArea.innerHTML = ""; return; }
 
-        const evts = groupedSchedules[dateStr] || [];
-        evts.sort((a,b) => a.priority - b.priority); 
+    const evts = groupedSchedules[dateStr] || [];
+    evts.sort((a,b) => a.priority - b.priority); 
 
-        let html = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-                <div style="font-weight:bold; color:#1e293b; font-size: 15px;">登録済みの予定</div>
-                <button onclick="renderScheduleForm('${dateStr}', null)" style="background:#2563eb; color:white; padding:8px 12px; border:none; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">➕ 新規追加</button>
-            </div>
-        `;
+    let html = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+            <span style="font-weight:bold; color:#334155;">同日の予定 (${evts.length}件)</span>
+            <button onclick="editSchedule('${dateStr}', null)" style="background:#2563eb; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; font-size:12px;">＋ 新規追加</button>
+        </div>
+    `;
 
-        if(evts.length === 0) {
-            html += `<div style="padding:20px; text-align:center; color:#64748b; background:#fff; border-radius:12px; border:1px dashed #cbd5e1; font-size: 13px;">この日の予定はありません。<br>右上のボタンから追加してください。</div>`;
-        } else {
-            evts.forEach((ev, index) => {
-                html += `
-                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                    <div style="display:flex; flex-direction:column; gap:4px; margin-right: 12px;">
-                        <button onclick="moveSchedulePriority('${dateStr}', ${index}, 'up')" style="background:#f1f5f9; border:none; padding:6px 12px; border-radius:6px; color:#475569; font-size:12px; cursor:pointer;" ${index === 0 ? 'disabled style="opacity:0.3;"' : ''}>▲</button>
-                        <button onclick="moveSchedulePriority('${dateStr}', ${index}, 'down')" style="background:#f1f5f9; border:none; padding:6px 12px; border-radius:6px; color:#475569; font-size:12px; cursor:pointer;" ${index === evts.length - 1 ? 'disabled style="opacity:0.3;"' : ''}>▼</button>
+    if (evts.length === 0) {
+        html += `<div style="text-align:center; padding:20px; color:#94a3b8; font-size:13px; background:#fff; border-radius:12px;">この日の予定はありません</div>`;
+    } else {
+        html += `<div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden;">`;
+        evts.forEach((e, idx) => {
+            html += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #f1f5f9;">
+                    <div style="flex:1;">
+                        <div style="font-weight:bold; font-size:14px; color:#1e3a8a;">${e.tab_name}</div>
+                        <div style="font-size:11px; color:#64748b; margin-top:2px;">📍 ${e.location || '未定'}</div>
                     </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight:800; font-size:15px; color:#1e3a8a; margin-top:2px;">${ev.tab_name}</div>
-                        <div style="font-size:11px; color:#64748b; font-weight:bold;">表示優先度: ${ev.priority}</div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <button onclick="moveSchedulePriority('${dateStr}', ${idx}, -1)" ${idx === 0 ? 'disabled' : ''} style="background:#f1f5f9; border:none; border-radius:4px; padding:2px 8px; cursor:pointer;">▲</button>
+                            <button onclick="moveSchedulePriority('${dateStr}', ${idx}, 1)" ${idx === evts.length - 1 ? 'disabled' : ''} style="background:#f1f5f9; border:none; border-radius:4px; padding:2px 8px; cursor:pointer;">▼</button>
+                        </div>
+                        <button onclick="editSchedule('${dateStr}', '${e.schedule_id}')" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer;">編集</button>
                     </div>
-                    <div style="display:flex; gap:8px;">
-                        <button onclick="renderScheduleForm('${dateStr}', '${ev.schedule_id}')" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">編集</button>
-                        <button onclick="deleteSchedule('${ev.schedule_id}')" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer;">削除</button>
-                    </div>
-                </div>`;
-            });
-        }
-        listArea.innerHTML = html;
-    }
-
-    async function moveSchedulePriority(dateStr, index, direction) {
-        const evts = groupedSchedules[dateStr];
-        if (!evts || evts.length < 2) return;
-
-        if (direction === 'up' && index > 0) {
-            const temp = evts[index]; evts[index] = evts[index - 1]; evts[index - 1] = temp;
-        } else if (direction === 'down' && index < evts.length - 1) {
-            const temp = evts[index]; evts[index] = evts[index + 1]; evts[index + 1] = temp;
-        } else return;
-
-        const updates = [];
-        evts.forEach((ev, i) => {
-            ev.priority = i + 1;
-            updates.push({ schedule_id: ev.schedule_id, priority: ev.priority });
+                </div>
+            `;
         });
-
-        renderScheduleListForDate(dateStr);
-        try {
-            await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_priorities', updates: updates }) });
-            await fetchSchedules(false);
-        } catch (e) { console.error("優先順位保存エラー", e); }
+        html += `</div>`;
     }
+    listArea.innerHTML = html;
+}
 
+// 予定の優先順位（表示順）を入れ替える関数
+async function moveSchedulePriority(dateStr, index, direction) {
+    const evts = groupedSchedules[dateStr];
+    if (!evts || index < 0 || index >= evts.length) return;
+    const targetIdx = index + direction;
+    if (targetIdx < 0 || targetIdx >= evts.length) return;
+
+    // 配列内で入れ替え
+    const temp = evts[index];
+    evts[index] = evts[targetIdx];
+    evts[targetIdx] = temp;
+
+    // 新しい priority を設定 (10刻み等)
+    let updates = [];
+    evts.forEach((e, i) => {
+        e.priority = (i + 1) * 10;
+        updates.push({ schedule_id: e.schedule_id, priority: e.priority });
+    });
+
+    // 画面を即時更新
+    renderScheduleListForDate(dateStr);
+
+    try {
+        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_priorities', updates: updates }) });
+    } catch(e) { console.error("優先順位の保存に失敗"); }
+}
     function renderScheduleForm(dateStr, scheduleId = null) {
         let isEdit = scheduleId !== null;
         let eventData = { schedule_id: "", date: dateStr, tab_name: "", priority: 1, location: "", description: "", recruit_roles: "" };
@@ -1305,40 +1400,105 @@
 
     // マスタ管理画面
     function renderDefaultManagerView(type = 'tab') {
-        currentDefaultType = type;
-        const typeLabels = { 'tab': '内容 (タブ)', 'place': '場所', 'support': '保護者協力', 'area': 'エリア' }; // ★areaを追加
-        let tabsHtml = Object.keys(typeLabels).map(tKey => {
-            const isActive = tKey === type;
-            return `<button onclick="renderDefaultManagerView('${tKey}')" style="flex:1; padding:10px; border:none; border-bottom:${isActive ? '3px solid #2563eb' : '3px solid transparent'}; background:transparent; font-weight:bold; color:${isActive ? '#2563eb' : '#64748b'}; font-size:12px;">${typeLabels[tKey]}</button>`;
-        }).join('');
+    currentActiveDate = null;
+    currentDefaultType = type;
+    
+    let typeName = type === 'tab' ? '予定タブ名' : type === 'place' ? '場所' : '役割';
+    const items = appDefaultsFull.filter(d => d.type === type);
 
-        const items = appDefaultsFull.filter(d => d.type === type);
-        let listHtml = items.length === 0 ? `<p style="text-align:center; color:#94a3b8; padding:20px;">登録されていません</p>` : "";
-
-        items.forEach((item) => {
-            listHtml += `
-                <div class="default-drag-item" data-value="${item.value}" data-type="${item.type}" style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:8px;">
-                    <div style="font-weight:bold;">${item.value}</div>
-                    <div style="display:flex; gap:8px;">
-                        <button onclick="renderDefaultForm('${item.value}', '${item.type}')" style="padding:6px 12px; background:#f1f5f9; border:none; border-radius:6px; font-weight:bold;">編集</button>
-                        <button onclick="deleteDefaultItem('${item.value}', '${item.type}')" style="padding:6px 12px; background:#fef2f2; color:#ef4444; border:none; border-radius:6px; font-weight:bold;">削除</button>
+    let html = `
+        <div class="header">
+            <button class="back-btn" onclick="renderAdminMenu()">戻る</button>
+            <span>🗂️ マスターデータ管理</span>
+        </div>
+        <div class="content" style="background: #f8fafc; flex: 1;">
+            <div style="display:flex; gap:8px; margin-bottom:16px;">
+                <button onclick="renderDefaultManagerView('tab')" style="flex:1; padding:8px; border-radius:8px; border:1px solid #cbd5e1; font-size:12px; font-weight:bold; ${type==='tab'?'background:#1e3a8a; color:white;':'background:white; color:#475569;'}">予定名</button>
+                <button onclick="renderDefaultManagerView('place')" style="flex:1; padding:8px; border-radius:8px; border:1px solid #cbd5e1; font-size:12px; font-weight:bold; ${type==='place'?'background:#1e3a8a; color:white;':'background:white; color:#475569;'}">場所</button>
+                <button onclick="renderDefaultManagerView('support')" style="flex:1; padding:8px; border-radius:8px; border:1px solid #cbd5e1; font-size:12px; font-weight:bold; ${type==='support'?'background:#1e3a8a; color:white;':'background:white; color:#475569;'}">役割</button>
+            </div>
+            
+            <div style="background:#fff; border-radius:12px; padding:16px; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <span style="font-weight:bold; color:#1e293b;">${typeName}の項目</span>
+                    <button onclick="editDefaultItem(null, '${type}')" style="background:#2563eb; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:bold;">＋ 新規追加</button>
+                </div>
+                <div>
+    `;
+    
+    if (items.length === 0) {
+        html += `<p style="text-align:center; color:#94a3b8; font-size:12px;">登録されていません</p>`;
+    } else {
+        items.forEach((item, idx) => {
+            html += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f1f5f9;">
+                    <span style="font-size:14px; color:#334155;">${item.value}</span>
+                    <div style="display:flex; gap:6px;">
+                        <button onclick="moveDefaultPriority(${idx}, -1)" ${idx===0?'disabled':''} style="background:#f1f5f9; border:none; border-radius:4px; padding:4px 8px;">▲</button>
+                        <button onclick="moveDefaultPriority(${idx}, 1)" ${idx===items.length-1?'disabled':''} style="background:#f1f5f9; border:none; border-radius:4px; padding:4px 8px;">▼</button>
+                        <button onclick="editDefaultItem('${item.value}', '${type}')" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:bold;">編集</button>
+                        <button onclick="deleteDefaultItem('${item.value}', '${type}')" style="background:#fef2f2; color:#ef4444; border:1px solid #fecaca; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:bold;">削除</button>
                     </div>
                 </div>
             `;
         });
-
-        document.getElementById('app').innerHTML = `
-            <div class="header">
-                <button class="back-btn" onclick="renderAdminMenu()">戻る</button>
-                <span>⚙️ マスタデータ管理</span>
-            </div>
-            <div class="content" style="background:#f8fafc;">
-                <div style="display:flex; background:#fff; margin-bottom:16px;">${tabsHtml}</div>
-                <button onclick="renderDefaultForm('', '${type}')" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:16px;">➕ 新しい項目を追加</button>
-                <div>${listHtml}</div>
-            </div>
-        `;
     }
+    
+    html += `</div></div></div>`;
+    document.getElementById('app').innerHTML = html;
+}
+
+// マスターデータの並べ替え
+async function moveDefaultPriority(index, direction) {
+    const items = appDefaultsFull.filter(d => d.type === currentDefaultType);
+    if (index < 0 || index >= items.length) return;
+    const targetIdx = index + direction;
+    if (targetIdx < 0 || targetIdx >= items.length) return;
+
+    const temp = items[index];
+    items[index] = items[targetIdx];
+    items[targetIdx] = temp;
+
+    let updates = [];
+    items.forEach((item, i) => {
+        item.order = (i + 1) * 10;
+        updates.push({ value: item.value, type: item.type, order: item.order });
+    });
+    
+    renderDefaultManagerView(currentDefaultType);
+    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'update_default_priorities', updates: updates }) });
+    await fetchSchedules(false); // 最新の並びを取得し直す
+}
+
+// マスターデータの追加・編集
+async function editDefaultItem(oldValue, type) {
+    let newValue = prompt("項目名を入力してください", oldValue || "");
+    if (newValue === null || newValue.trim() === "") return;
+    
+    try {
+        await fetch(GAS_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ action: 'save_default', type: type, old_value: oldValue, new_value: newValue.trim() }) 
+        });
+        showToast("保存しました");
+        await fetchSchedules(false); // 更新されたマスターデータを再取得
+        renderDefaultManagerView(type);
+    } catch(e) { alert("保存に失敗しました"); }
+}
+
+// マスターデータの削除
+async function deleteDefaultItem(value, type) {
+    if (!confirm(`「${value}」を削除してもよろしいですか？`)) return;
+    try {
+        await fetch(GAS_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ action: 'delete_default', type: type, value: value }) 
+        });
+        showToast("削除しました");
+        await fetchSchedules(false);
+        renderDefaultManagerView(type);
+    } catch(e) { alert("削除に失敗しました"); }
+}
 
     // ==========================================
     // 👥 団員/保護者管理
