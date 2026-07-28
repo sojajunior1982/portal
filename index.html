@@ -1188,7 +1188,7 @@ function generateNotifications() {
     let html = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
             <span style="font-weight:bold; color:#334155;">同日の予定 (${evts.length}件)</span>
-            <button onclick="editSchedule('${dateStr}', null)" style="background:#2563eb; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; font-size:12px;">＋ 新規追加</button>
+            <button onclick="renderScheduleForm('${dateStr}', null)" style="background:#2563eb; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; font-size:12px;">＋ 新規追加</button>
         </div>
     `;
 
@@ -1208,7 +1208,7 @@ function generateNotifications() {
                             <button onclick="moveSchedulePriority('${dateStr}', ${idx}, -1)" ${idx === 0 ? 'disabled' : ''} style="background:#f1f5f9; border:none; border-radius:4px; padding:2px 8px; cursor:pointer;">▲</button>
                             <button onclick="moveSchedulePriority('${dateStr}', ${idx}, 1)" ${idx === evts.length - 1 ? 'disabled' : ''} style="background:#f1f5f9; border:none; border-radius:4px; padding:2px 8px; cursor:pointer;">▼</button>
                         </div>
-                        <button onclick="editSchedule('${dateStr}', '${e.schedule_id}')" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer;">編集</button>
+                        <button<button onclick="renderScheduleForm('${dateStr}', '${e.schedule_id}')" onclick="editSchedule('${dateStr}', '${e.schedule_id}')" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; padding:6px 10px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer;">編集</button>
                     </div>
                 </div>
             `;
@@ -1486,20 +1486,6 @@ async function editDefaultItem(oldValue, type) {
     } catch(e) { alert("保存に失敗しました"); }
 }
 
-// マスターデータの削除
-async function deleteDefaultItem(value, type) {
-    if (!confirm(`「${value}」を削除してもよろしいですか？`)) return;
-    try {
-        await fetch(GAS_URL, { 
-            method: 'POST', 
-            body: JSON.stringify({ action: 'delete_default', type: type, value: value }) 
-        });
-        showToast("削除しました");
-        await fetchSchedules(false);
-        renderDefaultManagerView(type);
-    } catch(e) { alert("削除に失敗しました"); }
-}
-
     // ==========================================
     // 👥 団員/保護者管理
     // ==========================================
@@ -1766,22 +1752,6 @@ async function deleteDefaultItem(value, type) {
             else { alert("エラー: " + result.message); drawAccountForm(); }
         } catch (e) { alert("通信エラー"); drawAccountForm(); }
     }
-    function renderDefaultForm(oldValue, type) {
-        let isEdit = oldValue !== "";
-        document.getElementById('app').innerHTML = `
-            <div class="header">
-                <button class="back-btn" onclick="renderDefaultManagerView('${type}')">戻る</button>
-                <span>${isEdit ? '✏️ 編集' : '➕ 追加'}</span>
-            </div>
-            <div class="content" style="background:#f8fafc;">
-                <div style="background:#fff; padding:16px; border-radius:12px;">
-                    <label style="font-weight:bold; font-size:14px;">項目名</label>
-                    <input type="text" id="defNewValue" value="${oldValue}">
-                </div>
-            </div>
-        `;
-    }
-
     async function submitDefaultForm() {
         const newValue = document.getElementById('defNewValue').value;
         const oldValue = document.getElementById('defOldValue').value;
