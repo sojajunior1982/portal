@@ -332,19 +332,13 @@
 
     // -- Notifications
     function generateNotifications() {
+
+        console.table(rawSchedules);
+        
     const now = new Date();
     const notifications = [];
 
-    rawSchedules.forEach(ev => {
-console.log(
-        ev.schedule_id,
-        ev.updated_at,
-        ev.updated_by,
-        ev.update_type
-    );
-
-
-        
+    rawSchedules.forEach(ev => {        
     if (!ev.updated_at) return;
 
     const upd = new Date(ev.updated_at);
