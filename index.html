@@ -553,74 +553,6 @@
     }
 
     // -- Main list view
-    function createMonthCalendar(){
-
-    const year=currentMonth.getFullYear();
-    const month=currentMonth.getMonth();
-
-    const first=new Date(year,month,1);
-    const last=new Date(year,month+1,0);
-
-    const start=first.getDay();
-    const days=last.getDate();
-
-    let html='';
-
-    html+='<div class="calendar-grid">';
-
-    html+='<div class="calendar-header">';
-    ["日","月","火","水","木","金","土"].forEach(d=>{
-        html+=`<div>${d}</div>`;
-    });
-    html+='</div>';
-
-    html+='<div class="calendar-body">';
-
-    for(let i=0;i<start;i++){
-        html+='<div class="calendar-day empty"></div>';
-    }
-
-    for(let d=1;d<=days;d++){
-
-        const dateObj=new Date(year,month,d);
-        const key =
-    year + "-" +
-    String(month + 1).padStart(2, "0") + "-" +
-    String(d).padStart(2, "0");
-
-        const events=groupedSchedules[key]||[];
-
-        let eventHtml='';
-
-        if(events.length){
-
-            eventHtml+=`<div class="day-event">⚾ ${events[0].tab_name}</div>`;
-
-            if(events.length>1){
-                eventHtml+=`<div class="day-more">他${events.length-1}件</div>`;
-            }
-
-            if(events.some(e=>hasRecruitingRoles(e))){
-                eventHtml+=`<div class="day-badge day-recruit">🤝</div>`;
-            }
-
-            if(events.some(e=>isNewUpdate(e.updated_at))){
-                eventHtml+=`<div class="day-badge day-new" style="top:16px;">🆕</div>`;
-            }
-        }
-
-        html+=`
-        <div class="calendar-day"
-             onclick="${events.length ? `goToDetail('${key}')` : ''}">
-            <div class="day-number">${d}</div>
-            ${eventHtml}
-        </div>`;
-    }
-
-    html+='</div></div>';
-
-    return html;
-}
     function createMonthCalendar() {
 
     const year = currentMonth.getFullYear();
@@ -767,63 +699,107 @@ function renderListView() {
 
     const badgeHtml = unreadCount > 0
         ? `<span class="badge">${unreadCount}</span>`
-        : '';
+        : "";
 
     let html = createHeaderHtml(
         `<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`,
-        '📅 スケジュール',
+        "📅 スケジュール",
         `<div class="bell-icon" onclick="openNotifications()">🔔${badgeHtml}</div>`
     );
 
     html += `
-    <div class="content">
+<div class="content">
 
-        <div class="month-selector">
+    <div class="month-selector">
 
-            <span class="arrow"
-                onclick="
-                    currentMonth.setMonth(currentMonth.getMonth()-1);
-                    renderListView();
-                ">
-                ◀
-            </span>
+        <span class="arrow"
+            onclick="
+                currentMonth.setMonth(currentMonth.getMonth()-1);
+                renderListView();
+            ">
+            ◀
+        </span>
 
-            <span class="month-title">
-                ${currentMonth.getFullYear()}年
-                ${currentMonth.getMonth()+1}月
-            </span>
+        <span class="month-title">
+            ${currentMonth.getFullYear()}年 ${currentMonth.getMonth() + 1}月
+        </span>
 
-            <span class="arrow"
-                onclick="
-                    currentMonth.setMonth(currentMonth.getMonth()+1);
-                    renderListView();
-                ">
-                ▶
-            </span>
-
-        </div>
-
-        ${createMonthCalendar()}
+        <span class="arrow"
+            onclick="
+                currentMonth.setMonth(currentMonth.getMonth()+1);
+                renderListView();
+            ">
+            ▶
+        </span>
 
     </div>
-    `;
-        // notification modal
-        html += `
-            </div>
-            <div class="noti-modal" id="notiModal" onclick="closeNotifications()">
-                <div class="noti-content" onclick="event.stopPropagation()">
-                    <div style="font-size:16px; font-weight:bold; color:#1e3a8a; margin-bottom:12px; border-bottom:2px solid #e2e8f0; padding-bottom:8px;">🔔 新着通知</div>
-                    <div id="notiListArea">
-                        ${notiList.length > 0 ? notiList.map(n => `<div class="noti-item"><div class="noti-date">${n.date}</div>${n.msg}</div>`).join('') : '<p style="color:#94a3b8; font-size:13px; text-align:center;">新着通知はありません</p>'}
+
+    <div style="
+        font-size:11px;
+        color:#64748b;
+        margin:8px 0 12px;
+        text-align:center;
+    ">
+        🔴 New　🤝 募集あり　⚾ 予定
+    </div>
+
+    ${createMonthCalendar()}
+
+</div>
+`;
+
+    // notification modal
+    html += `
+<div class="noti-modal" id="notiModal" onclick="closeNotifications()">
+    <div class="noti-content" onclick="event.stopPropagation()">
+
+        <div style="
+            font-size:16px;
+            font-weight:bold;
+            color:#1e3a8a;
+            margin-bottom:12px;
+            border-bottom:2px solid #e2e8f0;
+            padding-bottom:8px;
+        ">
+            🔔 新着通知
+        </div>
+
+        <div id="notiListArea">
+            ${
+                notiList.length > 0
+                ? notiList.map(n => `
+                    <div class="noti-item">
+                        <div class="noti-date">${n.date}</div>
+                        ${n.msg}
                     </div>
-                    <button onclick="closeNotifications()" style="width:100%; margin-top:16px; padding:10px; background:#f1f5f9; color:#475569; border:none; border-radius:8px; font-weight:bold;">閉じる</button>
-                </div>
-            </div>
-        `;
+                `).join("")
+                : `<p style="color:#94a3b8;font-size:13px;text-align:center;">
+                    新着通知はありません
+                   </p>`
+            }
+        </div>
 
-        document.getElementById('app').innerHTML = html;
-    }
+        <button
+            onclick="closeNotifications()"
+            style="
+                width:100%;
+                margin-top:16px;
+                padding:10px;
+                background:#f1f5f9;
+                color:#475569;
+                border:none;
+                border-radius:8px;
+                font-weight:bold;
+            ">
+            閉じる
+        </button>
 
+    </div>
+</div>
+`;
+
+    document.getElementById("app").innerHTML = html;
+}
     function goToDetail(date) {
         currentActiveTabIndex = 0;
         renderDetailView(date);
