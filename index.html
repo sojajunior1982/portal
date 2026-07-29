@@ -1211,8 +1211,11 @@
                         </div>
                     </div>
                     <button onclick="submitScheduleForm()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: bold; cursor:pointer;">
-                        ${isEdit ? "更新内容を保存する" : "スケジュールを登録する"}
-                    </button>
+                    ${isEdit ? "更新内容を保存する" : "スケジュールを登録する"}
+                   </button>
+
+                   ${isEdit ? `
+                   <button onclick="deleteSchedule('${eventData.schedule_id}')" style="width:100%; padding:14px; margin-top:12px; background:#ef4444; color:white; border:none; border-radius:12px; font-size:15px; font-weight:bold; cursor:pointer; ">この予定を削除する</button>` : ""}
                 </div>
             </div>
         `;
