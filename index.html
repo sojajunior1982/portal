@@ -332,9 +332,6 @@
 
     // -- Notifications
     function generateNotifications() {
-
-        console.table(rawSchedules);
-        
     const now = new Date();
     const notifications = [];
 
@@ -373,11 +370,17 @@
             return;
     }
 
+console.log("追加", dateStr, action, upd);
+
+        
     notifications.push({
         time: upd.getTime(),
         date: dateStr,
         msg: `${icon} ${msg}`
     });
+
+console.log("現在", notifications.length);
+        
 });
     notifications.sort((a,b)=>b.time-a.time);
     return notifications;
@@ -424,6 +427,11 @@
     function renderListView() {
         currentActiveDate = null;
         const notiList = generateNotifications();
+
+console.log("通知件数", notiList.length);
+console.log(notiList);
+
+        
         const unreadCount = getUnreadCount(notiList);
         const badgeHtml = unreadCount > 0 ? `<span class="badge">${unreadCount}</span>` : '';
 
