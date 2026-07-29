@@ -332,35 +332,57 @@
 
     // -- Notifications
     function generateNotifications() {
-        const now = new Date();
-        const notifications = [];
+    const now = new Date();
+    const notifications = [];
 
-        rawSchedules.forEach(ev => {
-            if (ev.update) {
-                const upd = new Date(ev.update);
-                const diffDays = (now - upd) / (1000 * 60 * 60 * 24);
-                if (diffDays <= 3 && diffDays >= 0) {
-                    let mStr = `${upd.getMonth()+1}月${upd.getDate()}日`;
-                    notifications.push({ time: upd.getTime(), date: mStr, msg: `「${ev.tab_name}」の予定が追加・更新されました。` });
-                }
-            }
+    rawSchedules.forEach(ev => {
+        if (!ev.update) return;
+
+        const parts = ev.update.split(",");
+        if (parts.length < 3) return;
+
+        const upd = new Date(parts[0]);
+        const action = parts[2];
+
+        const diffDays = (now - upd) / (1000 * 60 * 60 * 24);
+        if (diffDays > 3 || diffDays < 0) return;
+
+        const d = new Date(ev.date);
+        const dateStr = `${d.getMonth() + 1}月${d.getDate()}日`;
+
+        let icon = "";
+        let msg = "";
+
+        switch (action) {
+            case "created":
+                icon = "📅";
+                msg = `${dateStr}「${ev.tab_name}」が追加されました。`;
+                break;
+
+            case "updated":
+                icon = "✏️";
+                msg = `${dateStr}「${ev.tab_name}」が変更されました。`;
+                break;
+
+            case "deleted":
+                icon = "🗑️";
+                msg = `${dateStr}「${ev.tab_name}」が削除されました。`;
+                break;
+
+            default:
+                return;
+        }
+
+        notifications.push({
+            time: upd.getTime(),
+            date: dateStr,
+            msg: `${icon} ${msg}`
         });
+    });
 
-        rawSchedules.forEach(ev => {
-            let roles = ev.recruit_roles ? ev.recruit_roles.split(',').filter(r=>r) : [];
-            if (roles.length > 0) {
-                const parentAns = myAttendances.find(a => String(a.schedule_id) === String(ev.schedule_id) && a.type === '保護者');
-                if (!parentAns) {
-                    let d = new Date(ev.date);
-                    notifications.push({ time: Date.now(), date: `${d.getMonth()+1}月${d.getDate()}日分`, msg: `【個人】「${ev.tab_name}」の協力パパママが募集中です。ご協力お願いします！` });
-                }
-            }
-        });
-
-        notifications.sort((a,b) => b.time - a.time);
-        return notifications;
-    }
-
+    notifications.sort((a, b) => b.time - a.time);
+    return notifications;
+}
     function getUnreadCount(notifications) {
         const lastReadTime = Number(localStorage.getItem('lastReadTime')) || 0;
         return notifications.filter(n => n.time > lastReadTime).length;
