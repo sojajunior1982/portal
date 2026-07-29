@@ -733,6 +733,97 @@ document.getElementById('app').innerHTML = `
 
     return html;
 }
+
+function createListTimeline() {
+
+    let html = "";
+
+    const dates = Object.keys(groupedSchedules).sort();
+
+    if (dates.length === 0) {
+        return `
+        <div style="
+            text-align:center;
+            color:#94a3b8;
+            padding:40px;
+        ">
+            予定はありません
+        </div>`;
+    }
+
+    dates.forEach(date => {
+
+        const holiday = holidays[date];
+
+        html += `
+        <div style="
+            background:#fff;
+            border-radius:14px;
+            padding:14px;
+            margin-bottom:14px;
+            box-shadow:0 2px 8px rgba(0,0,0,.05);
+        ">
+
+            <div style="
+                font-size:18px;
+                font-weight:bold;
+                color:#1e293b;
+                margin-bottom:8px;
+            ">
+                📅 ${date}
+                ${holiday ? `<span style="color:#ef4444;">（${holiday}）</span>` : ""}
+            </div>
+        `;
+
+        groupedSchedules[date].forEach(ev => {
+
+            const recruit = hasRecruitingRoles(ev);
+            const isNew = isNewUpdate(ev.updated_at);
+
+            html += `
+            <div
+                onclick="goToDetail('${date}')"
+                style="
+                    border-top:1px solid #e2e8f0;
+                    padding:10px 0;
+                    cursor:pointer;
+                ">
+
+                <div style="
+                    font-size:16px;
+                    font-weight:bold;
+                ">
+                    ⚾ ${ev.tab_name}
+                </div>
+
+                <div style="
+                    color:#64748b;
+                    font-size:13px;
+                    margin-top:4px;
+                ">
+                    📍 ${ev.location || "未設定"}
+                </div>
+
+                <div style="margin-top:6px;">
+
+                    ${recruit ? "🤝 " : ""}
+
+                    ${isNew ? "🔴 " : ""}
+
+                </div>
+
+            </div>
+            `;
+
+        });
+
+        html += "</div>";
+
+    });
+
+    return html;
+}
+    
 function renderListView() {
     currentActiveDate = null;
 
