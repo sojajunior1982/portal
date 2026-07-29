@@ -659,17 +659,21 @@ document.getElementById('app').innerHTML = `
 
             if (events.length > 0) {
 
-                const hasRecruit = events.some(ev => hasRecruitingRoles(ev));
-                const hasNew = events.some(ev => isNewUpdate(ev.updated_at));
+    marks += `
+    <div style="
+        font-size:13px;
+        font-weight:bold;
+        margin-top:2px;
+    ">
+        ⚾${events.length > 1 ? " " + events.length : ""}
+    </div>`;
 
-                marks += `<div style="font-size:15px;">⚾</div>`;
+    if (hasRecruit)
+        marks += `<div style="font-size:11px;">🤝</div>`;
 
-                if (hasRecruit)
-                    marks += `<div style="font-size:11px;">🤝</div>`;
-
-                if (hasNew)
-                    marks += `<div style="font-size:11px;">🔴</div>`;
-            }
+    if (hasNew)
+        marks += `<div style="font-size:11px;">🔴</div>`;
+}
 
             html += `
             <td
