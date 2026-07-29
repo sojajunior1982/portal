@@ -422,7 +422,7 @@ console.log(currentUser);
     function renderListView() {
         currentActiveDate = null;
         const notiList = generateNotifications();
-        const unreadCount = getUnreadCount(notiList);
+        const unreadCount = getUnreadCount();
         const badgeHtml = unreadCount > 0 ? `<span class="badge">${unreadCount}</span>` : '';
 
         let html = createHeaderHtml(`<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`, '📅 スケジュール', `<div class="bell-icon" onclick="openNotifications()">🔔${badgeHtml}</div>`);
@@ -1711,6 +1711,28 @@ console.log(currentUser);
         if (result.success) { showToast(result.message); await fetchSchedules(false); renderDefaultManagerView(type); }
         else alert(result.message);
     }
+
+
+function getUnreadCount() {
+
+    if (!notifications || notifications.length === 0) return 0;
+
+    if (!currentUser.last_notification_id) {
+        return Math.min(notifications.length, 20);
+    }
+
+    const index = notifications.findIndex(
+        n => n.notification_id === currentUser.last_notification_id
+    );
+
+    if (index === -1) {
+        return Math.min(notifications.length, 20);
+    }
+
+    return index;
+}
+
+    
 
 </script>
 </body>
