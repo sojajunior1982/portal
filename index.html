@@ -338,6 +338,9 @@
         const action = ev.update_type;
 
         rawSchedules.forEach(ev => {
+
+console.log(ev.updated_at, ev.update_type);
+            
             if (!ev.updated_at) return;
 
             const upd = new Date(ev.updated_at);
