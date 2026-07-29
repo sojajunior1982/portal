@@ -1094,7 +1094,6 @@
         renderScheduleListForDate(todayStr);
     }
 
-    // The schedule list / move / edit / delete code is preserved with minor fix applied earlier
     function renderScheduleListForDate(dateStr) {
         const listArea = document.getElementById('manageListArea');
         if (!listArea) return;
@@ -1268,6 +1267,27 @@
         } else {
             alert("保存エラー: " + (result ? result.message : "通信エラー"));
             renderScheduleForm(dateVal, scheduleIdVal);
+        }
+    }
+
+    async function deleteSchedule(scheduleId) {
+        if (!confirm("本当にこの予定を削除しますか？")) return;
+
+        showLoading("削除中...");
+
+        const result = await apiPost({
+            action: "delete_schedule",
+            schedule_id: scheduleId,
+            user_name: currentUser.name
+        });
+
+        if (result && result.success) {
+            showToast("削除しました");
+            await fetchSchedules(false);
+            renderScheduleManagerView();
+        } else {
+            alert("削除エラー：" + (result ? result.message : "通信エラー"));
+            renderScheduleManagerView();
         }
     }
 
