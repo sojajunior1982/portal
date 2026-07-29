@@ -306,6 +306,7 @@
     let latestNotificationId = "";
     let currentMonth = new Date();
     let holidays = {};
+    let scheduleViewMode = "list";
 
     // -- Utility helpers
     function createHeaderHtml(leftHtml = '', title = '', rightHtml = '') {
@@ -751,6 +752,48 @@ function renderListView() {
 <div class="content">
 
     <div class="month-selector">
+    <div style="
+display:flex;
+justify-content:center;
+gap:8px;
+margin:10px 0 15px;
+">
+
+<button
+onclick="
+scheduleViewMode='list';
+renderListView();
+"
+style="
+padding:6px 14px;
+border:none;
+border-radius:20px;
+background:${scheduleViewMode==="list" ? "#2563eb" : "#e2e8f0"};
+color:${scheduleViewMode==="list" ? "#fff" : "#334155"};
+font-weight:bold;
+cursor:pointer;
+">
+📋 リスト
+</button>
+
+<button
+onclick="
+scheduleViewMode='calendar';
+renderListView();
+"
+style="
+padding:6px 14px;
+border:none;
+border-radius:20px;
+background:${scheduleViewMode==="calendar" ? "#2563eb" : "#e2e8f0"};
+color:${scheduleViewMode==="calendar" ? "#fff" : "#334155"};
+font-weight:bold;
+cursor:pointer;
+">
+📅 カレンダー
+</button>
+
+</div>
 
         <span class="arrow"
             onclick="
@@ -783,7 +826,11 @@ function renderListView() {
         🔴 New　🤝 募集あり　⚾ 予定
     </div>
 
-    ${createMonthCalendar()}
+    ${creat${
+scheduleViewMode==="calendar"
+? createMonthCalendar()
+: createListTimeline()
+}eMonthCalendar()}
 
 </div>
 `;
@@ -840,6 +887,49 @@ function renderListView() {
 
     document.getElementById("app").innerHTML = html;
 }
+
+    function createListTimeline(){
+
+let html="";
+
+const dates=Object.keys(groupedSchedules).sort();
+
+dates.forEach(date=>{
+
+    html+=`
+    <div class="card">
+
+        <div style="
+        font-size:18px;
+        font-weight:bold;
+        margin-bottom:8px;
+        ">
+        ${date}
+        ${holidays[date] ? "（"+holidays[date]+"）" : ""}
+        </div>
+    `;
+
+    groupedSchedules[date].forEach(ev=>{
+
+        html+=`
+        <div style="
+        padding:8px 0;
+        border-top:1px solid #eee;
+        ">
+        ⚾ ${ev.tab_name}
+        </div>
+        `;
+
+    });
+
+    html+="</div>";
+
+});
+
+return html;
+
+}
+    
     function goToDetail(date) {
         currentActiveTabIndex = 0;
         renderDetailView(date);
