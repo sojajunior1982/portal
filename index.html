@@ -420,7 +420,7 @@
             currentUser = result.user;
             currentUser.last_notification_id =
                 result.user.last_notification_id || "";
-            await fetchSchedules();
+            await ();
         } else {
             messageDiv.style.color = "#ef4444"; messageDiv.innerText = (result && result.message) ? result.message : "通信エラーが発生しました。";
         }
@@ -431,7 +431,7 @@
         const loginResult = await apiPost({ action: 'auto_login', token });
         if (loginResult && loginResult.success) {
             currentUser = loginResult.user;
-            await fetchSchedules();
+            await ();
         } else {
             localStorage.removeItem('my_token');
             renderLoginView();
@@ -468,7 +468,19 @@
             groupSchedulesByDate();
             if (currentActiveDate !== null) renderDetailView(currentActiveDate); else renderListView();
         } else {
-            document.getElementById('app').innerHTML = `<div class="content"><p>データ取得エラー</p></div>`;
+
+            
+           console.log(schedResult);
+
+document.getElementById('app').innerHTML = `
+<div class="content">
+    <pre>${JSON.stringify(schedResult, null, 2)}</pre>
+</div>`;
+        
+        
+        
+        
+        
         }
     }
 
