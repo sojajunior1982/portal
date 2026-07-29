@@ -313,30 +313,12 @@
 
     // -- Fetch schedules + defaults + attendances
     async function fetchSchedules(isInitial = true) {
-
-
-alert("fetchSchedules開始");
-
-        
         if (isInitial) showLoading("予定を読み込み中...");
         const schedResult = await apiPost({
             action: 'get_schedules',
             family_id: currentUser.family_id,
             user_id: currentUser.user_id
         });
-
-
-        
-    alert("apiPost終了");
-
-    console.log(schedResult);
-
-    alert(JSON.stringify(schedResult));
-
-
-
-
-        
         if (schedResult && schedResult.success) {
             rawSchedules = schedResult.schedules || [];
             notifications = schedResult.notifications || [];
