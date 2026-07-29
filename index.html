@@ -319,11 +319,6 @@
             family_id: currentUser.family_id,
             user_id: currentUser.user_id
         });
-
-
-console.log(schedResult);
-
-        
         if (schedResult && schedResult.success) {
             rawSchedules = schedResult.schedules || [];
             notifications = schedResult.notifications || [];
