@@ -293,11 +293,6 @@
             currentUser = result.user;
             currentUser.last_notification_id =
                 result.user.last_notification_id || "";
-
-
-console.log(currentUser);
-
-            
             await fetchSchedules();
         } else {
             messageDiv.style.color = "#ef4444"; messageDiv.innerText = (result && result.message) ? result.message : "通信エラーが発生しました。";
@@ -426,11 +421,27 @@ console.log(currentUser);
 
     // -- Main list view
     function renderListView() {
+
+        console.log("current =", currentUser.last_notification_id);
+console.log("latest =", notifications[0]?.notification_id);
+
+notifications.forEach(n=>{
+    console.log(n.notification_id);
+});
+        
+        
+        
+        
+        
         currentActiveDate = null;
         const notiList = generateNotifications();
         const unreadCount = notifications.filter(
             n => String(n.notification_id) > String(currentUser.last_notification_id || "")
         ).length;
+
+
+console.log("unread =", unreadCount);
+        
         
         const badgeHtml = unreadCount > 0 ? `<span class="badge">${unreadCount}</span>` : '';
 
