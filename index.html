@@ -342,6 +342,16 @@
     const action = ev.update_type;
 
     const diffDays = (now - upd) / (1000 * 60 * 60 * 24);
+
+console.log(
+    ev.schedule_id,
+    upd,
+    now,
+    diffDays
+);
+
+
+        
     if (diffDays > 3 || diffDays < 0) return;
 
     const d = new Date(ev.date);
@@ -369,18 +379,11 @@
         default:
             return;
     }
-
-console.log("追加", dateStr, action, upd);
-
-        
     notifications.push({
         time: upd.getTime(),
         date: dateStr,
         msg: `${icon} ${msg}`
     });
-
-console.log("現在", notifications.length);
-        
 });
     notifications.sort((a,b)=>b.time-a.time);
     return notifications;
@@ -427,11 +430,6 @@ console.log("現在", notifications.length);
     function renderListView() {
         currentActiveDate = null;
         const notiList = generateNotifications();
-
-console.log("通知件数", notiList.length);
-console.log(notiList);
-
-        
         const unreadCount = getUnreadCount(notiList);
         const badgeHtml = unreadCount > 0 ? `<span class="badge">${unreadCount}</span>` : '';
 
