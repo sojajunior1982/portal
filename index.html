@@ -33,6 +33,83 @@
         #message { margin-top: 15px; color: #ef4444; font-size: 13px; text-align: center; }
 
         .month-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #ffffff; padding: 10px 16px; border-radius: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.02); }
+        .calendar-grid{
+    background:#fff;
+    border-radius:16px;
+    padding:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,.05);
+}
+
+.calendar-header,
+.calendar-body{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+}
+
+.calendar-header div{
+    text-align:center;
+    font-size:12px;
+    font-weight:bold;
+    color:#64748b;
+    padding:6px 0;
+}
+
+.calendar-day{
+    position:relative;
+    min-height:64px;
+    border:1px solid #eef2f7;
+    padding:4px;
+    cursor:pointer;
+    overflow:hidden;
+}
+
+.calendar-day.empty{
+    background:#fafafa;
+}
+
+.day-number{
+    font-size:12px;
+    font-weight:bold;
+}
+
+.day-event{
+    margin-top:3px;
+    font-size:10px;
+    background:#2563eb;
+    color:#fff;
+    border-radius:4px;
+    padding:1px 3px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.day-more{
+    font-size:9px;
+    color:#64748b;
+    margin-top:2px;
+}
+
+.day-badge{
+    position:absolute;
+    right:2px;
+    top:2px;
+    font-size:9px;
+}
+
+.day-new{
+    color:#ef4444;
+}
+
+.day-recruit{
+    color:#f59e0b;
+}
+        
+        
+        
+        
+        
+        
         .date-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.01); }
         .date-text { font-size: 15px; font-weight: 700; color: #1e293b; }
         .status-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
@@ -227,6 +304,7 @@
     let confirmStateMap = {};
     let notifications = [];
     let latestNotificationId = "";
+    let currentMonth = new Date();
 
     // -- Utility helpers
     function createHeaderHtml(leftHtml = '', title = '', rightHtml = '') {
@@ -472,42 +550,123 @@
     }
 
     // -- Main list view
-    function renderListView() {
-        currentActiveDate = null;
-        const notiList = generateNotifications();
-        const unreadCount = notifications.filter(
-            n => String(n.notification_id) > String(currentUser.last_notification_id || "")
-        ).length;
-        const badgeHtml = unreadCount > 0 ? `<span class="badge">${unreadCount}</span>` : '';
+    function createMonthCalendar(){
 
-        let html = createHeaderHtml(`<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`, '📅 スケジュール', `<div class="bell-icon" onclick="openNotifications()">🔔${badgeHtml}</div>`);
-        html += `<div class="content">
-            <div class="month-selector"><span class="arrow">◀</span><span class="month-title">今月の予定</span><span class="arrow">▶</span></div>`;
+    const year=currentMonth.getFullYear();
+    const month=currentMonth.getMonth();
 
-        const sortedDates = Object.keys(groupedSchedules).sort();
-        if (sortedDates.length === 0) {
-            html += `<p style="text-align:center; color:#94a3b8; margin-top:40px;">登録されている予定はありません</p>`;
-        } else {
-            sortedDates.forEach(date => {
-                const events = groupedSchedules[date];
-                const mainEvent = events[0];
-                const d = new Date(date);
-                const dayStr = `${d.getMonth() + 1}/${d.getDate()}`;
-                const weekDays = ["日","月","火","水","木","金","土"];
-                const weekStr = `(${weekDays[d.getDay()]})`;
-                const isRecruiting = events.some(ev => hasRecruitingRoles(ev));
-                const recruitingBadge = isRecruiting ? `<span class="status-badge status-recruiting">募集項目あり</span>` : '';
-                const eventCountBadge = events.length > 1 ? `<span style="font-size:11px; background:#e2e8f0; color:#475569; padding:2px 6px; border-radius:6px; margin-left:6px;">他${events.length - 1}件</span>` : '';
-                const hasNewUpdate = events.some(event => isNewUpdate(event.updated_at))
-                const newBadgeHtml = hasNewUpdate ? `<span style="background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:10px; margin-left:8px; font-weight:bold; vertical-align:middle;">New!</span>` : '';
+    const first=new Date(year,month,1);
+    const last=new Date(year,month+1,0);
 
-                html += `<div class="date-card" onclick="goToDetail('${date}')">
-                            <span class="date-text">${dayStr} ${weekStr} ${mainEvent.tab_name}${eventCountBadge} ${newBadgeHtml}</span>
-                            ${recruitingBadge}
-                         </div>`;
-            });
+    const start=first.getDay();
+    const days=last.getDate();
+
+    let html='';
+
+    html+='<div class="calendar-grid">';
+
+    html+='<div class="calendar-header">';
+    ["日","月","火","水","木","金","土"].forEach(d=>{
+        html+=`<div>${d}</div>`;
+    });
+    html+='</div>';
+
+    html+='<div class="calendar-body">';
+
+    for(let i=0;i<start;i++){
+        html+='<div class="calendar-day empty"></div>';
+    }
+
+    for(let d=1;d<=days;d++){
+
+        const dateObj=new Date(year,month,d);
+        const key=dateObj.toISOString().slice(0,10);
+
+        const events=groupedSchedules[key]||[];
+
+        let eventHtml='';
+
+        if(events.length){
+
+            eventHtml+=`<div class="day-event">⚾ ${events[0].tab_name}</div>`;
+
+            if(events.length>1){
+                eventHtml+=`<div class="day-more">他${events.length-1}件</div>`;
+            }
+
+            if(events.some(e=>hasRecruitingRoles(e))){
+                eventHtml+=`<div class="day-badge day-recruit">🤝</div>`;
+            }
+
+            if(events.some(e=>isNewUpdate(e.updated_at))){
+                eventHtml+=`<div class="day-badge day-new" style="top:16px;">🆕</div>`;
+            }
         }
 
+        html+=`
+        <div class="calendar-day"
+             onclick="${events.length ? `goToDetail('${key}')` : ''}">
+            <div class="day-number">${d}</div>
+            ${eventHtml}
+        </div>`;
+    }
+
+    html+='</div></div>';
+
+    return html;
+}
+    
+function renderListView() {
+    currentActiveDate = null;
+
+    const notiList = generateNotifications();
+
+    const unreadCount = notifications.filter(
+        n => String(n.notification_id) > String(currentUser.last_notification_id || "")
+    ).length;
+
+    const badgeHtml = unreadCount > 0
+        ? `<span class="badge">${unreadCount}</span>`
+        : '';
+
+    let html = createHeaderHtml(
+        `<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`,
+        '📅 スケジュール',
+        `<div class="bell-icon" onclick="openNotifications()">🔔${badgeHtml}</div>`
+    );
+
+    html += `
+    <div class="content">
+
+        <div class="month-selector">
+
+            <span class="arrow"
+                onclick="
+                    currentMonth.setMonth(currentMonth.getMonth()-1);
+                    renderListView();
+                ">
+                ◀
+            </span>
+
+            <span class="month-title">
+                ${currentMonth.getFullYear()}年
+                ${currentMonth.getMonth()+1}月
+            </span>
+
+            <span class="arrow"
+                onclick="
+                    currentMonth.setMonth(currentMonth.getMonth()+1);
+                    renderListView();
+                ">
+                ▶
+            </span>
+
+        </div>
+
+        ${createMonthCalendar()}
+
+    </div>
+    `;
         // notification modal
         html += `
             </div>
