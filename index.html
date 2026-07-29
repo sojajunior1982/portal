@@ -123,6 +123,7 @@
 .tab-container{
     display:flex;
     gap:4px;
+    margin-bottom:0;
 }
 
 .tab{
@@ -132,45 +133,70 @@
     padding:10px 8px;
 
     border-radius:14px 14px 0 0;
-    font-size:13px;
-    font-weight:700;
-    cursor:pointer;
 
     background:#e2e8f0;
     color:#475569;
+
     border:1.5px solid #cbd5e1;
     border-bottom:none;
 
+    font-size:13px;
+    font-weight:700;
+
     text-align:center;
+
+    cursor:pointer;
 
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
+
+    transition:.2s;
 }
 
 .tab.active{
-    flex:1.2;
+
     background:#ffffff;
     color:#1e3a8a;
+
     border-color:#94a3b8;
-    padding-bottom:11px;
-    margin-bottom:-1px;
+
     position:relative;
     z-index:2;
+
 }
 
-.tab-content-box {
-    background: #ffffff;
-    border: 1.5px solid #cbd5e1;
-    border-radius: 0 16px 16px 16px;
-    padding: 16px;
-    flex: 1;
-    overflow-y: auto;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.01);
-    margin-top: -1px;
-    margin-bottom: 12px;
+.tab-content-box{
+
+    background:#ffffff;
+
+    border:1.5px solid #cbd5e1;
+
+    border-radius:0 16px 16px 16px;
+
+    padding:16px;
+
+    margin-top:-1px;
+
+    flex:1;
+
+    overflow-y:auto;
+
+    box-shadow:0 6px 12px rgba(0,0,0,.04);
+
+    position:relative;
+
 }
-        .tab-panel.active { display: block; }
+
+/* ここ重要 */
+
+.tab-panel{
+    display:none;
+}
+
+.tab-panel.active{
+    display:block;
+}
         .detail-item { margin-bottom: 16px; }
         .detail-label { font-weight: 700; color: #64748b; font-size: 11px; margin-bottom: 4px; letter-spacing: 0.5px; }
         .detail-value { font-size: 15px; color: #1e293b; line-height: 1.5; white-space: pre-wrap; }
