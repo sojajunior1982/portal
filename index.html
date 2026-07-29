@@ -290,6 +290,10 @@
         if (result && result.success) {
             localStorage.setItem('my_token', result.token);
             currentUser = result.user;
+
+
+console.log(currentUser);
+            
             await fetchSchedules();
         } else {
             messageDiv.style.color = "#ef4444"; messageDiv.innerText = (result && result.message) ? result.message : "通信エラーが発生しました。";
@@ -430,7 +434,7 @@
                 const isRecruiting = events.some(ev => hasRecruitingRoles(ev));
                 const recruitingBadge = isRecruiting ? `<span class="status-badge status-recruiting">募集項目あり</span>` : '';
                 const eventCountBadge = events.length > 1 ? `<span style="font-size:11px; background:#e2e8f0; color:#475569; padding:2px 6px; border-radius:6px; margin-left:6px;">他${events.length - 1}件</span>` : '';
-                const hasNewUpdate = events.some(event => isNewUpdate(event.update));
+                const hasNewUpdate = events.some(event => isNewUpdate(event.updated_at))
                 const newBadgeHtml = hasNewUpdate ? `<span style="background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:10px; margin-left:8px; font-weight:bold; vertical-align:middle;">New!</span>` : '';
 
                 html += `<div class="date-card" onclick="goToDetail('${date}')">
@@ -1246,7 +1250,7 @@
         if (!dateVal || !tabVal) return alert("日付と予定の種類(タブ名)は必須です！");
         const checkedRoles = Array.from(document.querySelectorAll('.role-check:checked')).map(cb => cb.value);
         const customInputs = Array.from(document.querySelectorAll('.custom-role-input')).map(i => i.value.trim()).filter(v => v !== "");
-        const finalRecruitRoles = [...checkedRoles, ...customInputs].join(',');
+        const finalRecruitRoles = [...checkedRoles, ...customInputs].join(",");
         const payload = {
             action: 'save_schedule',
             schedule_id: scheduleIdVal,
