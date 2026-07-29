@@ -919,7 +919,7 @@
     // -- Confirm roles (admin) views
     function renderConfirmRolesListView() {
         currentActiveDate = null;
-        let header = createHeaderHtml(`<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`, '🤝 協力パパママ確定', `<button class="logout-btn" onclick="handleLogout()">ログアウト</button>`);
+        let header = createHeaderHtml(`<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`, '🤝 協力パパママ確定', ``);
         let html = `${header}<div class="content"><div class="month-selector"><span class="arrow">◀</span><span class="month-title">日付を選択</span><span class="arrow">▶</span></div>`;
         const sortedDates = Object.keys(groupedSchedules).sort();
         if (sortedDates.length === 0) {
