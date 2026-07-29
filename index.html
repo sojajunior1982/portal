@@ -336,6 +336,15 @@
     const notifications = [];
 
     rawSchedules.forEach(ev => {
+console.log(
+        ev.schedule_id,
+        ev.updated_at,
+        ev.updated_by,
+        ev.update_type
+    );
+
+
+        
     if (!ev.updated_at) return;
 
     const upd = new Date(ev.updated_at);
@@ -421,11 +430,6 @@
     function renderListView() {
         currentActiveDate = null;
         const notiList = generateNotifications();
-
-console.log(notiList.length);
-console.log(notiList);
-
-        
         const unreadCount = getUnreadCount(notiList);
         const badgeHtml = unreadCount > 0 ? `<span class="badge">${unreadCount}</span>` : '';
 
