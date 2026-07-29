@@ -291,10 +291,6 @@
         if (result && result.success) {
             localStorage.setItem('my_token', result.token);
             currentUser = result.user;
-
-
-console.log(currentUser);
-            
             await fetchSchedules();
         } else {
             messageDiv.style.color = "#ef4444"; messageDiv.innerText = (result && result.message) ? result.message : "通信エラーが発生しました。";
