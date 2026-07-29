@@ -533,8 +533,22 @@
                 childrenStatusRowsHtml = `<div class="summary-row"><span style="color:#94a3b8;">団員の情報がありません</span></div>`;
             }
 
-            const updateTime = event.update ? new Date(event.update).toLocaleString('ja-JP', {month:'numeric', day:'numeric', hour:'numeric', minute:'numeric'}) : '日時不明';
-            const updaterName = event.updater ? `by ${event.updater}` : '';
+            const updateTime = event.updated_at
+                ? new Date(event.updated_at).toLocaleString('ja-JP', {
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                })
+                : '日時不明';
+
+            const updateType = {
+                created: "追加",
+                updated: "更新",
+                deleted: "削除"
+            }[event.update_type] || "更新";
+
+            const updaterName = event.updated_by || "不明";
 
             html += `
                 <div class="tab-panel ${activeClass}" id="tab-panel-${index}">
@@ -542,7 +556,7 @@
                     <div class="detail-item"><div class="detail-label">📍 場所</div><div class="detail-value" style="font-weight:600;">${event.location || '未定'}</div></div>
                     <div class="detail-item"><div class="detail-label">📝 スケジュール・連絡</div><div class="detail-value" style="color:#475569; font-size:14.5px;">${event.description || '詳細なし'}</div></div>
                     <div style="margin-top:24px; text-align:right; font-size:11px; color:#94a3b8; border-top:1px dashed #e2e8f0; padding-top:8px;">
-                        🔄 最終更新: ${updateTime} ${updaterName}
+                        🔄 ${updateTime}　${updateType}：${updaterName}
                     </div>
                 </div>
             `;
