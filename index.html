@@ -1545,20 +1545,40 @@
 }
 
     async function moveDefaultPriority(index, direction) {
-        const items = appDefaultsFull.filter(d => d.type === currentDefaultType);
-        if (index < 0 || index >= items.length) return;
-        const targetIdx = index + direction;
-        if (targetIdx < 0 || targetIdx >= items.length) return;
-        const temp = items[index];
-        items[index] = items[targetIdx];
-        items[targetIdx] = temp;
-        let updates = [];
-        items.forEach((item, i) => { item.order = (i + 1) * 10; updates.push({ value: item.value, type: item.type, order: item.order }); });
-        renderDefaultManagerView(currentDefaultType);
-        await apiPost({ action: 'update_default_priorities', updates });
-        await fetchSchedules(false);
-    }
+        const items = appDefaultsFull
+            .filter(d => d.type === currentDefaultType)
+            .sort((a,b)=>a.order-b.order);
+        const target = index + direction;
+        if(target < 0 || target >= items.length) return;
+        [items[index], items[target]] = [items[target], items[index]];
+        const updates = [];
+        items.forEach((item,i)=>{
+            item.order = (i+1)*10;
 
+            // appDefaultsFull本体も更新
+            const org = appDefaultsFull.find(d =>
+                d.type === item.type &&
+                (
+                    item.type === "schedule"
+                        ? d.name === item.name
+                        : d.value === item.value
+                )
+            );
+
+            if(org) org.order = item.order;
+            updates.push({
+                value:item.value,
+                type:item.type,
+                order:item.order
+            });
+        });
+
+        renderDefaultManagerView(currentDefaultType);
+        apiPost({
+            action:"update_default_priorities",
+            updates
+        });
+    }
     async function deleteDefaultItem(value, type) {
         if (!confirm(`「${value}」を削除しますか？`)) return;
         showLoading("削除中...");
