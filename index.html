@@ -407,16 +407,19 @@ alert("fetchSchedules開始");
     }
 
     async function closeNotifications() {
-
         const notiModal = document.getElementById('notiModal');
         if (notiModal) notiModal.style.display = 'none';
 
         if (latestNotificationId) {
-            await apiPost({
+
+            const result = await apiPost({
                 action: "read_notifications",
                 user_id: currentUser.user_id,
-                last_notification_id: latestNotificationId
+                notification_id: latestNotificationId   // ←ここを修正
             });
+
+            alert(JSON.stringify(result));
+
             currentUser.last_notification_id = latestNotificationId;
         }
     }
