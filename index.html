@@ -416,6 +416,15 @@
         messageDiv.style.color = "#2563eb"; messageDiv.innerText = "認証中...";
         const result = await apiPost({ action: 'login', user_id: userId, password: password });
         if (result && result.success) {
+    localStorage.setItem('my_token', result.token);
+    currentUser = result.user;
+    currentUser.last_notification_id =
+        result.user.last_notification_id || "";
+
+    await fetchSchedules();
+
+} else {
+            if (result && result.success) {
             localStorage.setItem('my_token', result.token);
             currentUser = result.user;
             currentUser.last_notification_id =
