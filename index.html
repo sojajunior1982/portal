@@ -291,6 +291,13 @@
         if (result && result.success) {
             localStorage.setItem('my_token', result.token);
             currentUser = result.user;
+            currentUser.last_notification_id =
+                result.user.last_notification_id || "";
+
+
+console.log(currentUser);
+
+            
             await fetchSchedules();
         } else {
             messageDiv.style.color = "#ef4444"; messageDiv.innerText = (result && result.message) ? result.message : "通信エラーが発生しました。";
@@ -316,6 +323,8 @@
         if (schedResult && schedResult.success) {
             rawSchedules = schedResult.schedules || [];
             notifications = schedResult.notifications || [];
+            currentUser.last_notification_id = schedResult.last_notification_id || "";
+            
             if (notifications.length > 0) {
                 latestNotificationId = notifications[0].notification_id;
             }
@@ -391,6 +400,7 @@
                 user_id: currentUser.user_id,
                 notification_id: latestNotificationId
             });
+            currentUser.last_notification_id = latestNotificationId;
         }
     }
 
@@ -418,7 +428,10 @@
     function renderListView() {
         currentActiveDate = null;
         const notiList = generateNotifications();
-        const unreadCount = getUnreadCount();
+        const unreadCount = notifications.filter(
+            n => String(n.notification_id) > String(currentUser.last_notification_id || "")
+        ).length;
+        
         const badgeHtml = unreadCount > 0 ? `<span class="badge">${unreadCount}</span>` : '';
 
         let html = createHeaderHtml(`<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`, '📅 スケジュール', `<div class="bell-icon" onclick="openNotifications()">🔔${badgeHtml}</div>`);
@@ -1723,26 +1736,15 @@
     }
 
 
-function getUnreadCount() {
-
-    if (!notifications || notifications.length === 0) return 0;
-
-    if (!currentUser.last_notification_id) {
-        return Math.min(notifications.length, 20);
+    function getUnreadCount(notifications) {
+        const lastId = currentUser.last_notification_id || "";
+        if (!lastId) return notifications.length;
+        const index = notifications.findIndex(
+            n => n.notification_id === lastId
+        );
+        if (index === -1) return notifications.length;
+        return index;
     }
-
-    const index = notifications.findIndex(
-        n => n.notification_id === currentUser.last_notification_id
-    );
-
-    if (index === -1) {
-        return Math.min(notifications.length, 20);
-    }
-
-    return index;
-}
-
-    
 
 </script>
 </body>
