@@ -177,6 +177,7 @@
         support: ["🙆 参加", "🙋 当番", "🚗 道具車", "⚾ 審判"]
     };
     let confirmStateMap = {};
+    let notifications = [];
 
     // -- Utility helpers
     function createHeaderHtml(leftHtml = '', title = '', rightHtml = '') {
@@ -312,7 +313,8 @@
         if (isInitial) showLoading("予定を読み込み中...");
         const schedResult = await apiPost({ action: 'get_schedules', family_id: currentUser.family_id });
         if (schedResult && schedResult.success) {
-            rawSchedules = schedResult.schedules || [];            
+            rawSchedules = schedResult.schedules || [];
+            notifications = schedResult.notifications || [];        
             myAttendances = schedResult.myAttendances || [];
             allAttendances = schedResult.allAttendances || [];
             if (schedResult.defaults) {
@@ -332,62 +334,52 @@
 
     // -- Notifications
     function generateNotifications() {
-    const now = new Date();
-    const notifications = [];
+        return notifications.map(n => {
 
-    rawSchedules.forEach(ev => {        
-    if (!ev.updated_at) return;
+            const upd = new Date(n.created_at);
+            const d = new Date(n.schedule_date || "");
 
-    const upd = new Date(ev.updated_at);
-    const action = ev.update_type;
+            const dateStr = isNaN(d)
+                ? ""
+                : `${d.getMonth()+1}月${d.getDate()}日`;
 
-    const diffDays = (now - upd) / (1000 * 60 * 60 * 24);
+            let icon = "";
+            let msg = "";
 
-console.log(
-    ev.schedule_id,
-    upd,
-    now,
-    diffDays
-);
+            switch(n.type){
 
+                case "created":
+                    icon = "📅";
+                    msg = `${dateStr}「${n.tab_name}」が追加されました。`;
+                    break;
 
-        
-    if (diffDays > 3 || diffDays < 0) return;
+                case "updated":
+                    icon = "✏️";
+                    msg = `${dateStr}「${n.tab_name}」が変更されました。`;
+                    break;
 
-    const d = new Date(ev.date);
-    const dateStr = `${d.getMonth()+1}月${d.getDate()}日`;
+                case "deleted":
+                    icon = "🗑️";
+                    msg = `${dateStr}「${n.tab_name}」が削除されました。`;
+                    break;
 
-    let icon = "";
-    let msg = "";
+                case "assigned":
+                    icon = "🎉";
+                    msg = `${dateStr}「${n.tab_name}」の${n.detail}に決まりました。`;
+                    break;
 
-    switch (action) {
-        case "created":
-            icon = "📅";
-            msg = `${dateStr}「${ev.tab_name}」が追加されました。`;
-            break;
+                default:
+                    msg = "";
+            }
 
-        case "updated":
-            icon = "✏️";
-            msg = `${dateStr}「${ev.tab_name}」が変更されました。`;
-            break;
+            return {
+                time: upd.getTime(),
+                date: `${upd.getMonth()+1}月${upd.getDate()}日`,
+                msg: `${icon} ${msg}`
+            };
 
-        case "deleted":
-            icon = "🗑️";
-            msg = `${dateStr}「${ev.tab_name}」が削除されました。`;
-            break;
-
-        default:
-            return;
+        });
     }
-    notifications.push({
-        time: upd.getTime(),
-        date: dateStr,
-        msg: `${icon} ${msg}`
-    });
-});
-    notifications.sort((a,b)=>b.time-a.time);
-    return notifications;
-}
     function getUnreadCount(notifications) {
         const lastReadTime = Number(localStorage.getItem('lastReadTime')) || 0;
         return notifications.filter(n => n.time > lastReadTime).length;
