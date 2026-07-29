@@ -818,19 +818,19 @@ cursor:pointer;
     </div>
 
     <div style="
-        font-size:11px;
-        color:#64748b;
-        margin:8px 0 12px;
-        text-align:center;
-    ">
-        🔴 New　🤝 募集あり　⚾ 予定
-    </div>
+    font-size:11px;
+    color:#64748b;
+    margin:8px 0 12px;
+    text-align:center;
+">
+    🔴 New　🤝 募集あり　⚾ 予定
+</div>
 
-    ${creat${
-scheduleViewMode==="calendar"
-? createMonthCalendar()
-: createListTimeline()
-}eMonthCalendar()}
+${
+    scheduleViewMode === "calendar"
+        ? createMonthCalendar()
+        : createListTimeline()
+}
 
 </div>
 `;
