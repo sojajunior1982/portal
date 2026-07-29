@@ -378,8 +378,16 @@ console.log(rawSchedules);
         date: dateStr,
         msg: `${icon} ${msg}`
     });
+
+console.log("追加", dateStr, action, upd);
+        
 });
     notifications.sort((a,b)=>b.time-a.time);
+
+console.log("通知件数", notifications.length);
+console.log(notifications);
+
+        
     return notifications;
 }
     function getUnreadCount(notifications) {
