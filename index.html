@@ -324,6 +324,19 @@ alert("fetchSchedules開始");
             family_id: currentUser.family_id,
             user_id: currentUser.user_id
         });
+
+
+        
+    alert("apiPost終了");
+
+    console.log(schedResult);
+
+    alert(JSON.stringify(schedResult));
+
+
+
+
+        
         if (schedResult && schedResult.success) {
             rawSchedules = schedResult.schedules || [];
             notifications = schedResult.notifications || [];
