@@ -1327,44 +1327,184 @@
 
     // --- Default / account management: kept behavior, minor cleanup
     function renderDefaultManagerView(type = 'tab') {
-        currentActiveDate = null;
-        currentDefaultType = type;
-        const items = appDefaultsFull.filter(d => d.type === type);
-        let typeName = type === 'tab' ? '予定タブ名' : type === 'place' ? '場所' : '役割';
-        let html = createHeaderHtml(`<button class="back-btn" onclick="renderAdminMenu()">戻る</button>`, '🗂️ マスターデータ管理', '');
-        html += `<div class="content" style="background: #f8fafc; flex: 1;">
-            <div style="display:flex; gap:8px; margin-bottom:16px;">
-                <button onclick="renderDefaultManagerView('tab')" style="flex:1; padding:8px; border-radius:8px; border:1px solid #cbd5e1; font-size:12px; font-weight:bold; ${type==='tab'?'background:#1e3a8a; color:white;':'background:white; color:#475569;'}">予定名</button>
-                <button onclick="renderDefaultManagerView('place')" style="flex:1; padding:8px; border-radius:8px; border:1px solid #cbd5e1; font-size:12px; font-weight:bold; ${type==='place'?'background:#1e3a8a; color:white;':'background:white; color:#475569;'}">場所</button>
-                <button onclick="renderDefaultManagerView('support')" style="flex:1; padding:8px; border-radius:8px; border:1px solid #cbd5e1; font-size:12px; font-weight:bold; ${type==='support'?'background:#1e3a8a; color:white;':'background:white; color:#475569;'}">役割</button>
+
+    currentActiveDate = null;
+    currentDefaultType = type;
+
+    const items = appDefaultsFull
+        .filter(d => d.type === type)
+        .sort((a, b) => a.order - b.order);
+
+    const typeNames = {
+        tab: "予定名",
+        place: "場所",
+        support: "役割",
+        area: "自転車班",
+        schedule: "予定テンプレ"
+    };
+
+    let html = createHeaderHtml(
+        `<button class="back-btn" onclick="renderAdminMenu()">戻る</button>`,
+        '🗂️ マスターデータ管理',
+        ''
+    );
+
+    html += `
+    <div class="content" style="background:#f8fafc; flex:1;">
+
+        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:16px;">
+
+            <button onclick="renderDefaultManagerView('tab')"
+                style="padding:8px;border-radius:8px;border:1px solid #cbd5e1;font-size:12px;font-weight:bold;
+                ${type==='tab'
+                    ?'background:#1e3a8a;color:white;'
+                    :'background:white;color:#475569;'}">
+                予定名
+            </button>
+
+            <button onclick="renderDefaultManagerView('place')"
+                style="padding:8px;border-radius:8px;border:1px solid #cbd5e1;font-size:12px;font-weight:bold;
+                ${type==='place'
+                    ?'background:#1e3a8a;color:white;'
+                    :'background:white;color:#475569;'}">
+                場所
+            </button>
+
+            <button onclick="renderDefaultManagerView('support')"
+                style="padding:8px;border-radius:8px;border:1px solid #cbd5e1;font-size:12px;font-weight:bold;
+                ${type==='support'
+                    ?'background:#1e3a8a;color:white;'
+                    :'background:white;color:#475569;'}">
+                役割
+            </button>
+
+            <button onclick="renderDefaultManagerView('area')"
+                style="padding:8px;border-radius:8px;border:1px solid #cbd5e1;font-size:12px;font-weight:bold;
+                ${type==='area'
+                    ?'background:#1e3a8a;color:white;'
+                    :'background:white;color:#475569;'}">
+                自転車班
+            </button>
+
+            <button onclick="renderDefaultManagerView('schedule')"
+                style="padding:8px;border-radius:8px;border:1px solid #cbd5e1;font-size:12px;font-weight:bold;
+                ${type==='schedule'
+                    ?'background:#1e3a8a;color:white;'
+                    :'background:white;color:#475569;'}">
+                テンプレ
+            </button>
+
+        </div>
+
+        <div style="background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 4px rgba(0,0,0,.05);">
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+
+                <span style="font-weight:bold;color:#1e293b;">
+                    ${typeNames[type]}
+                </span>
+
+                <button
+                    onclick="renderDefaultForm('', '${type}')"
+                    style="background:#2563eb;color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:bold;">
+                    ＋ 新規追加
+                </button>
+
             </div>
-            <div style="background:#fff; border-radius:12px; padding:16px; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <span style="font-weight:bold; color:#1e293b;">${typeName}の項目</span>
-                    <button onclick="renderDefaultForm(null, '${type}')" style="background:#2563eb; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:bold;">＋ 新規追加</button>
-                </div>
-                <div>
+    `;
+
+    if (items.length === 0) {
+
+        html += `
+            <p style="text-align:center;color:#94a3b8;font-size:12px;">
+                登録されていません
+            </p>
         `;
-        if (items.length === 0) {
-            html += `<p style="text-align:center; color:#94a3b8; font-size:12px;">登録されていません</p>`;
-        } else {
-            items.forEach((item, idx) => {
-                html += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f1f5f9;">
-                        <span style="font-size:14px; color:#334155;">${item.value}</span>
-                        <div style="display:flex; gap:6px;">
-                            <button onclick="moveDefaultPriority(${idx}, -1)" ${idx===0?'disabled':''} style="background:#f1f5f9; border:none; border-radius:4px; padding:4px 8px;">▲</button>
-                            <button onclick="moveDefaultPriority(${idx}, 1)" ${idx===items.length-1?'disabled':''} style="background:#f1f5f9; border:none; border-radius:4px; padding:4px 8px;">▼</button>
-                            <button onclick="renderDefaultForm('${item.value}', '${type}')" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:bold;">編集</button>
-                            <button onclick="deleteDefaultItem('${item.value}', '${type}')" style="background:#fef2f2; color:#ef4444; border:1px solid #fecaca; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:bold;">削除</button>
-                        </div>
+
+    } else {
+
+        items.forEach((item, idx) => {
+
+            const displayName =
+                (type === "schedule")
+                    ? item.name
+                    : item.value;
+
+            const key = displayName;
+
+            html += `
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                padding:10px 0;
+                border-bottom:1px solid #f1f5f9;">
+
+                <div>
+
+                    <div style="
+                        font-size:14px;
+                        font-weight:bold;
+                        color:#334155;">
+                        ${displayName}
                     </div>
-                `;
-            });
-        }
-        html += `</div></div></div>`;
-        document.getElementById('app').innerHTML = html;
+
+                    ${
+                        type === "schedule"
+                        ? `<div style="
+                                font-size:11px;
+                                color:#94a3b8;
+                                margin-top:2px;">
+                                ${item.value.substring(0,40).replace(/\n/g," ")}...
+                           </div>`
+                        : ""
+                    }
+
+                </div>
+
+                <div style="display:flex;gap:6px;">
+
+                    <button
+                        onclick="moveDefaultPriority(${idx},-1)"
+                        ${idx===0?'disabled':''}
+                        style="background:#f1f5f9;border:none;border-radius:4px;padding:4px 8px;">
+                        ▲
+                    </button>
+
+                    <button
+                        onclick="moveDefaultPriority(${idx},1)"
+                        ${idx===items.length-1?'disabled':''}
+                        style="background:#f1f5f9;border:none;border-radius:4px;padding:4px 8px;">
+                        ▼
+                    </button>
+
+                    <button
+                        onclick="renderDefaultForm('${key}','${type}')"
+                        style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;">
+                        編集
+                    </button>
+
+                    <button
+                        onclick="deleteDefaultItem('${key}','${type}')"
+                        style="background:#fef2f2;color:#ef4444;border:1px solid #fecaca;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:bold;">
+                        削除
+                    </button>
+
+                </div>
+
+            </div>
+            `;
+        });
+
     }
+
+    html += `
+        </div>
+    </div>
+    `;
+
+    document.getElementById("app").innerHTML = html;
+}
 
     async function moveDefaultPriority(index, direction) {
         const items = appDefaultsFull.filter(d => d.type === currentDefaultType);
@@ -1696,33 +1836,143 @@
         } catch (e) { alert("通信エラー"); drawAccountForm(); }
     }
     function renderDefaultForm(oldValue, type) {
-        let isEdit = oldValue !== "";
-        document.getElementById('app').innerHTML = `
-            <div class="header">
-                <button class="back-btn" onclick="renderDefaultManagerView('${type}')">戻る</button>
-                <span>${isEdit ? '✏️ 編集' : '➕ 追加'}</span>
-            </div>
-            <div class="content" style="background:#f8fafc;">
-                <div style="background:#fff; padding:16px; border-radius:12px;">
-                    <label style="font-weight:bold; font-size:14px;">項目名</label>
-                    <input type="text" id="defNewValue" value="${oldValue}">
-                </div>
-            </div>
-        `;
+
+    const isEdit = oldValue !== "";
+
+    let item = null;
+
+    if (isEdit) {
+        item = appDefaultsFull.find(d => {
+            if (type === "schedule") {
+                return d.type === "schedule" && d.name === oldValue;
+            } else {
+                return d.type === type && d.value === oldValue;
+            }
+        });
     }
+
+    document.getElementById("app").innerHTML = `
+        <div class="header">
+            <button class="back-btn" onclick="renderDefaultManagerView('${type}')">戻る</button>
+            <span>${isEdit ? "✏️ 編集" : "➕ 追加"}</span>
+        </div>
+
+        <div class="content" style="background:#f8fafc;">
+        <input type="hidden" id="defOldValue" value="${oldValue}">
+        <input type="hidden" id="defType" value="${type}">
+
+            <div style="background:#fff;padding:16px;border-radius:12px;">
+
+                ${
+                    type === "schedule"
+                    ? `
+                        <label style="font-weight:bold;font-size:14px;">
+                            テンプレ名
+                        </label>
+
+                        <input
+                            id="defName"
+                            type="text"
+                            value="${item ? item.name : ""}"
+                            style="width:100%;margin:8px 0 16px 0;">
+
+                        <label style="font-weight:bold;font-size:14px;">
+                            テンプレ本文
+                        </label>
+
+                        <textarea
+                            id="defValue"
+                            style="
+                                width:100%;
+                                height:320px;
+                                resize:vertical;
+                                margin-top:8px;
+                                white-space:pre-wrap;
+                                font-family:inherit;
+                                font-size:14px;">${item ? item.value : ""}</textarea>
+                    `
+                    : `
+                        <label style="font-weight:bold;font-size:14px;">
+                            項目名
+                        </label>
+
+                        <input
+                            id="defValue"
+                            type="text"
+                            value="${item ? item.value : ""}"
+                            style="width:100%;margin-top:8px;">
+                    `
+                }
+
+                <div style="margin-top:20px;text-align:center;">
+
+                    <button
+                        onclick="saveDefaultItem('${type}','${isEdit ? oldValue : ""}')"
+                        style="
+                            background:#2563eb;
+                            color:#fff;
+                            border:none;
+                            border-radius:8px;
+                            padding:10px 28px;
+                            font-size:14px;
+                            font-weight:bold;">
+                        保存
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+}
 
     async function submitDefaultForm() {
-        const newValue = document.getElementById('defNewValue').value;
-        const oldValue = document.getElementById('defOldValue').value;
-        const type = document.getElementById('defType').value;
-        if(!newValue) return alert("項目名を入力してください");
 
-        showLoading("保存中...");
-        let res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'save_default', old_value: oldValue, new_value: newValue, type: type }) });
-        let result = await res.json();
-        if (result.success) { showToast(result.message); await fetchSchedules(false); renderDefaultManagerView(type); }
-        else alert(result.message);
+    const type = document.getElementById('defType').value;
+    const oldValue = document.getElementById('defOldValue').value;
+
+    let value = "";
+    let name = "";
+
+    if (type === "schedule") {
+
+        name = document.getElementById("defName").value.trim();
+        value = document.getElementById("defValue").value;
+
+        if (!name) return alert("テンプレ名を入力してください");
+        if (!value) return alert("本文を入力してください");
+
+    } else {
+
+        value = document.getElementById("defValue").value.trim();
+
+        if (!value) return alert("項目名を入力してください");
     }
+
+    showLoading("保存中...");
+
+    const res = await fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "save_default",
+            old_value: oldValue,
+            value: value,
+            name: name,
+            type: type
+        })
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+        showToast(result.message);
+        await fetchSchedules(false);
+        renderDefaultManagerView(type);
+    } else {
+        alert(result.message);
+    }
+}
 
     async function deleteDefaultItem(value, type) {
         if(!confirm(`「${value}」を削除しますか？`)) return;
