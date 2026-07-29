@@ -178,6 +178,7 @@
     };
     let confirmStateMap = {};
     let notifications = [];
+    let latestNotificationId = "";
 
     // -- Utility helpers
     function createHeaderHtml(leftHtml = '', title = '', rightHtml = '') {
@@ -318,7 +319,10 @@ console.log(currentUser);
         const schedResult = await apiPost({ action: 'get_schedules', family_id: currentUser.family_id });
         if (schedResult && schedResult.success) {
             rawSchedules = schedResult.schedules || [];
-            notifications = schedResult.notifications || [];        
+            notifications = schedResult.notifications || [];
+            if (notifications.length > 0) {
+                latestNotificationId = notifications[0].notification_id;
+            }
             myAttendances = schedResult.myAttendances || [];
             allAttendances = schedResult.allAttendances || [];
             if (schedResult.defaults) {
@@ -371,11 +375,7 @@ console.log(currentUser);
             };
       }).filter(Boolean);
     }
-    function getUnreadCount(notifications) {
-        const lastReadTime = Number(localStorage.getItem('lastReadTime')) || 0;
-        return notifications.filter(n => n.time > lastReadTime).length;
-    }
-
+    
     function openNotifications() {
         const notiModal = document.getElementById('notiModal');
         if (notiModal) notiModal.style.display = 'flex';
@@ -384,9 +384,18 @@ console.log(currentUser);
         if (badge) badge.style.display = 'none';
     }
 
-    function closeNotifications() {
+    async function closeNotifications() {
+
         const notiModal = document.getElementById('notiModal');
         if (notiModal) notiModal.style.display = 'none';
+
+        if (latestNotificationId) {
+            await apiPost({
+                action: "read_notifications",
+                user_id: currentUser.user_id,
+                notification_id: latestNotificationId
+            });
+        }
     }
 
     // -- Side menu
