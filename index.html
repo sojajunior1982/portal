@@ -386,10 +386,6 @@
         if (notiModal) notiModal.style.display = 'none';
 
         if (latestNotificationId) {
-
-console.log(currentUser.user_id);
-console.log(latestNotificationId);
-            
             await apiPost({
                 action: "read_notifications",
                 user_id: currentUser.user_id,
