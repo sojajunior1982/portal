@@ -445,17 +445,28 @@
     }
 }
     async function fetchUserData(token) {
-        showLoading("自動ログイン中...");
-        const loginResult = await apiPost({ action: 'auto_login', token });
-        if (loginResult && loginResult.success) {
-            currentUser = loginResult.user;
-            await ();
-        } else {
-            localStorage.removeItem('my_token');
-            renderLoginView();
-        }
-    }
+    showLoading("自動ログイン中...");
 
+    const loginResult = await apiPost({
+        action: 'auto_login',
+        token
+    });
+
+    if (loginResult && loginResult.success) {
+
+        currentUser = loginResult.user;
+        currentUser.last_notification_id =
+            loginResult.user.last_notification_id || "";
+
+        await fetchSchedules();
+
+    } else {
+
+        localStorage.removeItem('my_token');
+        renderLoginView();
+
+    }
+}
     // -- Fetch schedules + defaults + attendances
     async function fetchSchedules(isInitial = true) {
         if (isInitial) showLoading("予定を読み込み中...");
