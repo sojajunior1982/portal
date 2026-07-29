@@ -397,11 +397,8 @@
             const result = await apiPost({
                 action: "read_notifications",
                 user_id: currentUser.user_id,
-                notification_id: latestNotificationId   // ←ここを修正
+                notification_id: latestNotificationId
             });
-
-            alert(JSON.stringify(result));
-
             currentUser.last_notification_id = latestNotificationId;
         }
     }
