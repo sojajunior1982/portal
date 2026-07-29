@@ -659,6 +659,9 @@ document.getElementById('app').innerHTML = `
 
             if (events.length > 0) {
 
+    const hasRecruit = events.some(ev => hasRecruitingRoles(ev));
+    const hasNew = events.some(ev => isNewUpdate(ev.updated_at));
+
     marks += `
     <div style="
         font-size:13px;
@@ -846,8 +849,7 @@ function renderListView() {
     html += `
 <div class="content">
 
-    <div class="month-selector">
-    <div style="
+<div style="
 display:flex;
 justify-content:center;
 gap:8px;
@@ -890,7 +892,8 @@ cursor:pointer;
 
 </div>
 
-        <span class="arrow"
+<div class="month-selector">
+            <span class="arrow"
             onclick="
                 currentMonth.setMonth(currentMonth.getMonth()-1);
                 renderListView();
