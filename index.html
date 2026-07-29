@@ -332,58 +332,60 @@
 
     // -- Notifications
     function generateNotifications() {
+    const now = new Date();
+    const notifications = [];
+
+    rawSchedules.forEach(ev => {
+
+        console.log(ev);
+
         if (!ev.updated_at) return;
 
         const upd = new Date(ev.updated_at);
+
+        console.log(upd);
+
         const action = ev.update_type;
 
-        rawSchedules.forEach(ev => {
+        const diffDays = (now - upd) / (1000 * 60 * 60 * 24);
+        if (diffDays > 3 || diffDays < 0) return;
 
-console.log(ev.updated_at, ev.update_type);
-            
-            if (!ev.updated_at) return;
+        const d = new Date(ev.date);
+        const dateStr = `${d.getMonth()+1}月${d.getDate()}日`;
 
-            const upd = new Date(ev.updated_at);
-            const action = ev.update_type;
+        let icon = "";
+        let msg = "";
 
-            const diffDays = (now - upd) / (1000 * 60 * 60 * 24);
-            if (diffDays > 3 || diffDays < 0) return;
-
-            const d = new Date(ev.date);
-            const dateStr = `${d.getMonth()+1}月${d.getDate()}日`;
-
-            let icon = "";
-            let msg = "";
-
-            switch (action) {
-                case "created":
-                    icon = "📅";
-                    msg = `${dateStr}「${ev.tab_name}」が追加されました。`;
-                    break;
-
-             case "updated":
-                    icon = "✏️";
-                    msg = `${dateStr}「${ev.tab_name}」が変更されました。`;
-                    break;
-
-             case "deleted":
-                 icon = "🗑️";
-                 msg = `${dateStr}「${ev.tab_name}」が削除されました。`;
+        switch(action){
+            case "created":
+                icon="📅";
+                msg=`${dateStr}「${ev.tab_name}」が追加されました。`;
                 break;
 
-              default:
-                  return;
-          }
+            case "updated":
+                icon="✏️";
+                msg=`${dateStr}「${ev.tab_name}」が変更されました。`;
+                break;
 
-          notifications.push({
-              time: upd.getTime(),
-              date: dateStr,
-              msg: `${icon} ${msg}`
+            case "deleted":
+                icon="🗑️";
+                msg=`${dateStr}「${ev.tab_name}」が削除されました。`;
+                break;
+
+            default:
+                return;
+        }
+
+        notifications.push({
+            time: upd.getTime(),
+            date: dateStr,
+            msg: `${icon} ${msg}`
         });
     });
-        notifications.sort((a, b) => b.time - a.time);
-        return notifications;
-    }
+
+    notifications.sort((a,b)=>b.time-a.time);
+    return notifications;
+}
     function getUnreadCount(notifications) {
         const lastReadTime = Number(localStorage.getItem('lastReadTime')) || 0;
         return notifications.filter(n => n.time > lastReadTime).length;
