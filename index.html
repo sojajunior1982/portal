@@ -313,6 +313,9 @@
         const schedResult = await apiPost({ action: 'get_schedules', family_id: currentUser.family_id });
         if (schedResult && schedResult.success) {
             rawSchedules = schedResult.schedules || [];
+
+console.log(rawSchedules);
+            
             myAttendances = schedResult.myAttendances || [];
             allAttendances = schedResult.allAttendances || [];
             if (schedResult.defaults) {
@@ -336,53 +339,46 @@
     const notifications = [];
 
     rawSchedules.forEach(ev => {
+    if (!ev.updated_at) return;
 
-        console.log(ev);
+    const upd = new Date(ev.updated_at);
+    const action = ev.update_type;
 
-        if (!ev.updated_at) return;
+    const diffDays = (now - upd) / (1000 * 60 * 60 * 24);
+    if (diffDays > 3 || diffDays < 0) return;
 
-        const upd = new Date(ev.updated_at);
+    const d = new Date(ev.date);
+    const dateStr = `${d.getMonth()+1}月${d.getDate()}日`;
 
-        console.log(upd);
+    let icon = "";
+    let msg = "";
 
-        const action = ev.update_type;
+    switch (action) {
+        case "created":
+            icon = "📅";
+            msg = `${dateStr}「${ev.tab_name}」が追加されました。`;
+            break;
 
-        const diffDays = (now - upd) / (1000 * 60 * 60 * 24);
-        if (diffDays > 3 || diffDays < 0) return;
+        case "updated":
+            icon = "✏️";
+            msg = `${dateStr}「${ev.tab_name}」が変更されました。`;
+            break;
 
-        const d = new Date(ev.date);
-        const dateStr = `${d.getMonth()+1}月${d.getDate()}日`;
+        case "deleted":
+            icon = "🗑️";
+            msg = `${dateStr}「${ev.tab_name}」が削除されました。`;
+            break;
 
-        let icon = "";
-        let msg = "";
+        default:
+            return;
+    }
 
-        switch(action){
-            case "created":
-                icon="📅";
-                msg=`${dateStr}「${ev.tab_name}」が追加されました。`;
-                break;
-
-            case "updated":
-                icon="✏️";
-                msg=`${dateStr}「${ev.tab_name}」が変更されました。`;
-                break;
-
-            case "deleted":
-                icon="🗑️";
-                msg=`${dateStr}「${ev.tab_name}」が削除されました。`;
-                break;
-
-            default:
-                return;
-        }
-
-        notifications.push({
-            time: upd.getTime(),
-            date: dateStr,
-            msg: `${icon} ${msg}`
-        });
+    notifications.push({
+        time: upd.getTime(),
+        date: dateStr,
+        msg: `${icon} ${msg}`
     });
-
+});
     notifications.sort((a,b)=>b.time-a.time);
     return notifications;
 }
