@@ -305,6 +305,8 @@
     let notifications = [];
     let latestNotificationId = "";
     let currentMonth = new Date();
+    let holidays = {};
+    let currentMonth = new Date();
 
     // -- Utility helpers
     function createHeaderHtml(leftHtml = '', title = '', rightHtml = '') {
@@ -448,6 +450,7 @@
         if (schedResult && schedResult.success) {
             rawSchedules = schedResult.schedules || [];
             notifications = schedResult.notifications || [];
+            holidays = schedResult.holidays || {};
             currentUser.last_notification_id = schedResult.last_notification_id || "";
             
             if (notifications.length > 0) {
@@ -580,7 +583,10 @@
     for(let d=1;d<=days;d++){
 
         const dateObj=new Date(year,month,d);
-        const key=dateObj.toISOString().slice(0,10);
+        const key =
+    year + "-" +
+    String(month + 1).padStart(2, "0") + "-" +
+    String(d).padStart(2, "0");
 
         const events=groupedSchedules[key]||[];
 
@@ -615,7 +621,141 @@
 
     return html;
 }
-    
+    function createMonthCalendar() {
+
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    const startWeek = firstDay.getDay();
+    const lastDate = lastDay.getDate();
+
+    const today = new Date();
+
+    let html = `
+    <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;">
+        <thead>
+            <tr style="background:#f8fafc;">
+                <th style="color:#ef4444;padding:8px;">日</th>
+                <th style="padding:8px;">月</th>
+                <th style="padding:8px;">火</th>
+                <th style="padding:8px;">水</th>
+                <th style="padding:8px;">木</th>
+                <th style="padding:8px;">金</th>
+                <th style="color:#2563eb;padding:8px;">土</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+    let day = 1;
+
+    for (let row = 0; row < 6; row++) {
+
+        html += "<tr>";
+
+        for (let col = 0; col < 7; col++) {
+
+            if ((row === 0 && col < startWeek) || day > lastDate) {
+                html += `<td style="height:82px;border:1px solid #eee;"></td>`;
+                continue;
+            }
+
+            const yyyy = year;
+            const mm = String(month + 1).padStart(2, "0");
+            const dd = String(day).padStart(2, "0");
+            const key = `${yyyy}-${mm}-${dd}`;
+
+            const events = groupedSchedules[key] || [];
+
+            const isToday =
+                today.getFullYear() === yyyy &&
+                today.getMonth() === month &&
+                today.getDate() === day;
+
+            const isHoliday = holidays[key];
+
+            let color = "#1e293b";
+
+            if (col === 0 || isHoliday) color = "#ef4444";
+            if (col === 6) color = "#2563eb";
+
+            let marks = "";
+
+            if (events.length > 0) {
+
+                const hasRecruit = events.some(ev => hasRecruitingRoles(ev));
+                const hasNew = events.some(ev => isNewUpdate(ev.updated_at));
+
+                marks += `<div style="font-size:15px;">⚾</div>`;
+
+                if (hasRecruit)
+                    marks += `<div style="font-size:11px;">🤝</div>`;
+
+                if (hasNew)
+                    marks += `<div style="font-size:11px;">🔴</div>`;
+            }
+
+            html += `
+            <td
+                onclick="${events.length ? `goToDetail('${key}')` : ''}"
+                style="
+                    vertical-align:top;
+                    height:82px;
+                    border:1px solid #eee;
+                    padding:4px;
+                    cursor:${events.length ? 'pointer' : 'default'};
+                ">
+
+                <div
+                    style="
+                        font-weight:bold;
+                        color:${color};
+                        ${isToday ? `
+                        background:#2563eb;
+                        color:#fff;
+                        width:26px;
+                        height:26px;
+                        border-radius:50%;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        margin:auto;
+                        ` : ""}
+                    ">
+                    ${day}
+                </div>
+
+                ${isHoliday ? `
+                    <div style="
+                        font-size:9px;
+                        color:#ef4444;
+                        margin-top:2px;
+                        line-height:1.2;
+                    ">
+                        ${holidays[key]}
+                    </div>
+                ` : ""}
+
+                ${marks}
+
+            </td>
+            `;
+
+            day++;
+        }
+
+        html += "</tr>";
+
+        if (day > lastDate) break;
+    }
+
+    html += "</tbody></table>";
+
+    return html;
+}
 function renderListView() {
     currentActiveDate = null;
 
