@@ -312,10 +312,7 @@
         if (isInitial) showLoading("予定を読み込み中...");
         const schedResult = await apiPost({ action: 'get_schedules', family_id: currentUser.family_id });
         if (schedResult && schedResult.success) {
-            rawSchedules = schedResult.schedules || [];
-
-console.log(rawSchedules);
-            
+            rawSchedules = schedResult.schedules || [];            
             myAttendances = schedResult.myAttendances || [];
             allAttendances = schedResult.allAttendances || [];
             if (schedResult.defaults) {
@@ -378,16 +375,8 @@ console.log(rawSchedules);
         date: dateStr,
         msg: `${icon} ${msg}`
     });
-
-console.log("追加", dateStr, action, upd);
-        
 });
     notifications.sort((a,b)=>b.time-a.time);
-
-console.log("通知件数", notifications.length);
-console.log(notifications);
-
-        
     return notifications;
 }
     function getUnreadCount(notifications) {
@@ -432,6 +421,11 @@ console.log(notifications);
     function renderListView() {
         currentActiveDate = null;
         const notiList = generateNotifications();
+
+console.log(notiList.length);
+console.log(notiList);
+
+        
         const unreadCount = getUnreadCount(notiList);
         const badgeHtml = unreadCount > 0 ? `<span class="badge">${unreadCount}</span>` : '';
 
