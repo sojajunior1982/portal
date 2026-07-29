@@ -1206,6 +1206,12 @@
             `;
         });
         let tabOptionsHtml = appDefaults.tab.map(t => `<option value="${t}"></option>`).join('');
+        let scheduleTemplates = appDefaultsFull.filter(d => d.type === "schedule");
+
+        let scheduleOptionsHtml = scheduleTemplates
+            .map(t => `<option value="${t.name}"></option>`)
+            .join("");
+        
         let placeOptionsHtml = appDefaults.place.map(p => `<option value="${p}"></option>`).join('');
         let checkboxesHtml = "";
         appDefaults.support.forEach(role => {
@@ -1238,6 +1244,20 @@
                     </div>
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">詳細・持ち物</label>
+                        <div style="margin-bottom:12px;">
+                        <label style="display:block;font-size:14px;font-weight:bold;margin-bottom:4px;"> テンプレート </label>
+                            <input
+                                type="text"
+                                id="scheduleTemplate"
+                                list="schedule-defaults"
+                                placeholder="テンプレートを選択"
+                                onchange="applyScheduleTemplate()"
+                                style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+
+                            <datalist id="schedule-defaults">
+                                ${scheduleOptionsHtml}
+                            </datalist>
+                        </div>                        
                         <textarea id="newDescription" rows="5" placeholder="詳細やスケジュールを記入してください" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">${eventData.description}</textarea>
                     </div>
                     <div style="margin-bottom: 24px;">
@@ -1261,6 +1281,24 @@
         document.getElementById('app').innerHTML = html;
     }
 
+    function applyScheduleTemplate() {
+        const templateName = document.getElementById("scheduleTemplate").value;
+        if (!templateName) return;
+        const temp = appDefaultsFull.find(d =>
+            d.type === "schedule" &&
+            d.name === templateName
+        );
+        if (!temp) {
+            alert("テンプレートが見つかりません。");
+            return;
+        }
+        if (document.getElementById("newDescription").value.trim() !== "") {
+            if (!confirm("現在入力中の内容をテンプレートで置き換えますか？")) {
+                return;
+            }
+        }
+        document.getElementById("newDescription").value = temp.value;
+    }
     function addCustomRoleInput() {
         const container = document.getElementById('customRolesContainer');
         const div = document.createElement('div');
