@@ -1282,7 +1282,7 @@ console.log(currentUser);
         const result = await apiPost({
             action: "delete_schedule",
             schedule_id: scheduleId,
-            user_name: currentUser.name
+            user_name: currentUser.user_name
         });
 
         if (result && result.success) {
