@@ -315,11 +315,6 @@
     async function fetchSchedules(isInitial = true) {
         if (isInitial) showLoading("予定を読み込み中...");
         const schedResult = await apiPost({ action: 'get_schedules', family_id: currentUser.family_id });
-
-console.log(schedResult);
-
-
-        
         if (schedResult && schedResult.success) {
             rawSchedules = schedResult.schedules || [];
             notifications = schedResult.notifications || [];
