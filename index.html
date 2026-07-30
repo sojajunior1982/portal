@@ -734,16 +734,7 @@ document.getElementById('app').innerHTML = `
                     ${day}
                 </div>
 
-                ${isHoliday ? `
-                    <div style="
-                        font-size:9px;
-                        color:#ef4444;
-                        margin-top:2px;
-                        line-height:1.2;
-                    ">
-                        ${holidays[key]}
-                    </div>
-                ` : ""}
+
 
                 ${marks}
 
@@ -783,6 +774,19 @@ function createListTimeline() {
     dates.forEach(date => {
 
         const holiday = holidays[date];
+        const events = groupedSchedules[date];
+
+        const ev = events[0];
+
+        const otherCount = events.length - 1;
+
+        const recruit = events.some(e => hasRecruitingRoles(e));
+        const isNew = events.some(e => isNewUpdate(e.updated_at));
+
+        const other =
+            otherCount > 0
+                ? ` 他${otherCount}件`
+                : "";
 
         html += `
         <div style="
@@ -802,14 +806,7 @@ function createListTimeline() {
                 📅 ${date}
                 ${holiday ? `<span style="color:#ef4444;">（${holiday}）</span>` : ""}
             </div>
-        `;
 
-        groupedSchedules[date].forEach(ev => {
-
-            const recruit = hasRecruitingRoles(ev);
-            const isNew = isNewUpdate(ev.updated_at);
-
-            html += `
             <div
                 onclick="goToDetail('${date}')"
                 style="
@@ -819,10 +816,34 @@ function createListTimeline() {
                 ">
 
                 <div style="
-                    font-size:16px;
-                    font-weight:bold;
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    gap:8px;
                 ">
-                    ⚾ ${ev.tab_name}
+
+                    <div style="
+                        flex:1;
+                        min-width:0;
+                        overflow:hidden;
+                        white-space:nowrap;
+                        text-overflow:ellipsis;
+                        font-size:16px;
+                        font-weight:bold;
+                    ">
+                        ⚾ ${shortenTitle(ev.tab_name)}${other}
+                    </div>
+
+                    <div style="
+                        min-width:40px;
+                        text-align:right;
+                        white-space:nowrap;
+                        font-size:14px;
+                    ">
+                        ${isNew ? "🆕 " : ""}
+                        ${recruit ? "🤝" : ""}
+                    </div>
+
                 </div>
 
                 <div style="
@@ -833,24 +854,23 @@ function createListTimeline() {
                     📍 ${ev.location || "未設定"}
                 </div>
 
-                <div style="margin-top:6px;">
-
-                    ${recruit ? "🤝 " : ""}
-
-                    ${isNew ? "🔴 " : ""}
-
-                </div>
-
             </div>
-            `;
 
-        });
-
-        html += "</div>";
+        </div>
+        `;
 
     });
 
     return html;
+}
+    function shortenTitle(title, max = 15) {
+
+    if (!title) return "";
+
+    return title.length > max
+        ? title.substring(0, max) + "..."
+        : title;
+
 }
     
 function renderListView() {
@@ -947,7 +967,7 @@ cursor:pointer;
     margin:8px 0 12px;
     text-align:center;
 ">
-    🔴 New　🤝 募集あり　⚾ 予定
+    🆕 New　🤝 募集あり　⚾ 予定
 </div>
 
 ${
