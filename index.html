@@ -1765,7 +1765,16 @@ ${
 
     function renderScheduleForm(dateStr, scheduleId = null) {
         let isEdit = scheduleId !== null;
-        let eventData = { schedule_id: "", date: dateStr, tab_name: "", priority: 1, location: "", description: "", recruit_roles: "" };
+        let eventData = {
+            schedule_id: "",
+            date: dateStr,
+            tab_name: "",
+            priority: 1,
+            icon: "⚾",
+            location: "",
+            description: "",
+            recruit_roles: ""
+        };
         if (isEdit) {
             const evts = groupedSchedules[dateStr] || [];
             const found = evts.find(e => String(e.schedule_id) === String(scheduleId));
@@ -1787,6 +1796,9 @@ ${
             `;
         });
         let tabOptionsHtml = appDefaults.tab.map(t => `<option value="${t}"></option>`).join('');
+        let iconOptionsHtml = appDefaults.icon
+            .map(i => `<option value="${i}"></option>`)
+            .join("");
         let scheduleTemplates = appDefaultsFull.filter(d => d.type === "schedule");
 
         let scheduleOptionsHtml = scheduleTemplates
@@ -1813,7 +1825,35 @@ ${
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">日付 <span style="color:#ef4444">*</span></label>
                         <input type="date" id="newDate" value="${eventData.date}" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
                     </div>
-                    <div style="margin-bottom: 12px;">
+                    <div style="margin-bottom:12px;">
+
+<label
+style="
+display:block;
+font-size:14px;
+font-weight:bold;
+margin-bottom:4px;
+">
+アイコン
+</label>
+
+<input
+id="newIcon"
+type="text"
+list="icon-defaults"
+value="${eventData.icon || "⚾"}"
+style="
+width:100%;
+padding:10px;
+border:1px solid #cbd5e1;
+border-radius:8px;
+">
+
+<datalist id="icon-defaults">
+${iconOptionsHtml}
+</datalist>
+
+</div>
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">予定の種類 (タブ名) <span style="color:#ef4444">*</span></label>
                         <input type="text" id="newTabName" value="${eventData.tab_name}" list="tab-defaults" placeholder="選択するか入力してください" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
                         <datalist id="tab-defaults">${tabOptionsHtml}</datalist>
@@ -1826,15 +1866,14 @@ ${
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">詳細・持ち物</label>
                         <div style="margin-bottom:12px;">
-                        <label style="display:block;font-size:14px;font-weight:bold;margin-bottom:4px;"> テンプレート </label>
                             <input
                                 type="text"
                                 id="scheduleTemplate"
                                 list="schedule-defaults"
-                                placeholder="テンプレートを選択"
+                                placeholder="--テンプレートを選択--"
                                 onchange="applyScheduleTemplate()"
                                 style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
-
+ 
                             <datalist id="schedule-defaults">
                                 ${scheduleOptionsHtml}
                             </datalist>
@@ -1895,6 +1934,7 @@ ${
     async function submitScheduleForm() {
         const dateVal = document.getElementById('newDate').value;
         const tabVal = document.getElementById('newTabName').value;
+        const icon = document.getElementById("newIcon").value || "⚾";
         const scheduleIdVal = document.getElementById('editScheduleId').value;
         if (!dateVal || !tabVal) return alert("日付と予定の種類(タブ名)は必須です！");
         const checkedRoles = Array.from(document.querySelectorAll('.role-check:checked')).map(cb => cb.value);
@@ -1910,6 +1950,7 @@ ${
             description: document.getElementById('newDescription').value,
             recruit_roles: finalRecruitRoles,
             user_name: currentUser.user_name
+            icon: icon,
         };
         showLoading("スケジュールを保存中...");
         const result = await apiPost(payload);
