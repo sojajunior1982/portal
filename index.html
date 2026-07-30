@@ -514,14 +514,19 @@
             myAttendances = schedResult.myAttendances || [];
             allAttendances = schedResult.allAttendances || [];
             if (schedResult.defaults) {
-                appDefaults = {
-                    tab: schedResult.defaults.tab || appDefaults.tab,
-                    icon: appDefaultsFull.filter(d => d.type=="icon").map(d=>d.value),
-                    place: schedResult.defaults.place || appDefaults.place,
-                    support: schedResult.defaults.support || appDefaults.support
-                };
-                appDefaultsFull = schedResult.defaultsFull || [];
-            }
+
+    appDefaultsFull = schedResult.defaultsFull || [];
+
+    appDefaults = {
+        tab: schedResult.defaults.tab || [],
+        icon: appDefaultsFull
+            .filter(d => d.type === "icon")
+            .map(d => d.value),
+        place: schedResult.defaults.place || [],
+        support: schedResult.defaults.support || [],
+        area: schedResult.defaults.area || []
+    };
+}
             groupSchedulesByDate();
             if (currentActiveDate !== null) renderDetailView(currentActiveDate); else renderListView();
         } else {
