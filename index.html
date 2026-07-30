@@ -1956,6 +1956,7 @@ ${
 
     const typeNames = {
         tab: "予定名",
+        icon: "アイコン"
         place: "場所",
         support: "役割",
         area: "自転車班",
@@ -1971,7 +1972,7 @@ ${
     html += `
     <div class="content" style="background:#f8fafc; flex:1;">
 
-        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:16px;">
+        <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:16px;">
 
             <button onclick="renderDefaultManagerView('tab')"
                 style="padding:8px;border-radius:8px;border:1px solid #cbd5e1;font-size:12px;font-weight:bold;
@@ -1980,6 +1981,19 @@ ${
                     :'background:white;color:#475569;'}">
                 予定名
             </button>
+
+<button onclick="renderDefaultManagerView('icon')"
+style="
+padding:8px;
+border-radius:8px;
+border:1px solid #cbd5e1;
+font-size:12px;
+font-weight:bold;
+${type==="icon"
+    ?'background:#1e3a8a;color:white;'
+    :'background:white;color:#475569;'}">
+アイコン
+</button>      
 
             <button onclick="renderDefaultManagerView('place')"
                 style="padding:8px;border-radius:8px;border:1px solid #cbd5e1;font-size:12px;font-weight:bold;
