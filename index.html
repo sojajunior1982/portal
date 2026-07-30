@@ -340,20 +340,14 @@
     // -- Utility helpers
     function createHeaderHtml(leftHtml = '', title = '', rightHtml = '') {
 
-    const refreshBtn = `
-        <button
-            onclick="reloadSchedules()"
-            title="最新情報を取得"
-            style="
-                background:none;
-                border:none;
-                font-size:20px;
-                cursor:pointer;
-                margin-right:8px;
-            ">
-            🔄
-        </button>
+    return `
+        <div class="header">
+            ${leftHtml}
+            <span style="margin-left:24px;">${title}</span>
+            ${rightHtml}
+        </div>
     `;
+}
 
     return `
         <div class="header">
