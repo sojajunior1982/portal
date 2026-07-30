@@ -1012,48 +1012,7 @@ ${
     document.getElementById("app").innerHTML = html;
 }
 
-    function createListTimeline(){
-
-let html="";
-
-const dates=Object.keys(groupedSchedules).sort();
-
-dates.forEach(date=>{
-
-    html+=`
-    <div class="card">
-
-        <div style="
-        font-size:18px;
-        font-weight:bold;
-        margin-bottom:8px;
-        ">
-        ${date}
-        ${holidays[date] ? "（"+holidays[date]+"）" : ""}
-        </div>
-    `;
-
-    groupedSchedules[date].forEach(ev=>{
-
-        html+=`
-        <div style="
-        padding:8px 0;
-        border-top:1px solid #eee;
-        ">
-        ⚾ ${ev.tab_name}
-        </div>
-        `;
-
-    });
-
-    html+="</div>";
-
-});
-
-return html;
-
-}
-    
+  
     function goToDetail(date) {
         currentActiveTabIndex = 0;
         renderDetailView(date);
