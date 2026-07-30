@@ -333,10 +333,38 @@
     let currentMonth = new Date();
     let holidays = {};
     let scheduleViewMode = "list";
-
+    let isRefreshing = false;
+    let touchStartY = 0;
+    let touchMoveY = 0;
+    
     // -- Utility helpers
     function createHeaderHtml(leftHtml = '', title = '', rightHtml = '') {
-    return `<div class="header">${leftHtml}<span style="margin-left: 24px;">${title}</span>${rightHtml}</div>`;
+
+    const refreshBtn = `
+        <button
+            onclick="reloadSchedules()"
+            title="最新情報を取得"
+            style="
+                background:none;
+                border:none;
+                font-size:20px;
+                cursor:pointer;
+                margin-right:8px;
+            ">
+            🔄
+        </button>
+    `;
+
+    return `
+        <div class="header">
+            ${leftHtml}
+            <span style="margin-left:24px;">${title}</span>
+            <div style="display:flex;align-items:center;">
+                ${refreshBtn}
+                ${rightHtml}
+            </div>
+        </div>
+    `;
 }
 
     async function apiPost(body) {
@@ -361,6 +389,20 @@
         }, duration);
     }
 
+    document.addEventListener("visibilitychange", async () => {
+
+    if (
+        document.visibilityState === "visible" &&
+        currentUser &&
+        currentUser.family_id
+    ) {
+        await reloadSchedules();
+    }
+
+});
+
+
+    
     function showLoading(msg) {
         document.getElementById('app').innerHTML = `
             <div class="header"><span>総社ジュニアポータル</span></div>
@@ -403,6 +445,55 @@
         const diffDays = (now - updateDate) / (1000 * 60 * 60 * 24);
         return diffDays >= 0 && diffDays <= 2;
     }
+
+    async function reloadSchedules() {
+
+    if (isRefreshing) return;
+
+    isRefreshing = true;
+
+    showLoading("最新情報を取得中...");
+
+    try {
+
+        await fetchSchedules(false);
+
+        showToast("最新情報を取得しました");
+
+    } finally {
+
+        isRefreshing = false;
+
+    }
+
+}
+    let touchStartY = 0;
+let touchMoveY = 0;
+
+document.addEventListener("touchstart", e => {
+
+    touchStartY = e.touches[0].clientY;
+
+});
+
+document.addEventListener("touchmove", e => {
+
+    touchMoveY = e.touches[0].clientY;
+
+});
+
+document.addEventListener("touchend", async () => {
+
+    if (
+        window.scrollY === 0 &&
+        touchMoveY - touchStartY > 80
+    ) {
+
+        await reloadSchedules();
+
+    }
+
+});
 
     // Group schedules by date and sort by priority
     function groupSchedulesByDate() {
