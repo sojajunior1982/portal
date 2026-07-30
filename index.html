@@ -1073,7 +1073,13 @@ cursor:pointer;
     text-align:center;
 ">
     🆕 New　🤝 募集あり　⚾ 予定
-</div>document.getElementById("app").innerHTML = html;
+
+`;
+    
+</div>
+        `;
+    
+document.getElementById("app").innerHTML = html;
 
 const content = document.querySelector(".content");
 
@@ -1081,15 +1087,11 @@ let startY = 0;
 let moveY = 0;
 
 content.addEventListener("touchstart", e => {
-
     startY = e.touches[0].clientY;
-
 });
 
 content.addEventListener("touchmove", e => {
-
     moveY = e.touches[0].clientY;
-
 });
 
 content.addEventListener("touchend", async () => {
@@ -1098,13 +1100,10 @@ content.addEventListener("touchend", async () => {
         content.scrollTop === 0 &&
         moveY - startY > 80
     ) {
-
         await reloadSchedules();
-
     }
 
 });
-
     // notification modal
     html += `
 <div class="noti-modal" id="notiModal" onclick="closeNotifications()">
