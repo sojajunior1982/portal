@@ -342,15 +342,13 @@
     function createHeaderHtml(leftHtml = '', title = '', rightHtml = '') {
 
     return `
-    <div class="header">
-        ${leftHtml}
-        <span style="margin-left:24px;">${title}</span>
-        <div style="display:flex;align-items:center;">
-            ${refreshBtn}
+        <div class="header">
+            ${leftHtml}
+            <span style="margin-left:24px;">${title}</span>
             ${rightHtml}
         </div>
-    </div>
-`;
+    `;
+
 }
 
     async function apiPost(body) {
