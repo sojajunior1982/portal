@@ -1956,7 +1956,7 @@ ${
 
     const typeNames = {
         tab: "予定名",
-        icon: "アイコン"
+        icon: "アイコン",
         place: "場所",
         support: "役割",
         area: "自転車班",
@@ -2546,14 +2546,15 @@ ${type==="icon"
                     `
                     : `
                         <label style="font-weight:bold;font-size:14px;">
-                            項目名
+                            項目名${type==="icon" ? "アイコン" : "項目名"}
                         </label>
 
                         <input
-                            id="defValue"
-                            type="text"
-                            value="${item ? item.value : ""}"
-                            style="width:100%;margin-top:8px;">
+id="defValue"
+type="text"
+value="${item ? item.value : ""}"
+placeholder="${type==="icon" ? "例：⚾" : ""}"
+style="width:100%;margin-top:8px;">
                     `
                 }
 
