@@ -1798,8 +1798,15 @@ ${
         });
         let tabOptionsHtml = appDefaults.tab.map(t => `<option value="${t}"></option>`).join('');
         let iconOptionsHtml = appDefaults.icon
-            .map(i => `<option value="${i}"></option>`)
-            .join("");
+    .map(i => `
+        <option
+            value="${i}"
+            ${eventData.icon === i ? "selected" : ""}
+        >
+            ${i}
+        </option>
+    `)
+    .join("");
         let scheduleTemplates = appDefaultsFull.filter(d => d.type === "schedule");
 
         let scheduleOptionsHtml = scheduleTemplates
@@ -1838,11 +1845,8 @@ margin-bottom:4px;
 アイコン
 </label>
 
-<input
+<select
 id="newIcon"
-type="text"
-list="icon-defaults"
-value="${eventData.icon || "⚾"}"
 style="
 width:100%;
 padding:10px;
@@ -1850,9 +1854,9 @@ border:1px solid #cbd5e1;
 border-radius:8px;
 ">
 
-<datalist id="icon-defaults">
 ${iconOptionsHtml}
-</datalist>
+
+</select>
 
 </div>
                         <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">予定の種類 (タブ名) <span style="color:#ef4444">*</span></label>
