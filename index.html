@@ -688,14 +688,16 @@ document.getElementById('app').innerHTML = `
     const hasRecruit = events.some(ev => hasRecruitingRoles(ev));
     const hasNew = events.some(ev => isNewUpdate(ev.updated_at));
 
-    marks += `
-    <div style="
-        font-size:13px;
-        font-weight:bold;
-        margin-top:2px;
-    ">
-        ⚾${events.length > 1 ? " " + events.length : ""}
-    </div>`;
+    const icon = events[0].icon || "⚾";
+
+marks += `
+<div style="
+    font-size:13px;
+    font-weight:bold;
+    margin-top:2px;
+">
+    ${icon}${events.length > 1 ? " " + events.length : ""}
+</div>`;
 
     if (hasRecruit)
         marks += `<div style="font-size:11px;">🤝</div>`;
@@ -833,7 +835,7 @@ function createListTimeline() {
                             text-overflow:ellipsis;
                             flex:1;
                         ">
-                            ⚾ ${shortenTitle(ev.tab_name)}
+                            ${ev.icon || "⚾"} ${shortenTitle(ev.tab_name)}
                         </span>
 
                         ${
@@ -1089,7 +1091,7 @@ ${
         events.forEach((event, index) => {
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
             const newBadge = isNewUpdate(event.update) ? `<span style="background:#ef4444; color:white; font-size:9px; padding:2px 4px; border-radius:4px; margin-left:4px; vertical-align:middle; font-weight:bold;">New</span>` : '';
-            html += `<div class="tab ${activeClass}" id="tab-${index}" onclick="switchTab(${index}, ${events.length})">${event.tab_name}${newBadge}</div>`;
+            html += `<div class="tab ${activeClass}" id="tab-${index}" onclick="switchTab(${index}, ${events.length})">${event.icon || "⚾"} ${event.tab_name}${newBadge}</div>`;
         });
         html += `</div><div class="tab-content-box">`;
 
