@@ -783,11 +783,6 @@ function createListTimeline() {
         const recruit = events.some(e => hasRecruitingRoles(e));
         const isNew = events.some(e => isNewUpdate(e.updated_at));
 
-        const other =
-            otherCount > 0
-                ? ` 他${otherCount}件`
-                : "";
-
         html += `
         <div style="
             background:#fff;
@@ -824,21 +819,48 @@ function createListTimeline() {
 
                     <div style="
                         flex:1;
-                        min-width:0;
+                        display:flex;
+                        align-items:center;
+                        gap:6px;
                         overflow:hidden;
-                        white-space:nowrap;
-                        text-overflow:ellipsis;
-                        font-size:16px;
-                        font-weight:bold;
                     ">
-                        ⚾ ${shortenTitle(ev.tab_name)}${other}
+
+                        <span style="
+                            font-size:16px;
+                            font-weight:bold;
+                            overflow:hidden;
+                            white-space:nowrap;
+                            text-overflow:ellipsis;
+                            flex:1;
+                        ">
+                            ⚾ ${shortenTitle(ev.tab_name)}
+                        </span>
+
+                        ${
+                            otherCount > 0
+                            ? `
+                            <span style="
+                                background:#e0f2fe;
+                                color:#0369a1;
+                                font-size:11px;
+                                font-weight:bold;
+                                padding:2px 8px;
+                                border-radius:999px;
+                                white-space:nowrap;
+                                flex-shrink:0;
+                            ">
+                                他${otherCount}件
+                            </span>
+                            `
+                            : ""
+                        }
+
                     </div>
 
                     <div style="
-                        min-width:40px;
-                        text-align:right;
                         white-space:nowrap;
-                        font-size:14px;
+                        font-size:15px;
+                        flex-shrink:0;
                     ">
                         ${isNew ? "🆕 " : ""}
                         ${recruit ? "🤝" : ""}
@@ -849,7 +871,7 @@ function createListTimeline() {
                 <div style="
                     color:#64748b;
                     font-size:13px;
-                    margin-top:4px;
+                    margin-top:6px;
                 ">
                     📍 ${ev.location || "未設定"}
                 </div>
