@@ -978,6 +978,7 @@ function createListTimeline() {
 }
     
 function renderListView() {
+
     currentView = "list";
     currentActiveDate = null;
 
@@ -1044,69 +1045,54 @@ cursor:pointer;
 </div>
 
 <div class="month-selector">
-            <span class="arrow"
-            onclick="
-                currentMonth.setMonth(currentMonth.getMonth()-1);
-                renderListView();
-            ">
-            ◀
-        </span>
 
-        <span class="month-title">
-            ${currentMonth.getFullYear()}年 ${currentMonth.getMonth() + 1}月
-        </span>
+    <span class="arrow"
+        onclick="
+            currentMonth.setMonth(currentMonth.getMonth()-1);
+            renderListView();
+        ">
+        ◀
+    </span>
 
-        <span class="arrow"
-            onclick="
-                currentMonth.setMonth(currentMonth.getMonth()+1);
-                renderListView();
-            ">
-            ▶
-        </span>
+    <span class="month-title">
+        ${currentMonth.getFullYear()}年 ${currentMonth.getMonth()+1}月
+    </span>
 
-    </div>
+    <span class="arrow"
+        onclick="
+            currentMonth.setMonth(currentMonth.getMonth()+1);
+            renderListView();
+        ">
+        ▶
+    </span>
 
-    <div style="
-    font-size:11px;
-    color:#64748b;
-    margin:8px 0 12px;
-    text-align:center;
-">
-    🆕 New　🤝 募集あり　⚾ 予定
-
-`;
-    
 </div>
-        `;
-    
-document.getElementById("app").innerHTML = html;
 
-const content = document.querySelector(".content");
+<div style="
+font-size:11px;
+color:#64748b;
+margin:8px 0 12px;
+text-align:center;
+">
+🆕 New　🤝 募集あり　⚾ 予定
+</div>
 
-let startY = 0;
-let moveY = 0;
+${
+    scheduleViewMode === "calendar"
+        ? createMonthCalendar()
+        : createListTimeline()
+}
 
-content.addEventListener("touchstart", e => {
-    startY = e.touches[0].clientY;
-});
+</div>
+`;
 
-content.addEventListener("touchmove", e => {
-    moveY = e.touches[0].clientY;
-});
+    // ===============================
+    // 通知モーダル
+    // ===============================
 
-content.addEventListener("touchend", async () => {
-
-    if (
-        content.scrollTop === 0 &&
-        moveY - startY > 80
-    ) {
-        await reloadSchedules();
-    }
-
-});
-    // notification modal
     html += `
 <div class="noti-modal" id="notiModal" onclick="closeNotifications()">
+
     <div class="noti-content" onclick="event.stopPropagation()">
 
         <div style="
@@ -1121,6 +1107,7 @@ content.addEventListener("touchend", async () => {
         </div>
 
         <div id="notiListArea">
+
             ${
                 notiList.length > 0
                 ? notiList.map(n => `
@@ -1129,10 +1116,16 @@ content.addEventListener("touchend", async () => {
                         ${n.msg}
                     </div>
                 `).join("")
-                : `<p style="color:#94a3b8;font-size:13px;text-align:center;">
+                : `
+                <p style="
+                    color:#94a3b8;
+                    font-size:13px;
+                    text-align:center;
+                ">
                     新着通知はありません
-                   </p>`
+                </p>`
             }
+
         </div>
 
         <button
@@ -1151,13 +1144,51 @@ content.addEventListener("touchend", async () => {
         </button>
 
     </div>
+
 </div>
 `;
 
-    document.getElementById("app").innerHTML = html;
-}
+    // ===============================
+    // 描画
+    // ===============================
 
-  
+    document.getElementById("app").innerHTML = html;
+
+    // ===============================
+    // プルリフレッシュ
+    // ===============================
+
+    const content = document.querySelector(".content");
+
+    let startY = 0;
+    let moveY = 0;
+
+    content.addEventListener("touchstart", e => {
+
+        startY = e.touches[0].clientY;
+
+    });
+
+    content.addEventListener("touchmove", e => {
+
+        moveY = e.touches[0].clientY;
+
+    });
+
+    content.addEventListener("touchend", async () => {
+
+        if (
+            content.scrollTop === 0 &&
+            moveY - startY > 80
+        ) {
+
+            await reloadSchedules();
+
+        }
+
+    });
+
+}
     function goToDetail(date) {
         currentActiveTabIndex = 0;
         renderDetailView(date);
