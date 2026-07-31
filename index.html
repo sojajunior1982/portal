@@ -611,28 +611,30 @@ lastScheduleFetch = Date.now();
 
 if (redraw) {
 
-    if (currentActiveDate !== null) {
-        renderDetailView(currentActiveDate);
-    } else {
-        renderListView();
+        if (currentActiveDate !== null) {
+            renderDetailView(currentActiveDate);
+        } else {
+            renderListView();
+        }
+
     }
 
 } else {
 
-            
-           console.log(schedResult);
+    console.log(schedResult);
 
-document.getElementById('app').innerHTML = `
+    document.getElementById('app').innerHTML = `
 <div class="content">
     <pre>${JSON.stringify(schedResult, null, 2)}</pre>
 </div>`;
+
+}
         
         
         
         
         
         }
-    }
 
 async function fetchDefaults() {
 
