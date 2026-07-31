@@ -1322,19 +1322,42 @@ ${
 
         events.forEach((event, index) => {
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
-            const myAttsForThisEvent = myAttendances.filter(a => String(a.schedule_id) === String(event.schedule_id));
-            const parentAns = myAttsForThisEvent.find(a => a.type === '保護者');
+            const familyAttsForThisEvent = allAttendances.filter(
+                a =>
+                    String(a.schedule_id) === String(event.schedule_id) &&
+                    a.family_id === currentUser.family_id
+            );
+            const parentAnswers =
+                familyAttsForThisEvent.filter(
+                    a => a.type === "保護者"
+                );
+            let parentStatusRowsHtml = "";
 
-            let parentStatusText = "[未回答]";
-            if (parentAns) {
-                let parsed = parseRolesWithStatus(parentAns.response);
-                parentStatusText = parsed.length > 0 ? parsed.map(p => p.role).join(', ') : "不参加";
-            }
+parentAnswers.forEach(parent => {
+
+    let parsed = parseRolesWithStatus(parent.response);
+
+    let text =
+        parsed.length > 0
+            ? parsed.map(p => p.role).join(", ")
+            : "不参加";
+
+    parentStatusRowsHtml += `
+        <div class="summary-row">
+            <span style="color:#64748b;">
+                保護者 (${parent.name}):
+            </span>
+            <span style="font-weight:bold; color:${text==="不参加" ? "#64748b" : "#0284c7"};">
+                ${text}
+            </span>
+        </div>
+    `;
+});
 
             let childrenStatusRowsHtml = "";
             if (childrenList.length > 0) {
                 childrenList.forEach(childName => {
-                    const childAns = myAttsForThisEvent.find(a => a.type === '団員' && a.name === childName);
+                    const childAns = familyAttsForThisEvent.find(a => a.type === '団員' && a.name === childName);
                     const childStatusText = childAns ? childAns.response : "[未回答]";
                     childrenStatusRowsHtml += `
                         <div class="summary-row">
@@ -1383,10 +1406,10 @@ ${
                             <button onclick="openAllResponseModal('${event.schedule_id}')" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:bold; cursor:pointer;">👥 全員の回答</button>
                         </div>
                         ${childrenStatusRowsHtml}
-                        <div class="summary-row"><span style="color:#64748b;">保護者 (${currentUser.user_name}):</span><span style="font-weight:bold; color: ${parentStatusText === '不参加' ? '#64748b' : '#0284c7'};">${parentStatusText}</span></div>
-                    </div>
-                </div>
-            `;
+                        ${parentStatusRowsHtml}
+        </div>
+</div>
+`;
         });
 
         html += `</div>`;
