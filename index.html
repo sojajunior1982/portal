@@ -339,6 +339,7 @@
     let currentView = "list";
     let lastScheduleFetch = 0;
     const SCHEDULE_CACHE_MS = 5 * 60 * 1000; //5分
+    let autoSyncTimer = null;
     
     // -- Utility helpers
     function createHeaderHtml(leftHtml = '', title = '', rightHtml = '') {
@@ -478,6 +479,23 @@ document.addEventListener("touchend", async () => {
 
 });
 
+    function startAutoSync() {
+
+    if (autoSyncTimer) {
+        clearInterval(autoSyncTimer);
+    }
+
+    autoSyncTimer = setInterval(async () => {
+
+        if (!currentUser) return;
+
+        await refreshSchedulesIfNeeded(false, false);
+
+    }, 5 * 60 * 1000); // 5分ごと
+
+}
+    
+
     // Group schedules by date and sort by priority
     function groupSchedulesByDate() {
         groupedSchedules = {};
@@ -535,6 +553,8 @@ document.addEventListener("touchend", async () => {
 
         await fetchSchedules();
         await fetchDefaults();
+        
+        startAutoSync();        
 
     } else {
 
@@ -562,6 +582,8 @@ document.addEventListener("touchend", async () => {
 
         await fetchSchedules();
         await fetchDefaults();
+
+        startAutoSync();
 
     } else {
 
@@ -737,10 +759,19 @@ async function fetchDefaults() {
     }
 
     function handleLogout() {
-        localStorage.removeItem('my_token');
-        currentUser = null;
-        renderLoginView();
+
+    localStorage.removeItem("my_token");
+
+    if (autoSyncTimer) {
+        clearInterval(autoSyncTimer);
+        autoSyncTimer = null;
     }
+
+    currentUser = null;
+
+    renderLoginView();
+
+}
 
     // -- Main list view
     function createMonthCalendar() {
