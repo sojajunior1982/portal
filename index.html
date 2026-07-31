@@ -1338,21 +1338,38 @@ ${
                 );
             let parentStatusRowsHtml = "";
 
-parentAnswers.forEach(parent => {
+familyAccounts.forEach(account => {
 
-    let parsed = parseRolesWithStatus(parent.response);
+    const parent =
+        parentAnswers.find(
+            p => p.name === account.user_name
+        );
 
-    let text =
-        parsed.length > 0
-            ? parsed.map(p => p.role).join(", ")
-            : "不参加";
+    let text = "[未回答]";
+
+    if (parent) {
+
+        const parsed =
+            parseRolesWithStatus(parent.response);
+
+        text =
+            parsed.length > 0
+                ? parsed.map(p => p.role).join(", ")
+                : "不参加";
+    }
 
     parentStatusRowsHtml += `
         <div class="summary-row">
             <span style="color:#64748b;">
-                保護者 (${parent.name}):
+                保護者 (${account.user_name}):
             </span>
-            <span style="font-weight:bold; color:${text==="不参加" ? "#64748b" : "#0284c7"};">
+            <span style="font-weight:bold; color:${
+                text === "[未回答]"
+                    ? "#94a3b8"
+                    : text === "不参加"
+                        ? "#64748b"
+                        : "#0284c7"
+            };">
                 ${text}
             </span>
         </div>
