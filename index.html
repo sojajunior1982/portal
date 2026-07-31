@@ -310,7 +310,7 @@
 
     <a href="#" onclick="navigateMenu('manageSchedule'); return false;"
        style="display:block; padding:14px 20px; color:#334155; text-decoration:none; border-bottom:1px solid #f1f5f9;">
-        ⚙️ 予定の追加・管理
+        📅 予定の追加・管理
     </a>
 
     <a href="#" onclick="navigateMenu('confirmRoles'); return false;"
@@ -1990,10 +1990,8 @@ familyAccounts.forEach(account => {
         let today = new Date();
         let todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
 
-        let header = createHeaderHtml(`<button class="menu-btn" onclick="renderListView()">☰</button>`, '📅 予定の追加・管理', ``, "edit");
-        let html = `${header}
-            
-            </div>
+        let header = createHeaderHtml(`<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`, '📅 予定の追加・管理', ``, "edit");
+        let html = `${header}</div>
             <div class="content" style="background: #f8fafc; flex: 1;">
                 <div style="background: #ffffff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     <label style="font-weight:bold; font-size:14px; color:#1e293b;">管理する日付を選択</label>
