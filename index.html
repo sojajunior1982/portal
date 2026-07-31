@@ -532,6 +532,7 @@ document.addEventListener("touchend", async () => {
             result.user.last_notification_id || "";
 
         await fetchSchedules();
+        await fetchDefaults();
 
     } else {
 
@@ -558,6 +559,7 @@ document.addEventListener("touchend", async () => {
             loginResult.user.last_notification_id || "";
 
         await fetchSchedules();
+        await fetchDefaults();
 
     } else {
 
@@ -585,21 +587,7 @@ document.addEventListener("touchend", async () => {
             }
             myAttendances = schedResult.myAttendances || [];
             allAttendances = schedResult.allAttendances || [];
-            if (schedResult.defaults) {
-
-    appDefaultsFull = schedResult.defaultsFull || [];
-
-    appDefaults = {
-        tab: schedResult.defaults.tab || [],
-        icon: appDefaultsFull
-            .filter(d => d.type === "icon")
-            .map(d => d.value),
-        place: schedResult.defaults.place || [],
-        support: schedResult.defaults.support || [],
-        area: schedResult.defaults.area || []
-    };
-}
-            groupSchedulesByDate();
+                        groupSchedulesByDate();
             if (currentActiveDate !== null) renderDetailView(currentActiveDate); else renderListView();
         } else {
 
@@ -617,6 +605,30 @@ document.getElementById('app').innerHTML = `
         
         }
     }
+
+async function fetchDefaults() {
+
+    const result = await apiPost({
+        action: "get_defaults"
+    });
+
+    if (!result || !result.success) return;
+
+    appDefaultsFull = result.defaultsFull || [];
+
+    appDefaults = {
+        tab: result.defaults.tab || [],
+        icon: appDefaultsFull
+            .filter(d => d.type === "icon")
+            .map(d => d.value),
+        place: result.defaults.place || [],
+        support: result.defaults.support || [],
+        area: result.defaults.area || []
+    };
+
+}
+
+    
 
     // -- Notifications
     function generateNotifications() {
