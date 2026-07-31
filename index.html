@@ -588,54 +588,57 @@ async function refreshSchedulesIfNeeded(force = false) {
 
     
     async function fetchSchedules(isInitial = true, redraw = true) {
-        if (isInitial) showLoading("予定を読み込み中...");
-        const schedResult = await apiPost({
-            action: 'get_schedules',
-            family_id: currentUser.family_id,
-            user_id: currentUser.user_id
-        });
-        if (schedResult && schedResult.success) {
-            rawSchedules = schedResult.schedules || [];
-            notifications = schedResult.notifications || [];
-            holidays = schedResult.holidays || {};
-            currentUser.last_notification_id = schedResult.last_notification_id || "";
-            
-            if (notifications.length > 0) {
-                latestNotificationId = notifications[0].notification_id;
-            }
-            myAttendances = schedResult.myAttendances || [];
-            allAttendances = schedResult.allAttendances || [];
-         groupSchedulesByDate();
 
-lastScheduleFetch = Date.now();
+    if (isInitial) showLoading("予定を読み込み中...");
 
-if (redraw) {
+    const schedResult = await apiPost({
+        action: 'get_schedules',
+        family_id: currentUser.family_id,
+        user_id: currentUser.user_id
+    });
 
-        if (currentActiveDate !== null) {
-            renderDetailView(currentActiveDate);
-        } else {
-            renderListView();
+    if (schedResult && schedResult.success) {
+
+        rawSchedules = schedResult.schedules || [];
+        notifications = schedResult.notifications || [];
+        holidays = schedResult.holidays || {};
+        currentUser.last_notification_id =
+            schedResult.last_notification_id || "";
+
+        if (notifications.length > 0) {
+            latestNotificationId = notifications[0].notification_id;
         }
 
-    }
+        myAttendances = schedResult.myAttendances || [];
+        allAttendances = schedResult.allAttendances || [];
 
-} else {
+        lastScheduleFetch = Date.now();
 
-    console.log(schedResult);
+        if (redraw) {
 
-    document.getElementById('app').innerHTML = `
+            groupSchedulesByDate();
+
+            if (currentActiveDate !== null) {
+                renderDetailView(currentActiveDate);
+            } else {
+                renderListView();
+            }
+
+        }
+
+    } else {
+
+        console.log(schedResult);
+
+        document.getElementById("app").innerHTML = `
 <div class="content">
     <pre>${JSON.stringify(schedResult, null, 2)}</pre>
 </div>`;
 
-}
-        
-        
-        
-        
-        
-        }
+    }
 
+}
+    
 async function fetchDefaults() {
 
     const result = await apiPost({
