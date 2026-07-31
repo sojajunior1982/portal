@@ -17,7 +17,8 @@
         @media (max-width: 480px) { .app-container { max-width: 100%; height: 100dvh; max-height: 100dvh; border-radius: 0; border: none; box-shadow: none; } }
 
         .header { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 18px 16px; text-align: center; font-size: 17px; font-weight: 700; position: relative; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); flex-shrink: 0; z-index: 10; }
-        .header.confirm-mode { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15); }
+        .header.edit-mode{ background:linear-gradient(135deg,#7c3aed 0%,#6d28d9 100%); box-shadow:0 4px 12px rgba(124,58,237,.18);}
+        .header.admin-mode{ background:linear-gradient(135deg,#dc2626 0%,#b91c1c 100%); box-shadow:0 4px 12px rgba(220,38,38,.18);}
         .back-btn { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: white; background: rgba(255,255,255,0.2); border: none; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }
         .logout-btn { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: white; background: rgba(255,255,255,0.15); border: none; padding: 6px 12px; border-radius: 20px; font-size: 11px; cursor: pointer; }
         .menu-btn { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: white; background: none; border: none; font-size: 22px; cursor: pointer; padding: 0; }
@@ -273,6 +274,7 @@
         .empty-month div:first-child{
             margin-bottom:12px;
         }
+        #2563eb
     </style>
 </head>
 <body>
@@ -285,22 +287,48 @@
         <div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">ログイン中</div>
         <div id="menuUserName" style="font-size: 16px; font-weight: bold; color: #1e293b;">-</div>
     </div>
-    <div style="flex: 1; padding: 12px 0; overflow-y: auto;">
-        <a href="#" onclick="navigateMenu('schedule'); return false;" style="display: block; padding: 14px 20px; color: #2563eb; font-weight: bold; background: #eff6ff; text-decoration: none; border-left: 4px solid #2563eb;">
-            📅 スケジュール
-        </a>
-        <a href="#" onclick="navigateMenu('manageSchedule'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
-            ⚙️ 予定の追加・管理
-        </a>
-        <a href="#" onclick="navigateMenu('confirmRoles'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
-            🤝 協力パパママ確定
-        </a>
-        <a href="#" onclick="navigateMenu('documents'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
-            各種資料
-        </a>
-        <a href="#" onclick="navigateMenu('admin'); return false;" style="display: block; padding: 14px 20px; color: #334155; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
-            管理者用
-        </a>
+    <div style="flex:1; padding:12px 0; overflow-y:auto;">
+
+    <div style="padding:8px 20px 6px; font-size:11px; color:#94a3b8; font-weight:bold; letter-spacing:1px;">
+        みんなが使う
+    </div>
+
+    <a href="#" onclick="navigateMenu('schedule'); return false;"
+       style="display:block; padding:14px 20px; color:#2563eb; font-weight:bold; background:#eff6ff; text-decoration:none; border-left:4px solid #2563eb;">
+        📅 スケジュール
+    </a>
+
+    <a href="#" onclick="navigateMenu('documents'); return false;"
+       style="display:block; padding:14px 20px; color:#334155; text-decoration:none; border-bottom:1px solid #f1f5f9;">
+        📁 各種資料
+    </a>
+
+
+    <div style="padding:18px 20px 6px; font-size:11px; color:#94a3b8; font-weight:bold; letter-spacing:1px;">
+        運営・入力
+    </div>
+
+    <a href="#" onclick="navigateMenu('manageSchedule'); return false;"
+       style="display:block; padding:14px 20px; color:#334155; text-decoration:none; border-bottom:1px solid #f1f5f9;">
+        ⚙️ 予定の追加・管理
+    </a>
+
+    <a href="#" onclick="navigateMenu('confirmRoles'); return false;"
+       style="display:block; padding:14px 20px; color:#334155; text-decoration:none; border-bottom:1px solid #f1f5f9;">
+        🤝 協力パパママ確定
+    </a>
+
+
+    <div style="padding:18px 20px 6px; font-size:11px; color:#94a3b8; font-weight:bold; letter-spacing:1px;">
+        管理者
+    </div>
+
+    <a href="#" onclick="navigateMenu('admin'); return false;"
+       style="display:block; padding:14px 20px; color:#334155; text-decoration:none;">
+        🔒 管理者用
+    </a>
+
+</div>
     </div>
 
     <div style="padding:16px; border-top:1px solid #e2e8f0;">
@@ -382,10 +410,21 @@
     let familyAccounts = [];
     
     // -- Utility helpers
-    function createHeaderHtml(leftHtml = '', title = '', rightHtml = '') {
+    function createHeaderHtml(
+        leftHtml='',
+        title='',
+        rightHtml='',
+        mode='view'
+    ){
 
     return `
-        <div class="header">
+        <div class="header ${
+            mode==="edit"
+                ? "edit-mode"
+                : mode==="admin"
+                ? "admin-mode"
+                : ""
+        }">
             ${leftHtml}
             <span style="margin-left:24px;">${title}</span>
             ${rightHtml}
@@ -1118,8 +1157,7 @@ function renderListView() {
         : "";
 
     let html = createHeaderHtml(
-        `<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`,
-        "📅 スケジュール",
+        `<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`, "📅 スケジュール",
         `<div class="bell-icon" onclick="openNotifications()">🔔${badgeHtml}</div>`
     );
 
@@ -1342,7 +1380,7 @@ ${
         const titleStr = `${d.getMonth() + 1}月${d.getDate()}日の詳細`;
         const childrenList = getChildrenList();
 
-        let header = createHeaderHtml(`<button class="back-btn" onclick="renderListView()">戻る</button>`, titleStr, '');
+        let header = createHeaderHtml(`<button class="back-btn" onclick="renderListView()">戻る</button>`, titleStr, '', "view");
         let html = header + `<div class="content" style="display:flex; flex-direction:column;">`;
         html += `<div class="tab-container">`;
         events.forEach((event, index) => {
@@ -1796,7 +1834,7 @@ familyAccounts.forEach(account => {
     // -- Confirm roles (admin) views
     function renderConfirmRolesListView() {
         currentActiveDate = null;
-        let header = createHeaderHtml(`<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`, '🤝 協力パパママ確定', ``);
+        let header = createHeaderHtml(`<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`, '🤝 協力パパママ確定', ``, "edit");
         let html = `${header}<div class="content"><div class="month-selector"><span class="arrow">◀</span><span class="month-title">日付を選択</span><span class="arrow">▶</span></div>`;
         const sortedDates = Object.keys(groupedSchedules).sort();
         if (sortedDates.length === 0) {
@@ -1835,7 +1873,7 @@ familyAccounts.forEach(account => {
             });
         }
 
-        let header = createHeaderHtml(`<button class="back-btn" onclick="renderConfirmRolesListView()">戻る</button>`, titleStr, '');
+        let header = createHeaderHtml(`<button class="back-btn" onclick="renderConfirmRolesListView()">戻る</button>`, titleStr, '', "edit");
         let html = header + `<div class="content" style="display:flex; flex-direction:column;"><div class="tab-container">`;
         events.forEach((event, index) => {
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
@@ -1955,7 +1993,7 @@ familyAccounts.forEach(account => {
     // -- Schedule manager (admin) simplified (kept functionality)
     function renderAdminMenu() {
         currentActiveDate = null;
-        let html = createHeaderHtml(`<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`, '⚙️ 管理者メニュー', '');
+        let html = createHeaderHtml(`<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`, '⚙️ 管理者メニュー', '', "admin");
         html += `<div class="content" style="background:#f8fafc;">
             <div style="display:flex; flex-direction:column; gap:16px; padding:16px;">
                 <button onclick="renderDefaultManagerView('tab')" style="padding:16px; background:#fff; border:1px solid #e2e8f0; border-radius:12px; font-size:16px; font-weight:bold; color:#1e293b; text-align:left; box-shadow:0 4px 6px rgba(0,0,0,0.02); display:flex; justify-content:space-between;">
@@ -2308,7 +2346,7 @@ ${iconOptionsHtml}
     let html = createHeaderHtml(
         `<button class="back-btn" onclick="renderAdminMenu()">戻る</button>`,
         '🗂️ マスターデータ管理',
-        ''
+        '', "admin"
     );
 
     html += `
@@ -2562,7 +2600,7 @@ ${type==="icon"
             return (a.children || "").localeCompare(b.children || "", 'ja');
         });
 
-        let html = createHeaderHtml(`<button class="back-btn" onclick="renderAdminMenu()">戻る</button>`, '👥 団員/保護者管理', '');
+        let html = createHeaderHtml(`<button class="back-btn" onclick="renderAdminMenu()">戻る</button>`, '👥 団員/保護者管理', '', "admin");
         html += `<div class="content" style="background:#f8fafc; padding: 16px;">
             <button onclick="renderAccountForm(null)" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:16px;">➕ 新規家族・アカウント追加</button>
             <div style="display:flex; flex-direction:column; gap:12px;">`;
