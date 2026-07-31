@@ -521,27 +521,6 @@
     }
 }
 
-/* 
-    
-document.addEventListener("touchstart", e => {
-    touchStartY = e.touches[0].clientY;
-});
-document.addEventListener("touchmove", e => {
-    touchMoveY = e.touches[0].clientY;
-});
-document.addEventListener("touchend", async () => {
-    if (
-        window.scrollY === 0 &&
-        touchMoveY - touchStartY > 80
-    ) {
-
-        await reloadSchedules();
-
-    }
-});
-
-*/
-
     function startAutoSync() {
 
     if (autoSyncTimer) {
