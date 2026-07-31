@@ -263,6 +263,16 @@
         .noti-item { border-bottom: 1px solid #e2e8f0; padding: 10px 0; font-size: 13px; line-height: 1.5; color: #334155; }
         .noti-item:last-child { border-bottom: none; }
         .noti-date { font-size: 11px; color: #94a3b8; font-weight: bold; margin-bottom: 2px; }
+        .empty-month{
+            padding:40px 20px;
+            text-align:center;
+            color:#64748b;
+            font-size:14px;
+        }
+
+        .empty-month div:first-child{
+            margin-bottom:12px;
+        }
     </style>
 </head>
 <body>
@@ -912,18 +922,27 @@ function createListTimeline() {
 
     let html = "";
 
-    const dates = Object.keys(groupedSchedules).sort();
+    const year = currentMonth.getFullYear();
+const month = currentMonth.getMonth();
+
+const dates = Object.keys(groupedSchedules)
+    .filter(date => {
+        const d = new Date(date);
+        return (
+            d.getFullYear() === year &&
+            d.getMonth() === month
+        );
+    })
+    .sort();
 
     if (dates.length === 0) {
-        return `
-        <div style="
-            text-align:center;
-            color:#94a3b8;
-            padding:40px;
-        ">
-            予定はありません
-        </div>`;
-    }
+    html += `
+        <div class="empty-month">
+            <div style="font-size:40px;">📅</div>
+            <div>今月の予定はありません</div>
+        </div>
+    `;
+}
 
     dates.forEach(date => {
 
