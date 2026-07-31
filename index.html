@@ -510,40 +510,26 @@
     }
 
     async function reloadSchedules() {
-
     if (isRefreshing) return;
-
     isRefreshing = true;
-
     showLoading("最新情報を取得中...");
-
     try {
-
         await fetchSchedules(false, true);
-
         showToast("最新情報を取得しました");
-
     } finally {
-
         isRefreshing = false;
-
     }
-
 }
+
+*/ 
+    
 document.addEventListener("touchstart", e => {
-
     touchStartY = e.touches[0].clientY;
-
 });
-
 document.addEventListener("touchmove", e => {
-
     touchMoveY = e.touches[0].clientY;
-
 });
-
 document.addEventListener("touchend", async () => {
-
     if (
         window.scrollY === 0 &&
         touchMoveY - touchStartY > 80
@@ -552,8 +538,9 @@ document.addEventListener("touchend", async () => {
         await reloadSchedules();
 
     }
-
 });
+
+*/
 
     function startAutoSync() {
 
@@ -1324,7 +1311,6 @@ ${
     let moveY = 0;
 
 
-    /*
     content.addEventListener("touchstart", e => {
 
         startY = e.touches[0].clientY;
@@ -1349,8 +1335,6 @@ ${
         }
 
     });
-
-*/
 
 }
     function goToDetail(date) {
