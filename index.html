@@ -443,7 +443,7 @@
 
     try {
 
-        await refreshSchedulesIfNeeded(true);
+        await fetchSchedules(false, true);
 
         showToast("最新情報を取得しました");
 
@@ -634,12 +634,10 @@ async function refreshSchedulesIfNeeded(force = false) {
         myAttendances = schedResult.myAttendances || [];
         allAttendances = schedResult.allAttendances || [];
 
+        groupSchedulesByDate();
         lastScheduleFetch = Date.now();
 
         if (redraw) {
-
-            groupSchedulesByDate();
-
             if (currentActiveDate !== null) {
                 renderDetailView(currentActiveDate);
             } else {
