@@ -1990,7 +1990,8 @@ familyAccounts.forEach(account => {
         let today = new Date();
         let todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
 
-        let html = `
+        let header = createHeaderHtml(`<button class="menu-btn" onclick="renderListView()">☰</button>`, '📅 予定の追加・管理', ``, "edit");
+        let html = `${header}
             <div class="header">
                 <button class="back-btn" onclick="renderListView()">戻る</button>
                 <span>📅 予定の追加・管理</span>
