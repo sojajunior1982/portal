@@ -1832,16 +1832,16 @@ familyAccounts.forEach(account => {
                 const atts = allAttendances.filter(a => String(a.schedule_id) === String(ev.schedule_id) && a.type === '保護者');
                 confirmStateMap[ev.schedule_id] = {};
                 atts.forEach(att => {
-                    
-                    confirmStatconst key = `${att.family_id}_${att.name}`;
 
-                    confirmStateMap[ev.schedule_id][key] = {
-                        family_id: att.family_id,
-                        name: att.name,
-                        roles: parseRolesWithStatus(att.response)
-                    };ap[ev.schedule_id][att.family_id] = { name: att.name, roles: parseRolesWithStatus(att.response) };
-                    
-                });
+    const key = `${att.family_id}_${att.name}`;
+
+    confirmStateMap[ev.schedule_id][key] = {
+        family_id: att.family_id,
+        name: att.name,
+        roles: parseRolesWithStatus(att.response)
+    };
+
+});
             });
         }
 
