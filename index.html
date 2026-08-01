@@ -367,6 +367,42 @@
     <div class="modal" id="modalContent"></div>
 </div>
 
+<div class="all-res-overlay" id="allResponseModal">
+    <div class="modal" id="allResponseModalContent"></div>
+</div>
+
+<!-- コメント表示モーダル -->
+<div class="modal-overlay" id="commentModal" style="display:none;">
+    <div class="modal">
+
+        <div class="modal-header">
+            <div id="commentModalTitle" class="modal-title"></div>
+
+            <button
+                onclick="closeCommentModal()"
+                style="background:none;border:none;font-size:26px;font-weight:bold;color:#94a3b8;cursor:pointer;padding:0 4px;">
+                ×
+            </button>
+        </div>
+
+        <div
+            id="commentModalBody"
+            class="modal-body"
+            style="white-space:pre-wrap;text-align:left;">
+        </div>
+
+        <div class="modal-footer">
+            <button
+                class="modal-footer-btn m-btn-cancel"
+                style="width:100%;"
+                onclick="closeCommentModal()">
+                閉じる
+            </button>
+        </div>
+
+    </div>
+</div>
+
 <div class="toast" id="toast">保存しました！</div>
 
 <div class="all-res-overlay" id="allResponseModal">
@@ -1406,6 +1442,20 @@ familyAccounts.forEach(account => {
         </div>
     `;
 });
+            if (parent && parent.comment) {
+
+    const short =
+        parent.comment.length > 18
+            ? parent.comment.substring(0, 18) + "..."
+            : parent.comment;
+
+    parentStatusRowsHtml += `
+        <div class="comment-preview"
+             onclick="showComment(${JSON.stringify(parent.name)}, ${JSON.stringify(parent.comment)})">
+            💬 ${short}
+        </div>
+    `;
+}
 
             let childrenStatusRowsHtml = "";
             if (childrenList.length > 0) {
@@ -1478,6 +1528,33 @@ familyAccounts.forEach(account => {
         document.getElementById('app').innerHTML = html;
     }
 
+    function showComment(name, text){
+
+    document.getElementById("commentModalTitle").innerText =
+        `${name}さんのコメント`;
+
+    document.getElementById("commentModalBody").innerText =
+        text;
+
+    document.getElementById("commentModal").style.display="flex";
+}
+
+    function closeCommentModal(){
+    document.getElementById("commentModal").style.display="none";
+}
+
+    function shortComment(text, len = 18) {
+
+    if (!text) return "";
+
+    return text.length > len
+        ? text.substring(0, len) + "..."
+        : text;
+}
+
+    
+
+
     function switchTab(activeIndex, totalTabs) {
         currentActiveTabIndex = activeIndex;
         for (let i = 0; i < totalTabs; i++) {
@@ -1545,7 +1622,32 @@ familyAccounts.forEach(account => {
                     `;
                 });
             } else {
-                const existing = myAttendances.find(a => String(a.schedule_id) === String(event.schedule_id) && a.type === '保護者');
+                familyAccounts.forEach(account => {
+
+    const existing = myAttendances.find(
+        a =>
+            String(a.schedule_id) === String(event.schedule_id) &&
+            a.type === "保護者" &&
+            a.name === account.user_name
+    );
+
+    const parsedRoles = existing
+        ? parseRolesWithStatus(existing.response)
+        : [];
+
+    const currentComment = existing
+        ? existing.comment || ""
+        : "";
+
+    tempAttendances.push({
+        schedule_id: String(event.schedule_id),
+        name: account.user_name,
+        roles: parsedRoles,
+        comment: currentComment
+    });
+
+    // ここでパパ・ママそれぞれのボタンを生成
+});
                 const parsedRoles = existing ? parseRolesWithStatus(existing.response) : [];
                 const currentComment = existing ? existing.comment || "" : "";
                 tempAttendances.push({ schedule_id: String(event.schedule_id), name: currentUser.user_name, roles: parsedRoles, comment: currentComment });
@@ -1724,12 +1826,32 @@ familyAccounts.forEach(account => {
                 const isConfirmedRole = assigned.some(a => a.status === 1);
                 if (isConfirmedRole) assigned = assigned.filter(a => a.status === 1);
                 let namesStr = assigned.length > 0 ? assigned.map(a => {
-                    let baseStr = `${a.status === 1 ? '🌞 ' : ''}${a.name}`;
-                    if (a.comment && a.comment.trim() !== "") {
-                        let safeComment = a.comment.replace(/\r?\n/g, ' ');
-                        baseStr += `<span style="cursor: pointer; font-size: 1.1em; margin-left: 5px;" onclick="alert('${a.name}さんのコメント:\\n${safeComment}')">💬</span>`;
-                    }
-                    return baseStr;
+                    let namesStr = assigned.length > 0
+? assigned.map(a => {
+
+    let html = `
+        <div style="margin-bottom:8px;">
+            <div>
+                ${a.status === 1 ? "🌞 " : ""}${a.name}
+            </div>
+    `;
+
+    if (a.comment && a.comment.trim() !== "") {
+
+        html += `
+            <div class="comment-preview"
+                 onclick="showComment(${JSON.stringify(a.name)}, ${JSON.stringify(a.comment)})">
+                💬 ${shortComment(a.comment)}
+            </div>
+        `;
+    }
+
+    html += `</div>`;
+
+    return html;
+
+}).join("")
+: '<span style="color:#94a3b8;font-size:12px;">なし</span>';
                 }).join('<br>') : '<span style="color:#94a3b8; font-size:12px;">なし</span>';
 
                 let statusBadge = isConfirmedRole ? `<span style="color:#059669; font-size:11px; margin-left:6px; font-weight:bold;">[🌞確定]</span>` : `<span style="color:#d97706; font-size:11px; margin-left:6px; font-weight:bold;">[募集中]</span>`;
@@ -1836,10 +1958,11 @@ familyAccounts.forEach(account => {
     const key = `${att.family_id}_${att.name}`;
 
     confirmStateMap[ev.schedule_id][key] = {
-        family_id: att.family_id,
-        name: att.name,
-        roles: parseRolesWithStatus(att.response)
-    };
+    family_id: att.family_id,
+    name: att.name,
+    roles: parseRolesWithStatus(att.response),
+    comment: att.comment || ""
+};
 
 });
             });
@@ -1867,11 +1990,12 @@ familyAccounts.forEach(account => {
     const person = scheduleState[key];
     const foundRole = person.roles.find(r => r.role === role);
     if (foundRole) applicants.push({
-        key: key,
-        family_id: person.family_id,
-        name: person.name,
-        status: foundRole.status
-    });
+    key: key,
+    family_id: person.family_id,
+    name: person.name,
+    status: foundRole.status,
+    comment: foundRole.comment || person.comment || ""
+});
 });
                     applicants.sort((a,b) => b.status - a.status || a.name.localeCompare(b.name, 'ja'));
                     let rowsHtml = "";
@@ -1880,14 +2004,40 @@ familyAccounts.forEach(account => {
                     } else {
                         applicants.forEach(app => {
                             const isConfirmed = app.status === 1;
-                            rowsHtml += `
-                                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed #f1f5f9;">
-                                    <span style="font-size:14px; font-weight:bold; color:#1e293b;">${isConfirmed ? '🌞 ' : ''}${app.name}</span>
-                                    <button class="confirm-toggle-btn ${isConfirmed ? 'is-confirmed' : ''}" onclick="toggleRoleConfirmation('${event.schedule_id}', '${app.key}', '${role}')">
-                                        ${isConfirmed ? '確定中 ✓' : '確定する'}
-                                    </button>
-                                </div>
-                            `;
+                            const shortComment =
+    app.comment && app.comment.length > 18
+        ? app.comment.substring(0,18) + "..."
+        : app.comment;
+
+rowsHtml += `
+    <div style="padding:8px 0; border-bottom:1px dashed #f1f5f9;">
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:14px; font-weight:bold; color:#1e293b;">
+                ${isConfirmed ? '🌞 ' : ''}${app.name}
+            </span>
+
+            <button
+                class="confirm-toggle-btn ${isConfirmed ? 'is-confirmed' : ''}"
+                onclick="toggleRoleConfirmation('${event.schedule_id}', '${app.key}', '${role}')">
+                ${isConfirmed ? '確定中 ✓' : '確定する'}
+            </button>
+        </div>
+
+        ${
+            app.comment
+                ? `
+                <div
+                    class="comment-preview"
+                    onclick="showComment(${JSON.stringify(app.name)}, ${JSON.stringify(app.comment)})">
+                    💬 ${shortComment}
+                </div>
+                `
+                : ""
+        }
+
+    </div>
+`;
                         });
                     }
                     rolesBlockHtml += `<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:12px;">
