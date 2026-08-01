@@ -1832,7 +1832,15 @@ familyAccounts.forEach(account => {
                 const atts = allAttendances.filter(a => String(a.schedule_id) === String(ev.schedule_id) && a.type === '保護者');
                 confirmStateMap[ev.schedule_id] = {};
                 atts.forEach(att => {
-                    confirmStateMap[ev.schedule_id][att.family_id] = { name: att.name, roles: parseRolesWithStatus(att.response) };
+                    
+                    confirmStatconst key = `${att.family_id}_${att.name}`;
+
+                    confirmStateMap[ev.schedule_id][key] = {
+                        family_id: att.family_id,
+                        name: att.name,
+                        roles: parseRolesWithStatus(att.response)
+                    };ap[ev.schedule_id][att.family_id] = { name: att.name, roles: parseRolesWithStatus(att.response) };
+                    
                 });
             });
         }
@@ -1855,11 +1863,16 @@ familyAccounts.forEach(account => {
                 roles.forEach(role => {
                     let applicants = [];
                     const scheduleState = confirmStateMap[event.schedule_id] || {};
-                    Object.keys(scheduleState).forEach(fId => {
-                        const person = scheduleState[fId];
-                        const foundRole = person.roles.find(r => r.role === role);
-                        if (foundRole) applicants.push({ family_id: fId, name: person.name, status: foundRole.status });
-                    });
+                    Object.keys(scheduleState).forEach(key => {
+    const person = scheduleState[key];
+    const foundRole = person.roles.find(r => r.role === role);
+    if (foundRole) applicants.push({
+        key: key,
+        family_id: person.family_id,
+        name: person.name,
+        status: foundRole.status
+    });
+});
                     applicants.sort((a,b) => b.status - a.status || a.name.localeCompare(b.name, 'ja'));
                     let rowsHtml = "";
                     if (applicants.length === 0) {
@@ -1870,7 +1883,7 @@ familyAccounts.forEach(account => {
                             rowsHtml += `
                                 <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed #f1f5f9;">
                                     <span style="font-size:14px; font-weight:bold; color:#1e293b;">${isConfirmed ? '🌞 ' : ''}${app.name}</span>
-                                    <button class="confirm-toggle-btn ${isConfirmed ? 'is-confirmed' : ''}" onclick="toggleRoleConfirmation('${event.schedule_id}', '${app.family_id}', '${role}')">
+                                    <button class="confirm-toggle-btn ${isConfirmed ? 'is-confirmed' : ''}" onclick="toggleRoleConfirmation('${event.schedule_id}', '${app.key}', '${role}')">
                                         ${isConfirmed ? '確定中 ✓' : '確定する'}
                                     </button>
                                 </div>
@@ -1898,8 +1911,8 @@ familyAccounts.forEach(account => {
         document.getElementById('app').innerHTML = html;
     }
 
-    function toggleRoleConfirmation(scheduleId, familyId, role) {
-        const person = (confirmStateMap[scheduleId] || {})[familyId];
+    function toggleRoleConfirmation(scheduleId, key, role) {
+    const person = (confirmStateMap[scheduleId] || {})[key];
         if (!person) return;
         const targetRole = person.roles.find(r => r.role === role);
         if (targetRole) {
@@ -1910,11 +1923,11 @@ familyAccounts.forEach(account => {
 
     function selectAllForRole(scheduleId, role) {
         const scheduleState = confirmStateMap[scheduleId] || {};
-        Object.keys(scheduleState).forEach(fId => {
-            const person = scheduleState[fId];
-            const targetRole = person.roles.find(r => r.role === role);
-            if (targetRole) targetRole.status = 1;
-        });
+        Object.keys(scheduleState).forEach(key => {
+    const person = scheduleState[key];
+    const targetRole = person.roles.find(r => r.role === role);
+    if (targetRole) targetRole.status = 1;
+});
         renderConfirmRolesDetailView(currentActiveDate, false);
     }
 
