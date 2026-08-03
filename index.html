@@ -472,15 +472,29 @@
 
     const res = await fetch(GAS_URL,{
         method:"POST",
+        cache:"no-store",
+        redirect:"follow",
+        headers:{
+            "Content-Type":"application/json",
+            "Cache-Control":"no-cache"
+        },
         body:JSON.stringify(body)
     });
 
+    console.log("FINAL URL =", res.url);
+    console.log("STATUS =", res.status);
+
     const text = await res.text();
 
-    console.log(body.action, "=>", text);
+    console.log(body.action,"=>",text);
+
+    if(!text.startsWith("{")){
+        throw new Error("JSONではありません\n\n" + text.substring(0,300));
+    }
 
     return JSON.parse(text);
 }
+    
     function showToast(msg, duration = 1500) {
         const toast = document.getElementById('toast');
         if (!toast) return;
