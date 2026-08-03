@@ -471,10 +471,15 @@
     console.log("SEND ACTION =", body.action);
 
     const res = await fetch(GAS_URL,{
-    method:"POST",
-    redirect:"manual",
-    body:JSON.stringify(body)
-});
+        method:"POST",
+        cache:"no-store",
+        redirect:"follow",
+        headers:{
+            "Content-Type":"application/json",
+            "Cache-Control":"no-cache"
+        },
+        body:JSON.stringify(body)
+    });
 
 console.log(res.status);
 console.log(res.type);
