@@ -698,6 +698,8 @@ async function refreshSchedulesIfNeeded(force = false) {
     
     async function fetchSchedules(isInitial = true, redraw = true) {
 
+console.log("fetchSchedules START");
+        
     if (isInitial) showLoading("予定を読み込み中...");
 
     const schedResult = await apiPost({
@@ -745,6 +747,8 @@ async function refreshSchedulesIfNeeded(force = false) {
     }
 
 }
+
+    console.log("fetchSchedules END");
     
 async function fetchDefaults() {
 
