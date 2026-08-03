@@ -466,37 +466,21 @@
     `;
 }
 
-    async function apiPost(body) {
+   async function apiPost(body) {
 
-        
- 
-        console.log("GAS_URL =", GAS_URL);
-    
-        
-        
-        
-        try {
+    console.log("SEND ACTION =", body.action);
 
-        const res = await fetch(GAS_URL,{
-            method:"POST",
-            body:JSON.stringify(body)
-        });
+    const res = await fetch(GAS_URL,{
+        method:"POST",
+        body:JSON.stringify(body)
+    });
 
-        const text = await res.text();
+    const text = await res.text();
 
-        console.log("API RETURN =", text);
+    console.log(body.action, "=>", text);
 
-        return JSON.parse(text);
-
-    } catch(e){
-
-        console.error("API error",e);
-
-        return null;
-
-    }
+    return JSON.parse(text);
 }
-
     function showToast(msg, duration = 1500) {
         const toast = document.getElementById('toast');
         if (!toast) return;
