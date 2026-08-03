@@ -2097,6 +2097,13 @@ onclick="submitAllResponses('${type}')">
 
     try {
 
+
+console.log(tempAttendances);
+
+
+
+
+        
         for (const item of tempAttendances) {
 
             const sendVal =
@@ -2114,6 +2121,11 @@ onclick="submitAllResponses('${type}')">
                 comment: item.comment
             };
 
+
+console.log(payload);
+
+
+            
             await apiPost(payload);
 
         }
