@@ -1735,161 +1735,120 @@ oninput="updateTempComment('${event.schedule_id}','${childName}',this.value)">
 
             });
 
-        }
-
         //--------------------------------------------------
         // 保護者
         //--------------------------------------------------
 
-        else {
+} else {
 
-            const availableRoles =
-                event.recruit_roles
-                    ? event.recruit_roles
-                        .split(",")
-                        .map(r => r.trim())
-                        .filter(r => r !== "")
-                    : [];
+    const existing = myAttendances.find(
+        a =>
+            String(a.schedule_id) === String(event.schedule_id) &&
+            a.type === "保護者" &&
+            a.name === currentUser.user_name
+    );
 
-            if (availableRoles.length === 0) {
+    const parsedRoles =
+        existing
+            ? parseRolesWithStatus(existing.response)
+            : [];
 
-                selectorContentHtml =
-                    `<div style="font-size:12px;color:#94a3b8;text-align:center;padding:8px;">
-                        🤝 お手伝いは不要な予定です
-                    </div>`;
+    const currentComment =
+        existing
+            ? existing.comment || ""
+            : "";
 
-            } else {
+    tempAttendances.push({
+        schedule_id: String(event.schedule_id),
+        name: currentUser.user_name,
+        roles: parsedRoles,
+        comment: currentComment
+    });
 
-                familyAccounts.forEach(account => {
+    const availableRoles =
+        event.recruit_roles
+            ? event.recruit_roles
+                .split(",")
+                .map(r => r.trim())
+                .filter(r => r !== "")
+            : [];
 
-                    const existing =
-                        myAttendances.find(a =>
-                            String(a.schedule_id) === String(event.schedule_id) &&
-                            a.type === "保護者" &&
-                            a.name === account.user_name
-                        );
+    if (availableRoles.length === 0) {
 
-                    const parsedRoles =
-                        existing
-                            ? parseRolesWithStatus(existing.response)
-                            : [];
+        selectorContentHtml =
+            `<div style="font-size:12px;color:#94a3b8;text-align:center;padding:6px 0;">
+                🤝 お手伝いは不要な予定です
+            </div>`;
 
-                    const currentComment =
-                        existing
-                            ? (existing.comment || "")
-                            : "";
+    } else {
 
-                    tempAttendances.push({
+        const isUnused = parsedRoles.length === 0;
 
-                        schedule_id: String(event.schedule_id),
-
-                        name: account.user_name,
-
-                        roles: [...parsedRoles],
-
-                        comment: currentComment
-
-                    });
-
-                    const editable =
-                        account.user_name === currentUser.user_name;
-
-                    selectorContentHtml += `
+        selectorContentHtml += `
 <div class="child-section">
 
 <div class="child-name-badge">
-👤 ${account.user_name}
-${editable ? "" : "<span style='font-size:11px;color:#94a3b8;'>（閲覧のみ）</span>"}
+👤 ${currentUser.user_name}
 </div>
 
 <button
-class="sel-btn sel-btn-full ${parsedRoles.length===0 ? "active-red" : ""}"
-${editable ? "" : "disabled"}
-id="btn-${event.schedule_id}-${account.user_name}-不参加"
-onclick="${editable ? `selectTempResponse('${event.schedule_id}','不参加','保護者','${account.user_name}')` : ""}">
+class="sel-btn sel-btn-full ${isUnused ? "active-red" : ""}"
+id="btn-${event.schedule_id}-${currentUser.user_name}-不参加"
+onclick="selectTempResponse(
+'${event.schedule_id}',
+'不参加',
+'保護者',
+'${currentUser.user_name}'
+)">
 ❌ 今回は協力できません
 </button>
 
 <div class="selector-group" style="flex-direction:column;gap:8px;">
 `;
-                    availableRoles.forEach(role => {
 
-                        const isSelected =
-                            parsedRoles.some(r => r.role === role);
+        availableRoles.forEach(role => {
 
-                        selectorContentHtml += `
+            const isSelected =
+                parsedRoles.some(r => r.role === role);
 
+            selectorContentHtml += `
 <button
 class="sel-btn sel-btn-full ${isSelected ? "active-green" : ""}"
 style="margin-bottom:0;"
-${editable ? "" : "disabled"}
-id="btn-${event.schedule_id}-${account.user_name}-${role}"
-
-onclick="${
-editable
-? `selectTempResponse(
+id="btn-${event.schedule_id}-${currentUser.user_name}-${role}"
+onclick="selectTempResponse(
 '${event.schedule_id}',
 '${role}',
 '保護者',
-'${account.user_name}',
+'${currentUser.user_name}',
 ${isSelected}
-)`
-: ""
-}">
-
+)">
 ${role}
-
 </button>
-
 `;
 
-                    });
+        });
 
-                    selectorContentHtml += `
-
+        selectorContentHtml += `
 </div>
-
-`;
-
-                    //------------------------------------------------
-                    // コメントは保護者一人につき１つだけ
-                    //------------------------------------------------
-
-                    selectorContentHtml += `
-
-<div style="margin-top:8px;">
 
 <input
 type="text"
 class="modal-comment"
-
-id="modal-cmt-${event.schedule_id}-${account.user_name}"
-
-placeholder="補足・連絡（あれば）"
-
+id="modal-cmt-${event.schedule_id}-${currentUser.user_name}"
+placeholder="理由や連絡（あれば）"
 value="${currentComment}"
-
-${editable ? "" : "disabled"}
-
-oninput="${
-editable
-? `updateTempComment(
+oninput="updateTempComment(
 '${event.schedule_id}',
-'${account.user_name}',
+'${currentUser.user_name}',
 this.value
-)`
-: ""
-}">
-
+)">
 </div>
-
 `;
 
-                });
+    }
 
-            }
-
-        }
+}
 
         //----------------------------------------------------
         // 予定ブロック
@@ -2131,12 +2090,22 @@ onclick="submitAllResponses('${type}')">
     }
 
     async function submitAllResponses(type) {
-        closeFullResponseModal();
-        showToast("保存中...");
-        for (let item of tempAttendances) {
-            let sendVal = type === '団員' ? item.response : stringifyRolesWithStatus(item.roles);
+
+    closeFullResponseModal();
+
+    showLoading("保存中...");
+
+    try {
+
+        for (const item of tempAttendances) {
+
+            const sendVal =
+                type === "団員"
+                    ? item.response
+                    : stringifyRolesWithStatus(item.roles);
+
             const payload = {
-                action: 'submit_attendance',
+                action: "submit_attendance",
                 schedule_id: item.schedule_id,
                 family_id: currentUser.family_id,
                 name: item.name,
@@ -2144,11 +2113,25 @@ onclick="submitAllResponses('${type}')">
                 response: sendVal,
                 comment: item.comment
             };
-            try { await apiPost(payload); } catch(e) { console.error("保存エラー", e); }
+
+            await apiPost(payload);
+
         }
+
         await fetchSchedules(false);
-        showToast("保存完了！");
+        
+        renderDetailView(currentActiveDate);
+        showToast("保存しました！");
+
+    } catch (e) {
+
+        console.error(e);
+
+        alert("保存に失敗しました");
+
     }
+
+}
 
     // -- All response modal (show everyone)
     function openAllResponseModal(scheduleId) {
