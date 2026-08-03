@@ -1795,15 +1795,11 @@ oninput="updateTempComment('${event.schedule_id}','${childName}',this.value)">
                         account.user_name === currentUser.user_name;
 
                     selectorContentHtml += `
-
 <div class="child-section">
 
 <div class="child-name-badge">
-
 👤 ${account.user_name}
-
 ${editable ? "" : "<span style='font-size:11px;color:#94a3b8;'>（閲覧のみ）</span>"}
-
 </div>
 
 <button
@@ -1811,12 +1807,11 @@ class="sel-btn sel-btn-full ${parsedRoles.length===0 ? "active-red" : ""}"
 ${editable ? "" : "disabled"}
 id="btn-${event.schedule_id}-${account.user_name}-不参加"
 onclick="${editable ? `selectTempResponse('${event.schedule_id}','不参加','保護者','${account.user_name}')` : ""}">
-
 ❌ 今回は協力できません
-
 </button>
 
 <div class="selector-group" style="flex-direction:column;gap:8px;">
+`;
                     availableRoles.forEach(role => {
 
                         const isSelected =
