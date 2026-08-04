@@ -2963,17 +2963,54 @@ rowsHtml += `
             eventData.priority = evts.length + 1;
         }
         const defaultRoles = appDefaults.support;
-        let currentRolesArr = eventData.recruit_roles ? eventData.recruit_roles.split(',').map(r => r.trim()) : [];
-        let extraRolesArr = currentRolesArr.filter(r => r !== "" && !defaultRoles.includes(r));
-        let extraRolesHtml = "";
-        extraRolesArr.forEach(role => {
-            extraRolesHtml += `
-                <div class="custom-role-item" style="display:flex; gap:8px; margin-bottom:8px;">
-                    <input type="text" class="custom-role-input" value="${role}" placeholder="募集項目名" style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
-                    <button type="button" onclick="this.parentElement.remove()" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding:0 12px; border-radius:8px; cursor:pointer; font-weight:bold;">×</button>
-                </div>
-            `;
+        // デフォルト募集項目
+
+if (currentRolesArr.length === 0) {
+
+    currentRolesArr =
+        defaultRoles.map(role => ({
+
+            role,
+
+            limit: ""
+
+        }));
+
+}
+        let currentRolesArr = [];
+
+if (eventData.recruit_roles) {
+
+    const arr = eventData.recruit_roles
+    ? eventData.recruit_roles.split(",")
+    : [];
+
+const recruitItems = [];
+
+for (let i = 0; i < arr.length; i += 2) {
+
+    recruitItems.push({
+        name: arr[i] || "",
+        limit: arr[i + 1] || ""
+    });
+
+}
+        .map(v => v.trim());
+
+    for (let i = 0; i < arr.length; i += 2) {
+
+        currentRolesArr.push({
+
+            role: arr[i] || "",
+
+            limit: arr[i + 1] || ""
+
         });
+
+    }
+
+}
+        
         let tabOptionsHtml = appDefaults.tab.map(t => `<option value="${t}"></option>`).join('');
         const iconList = appDefaults.icon || ["⚾"];
 
@@ -2994,12 +3031,136 @@ let iconOptionsHtml = iconList
             .join("");
         
         let placeOptionsHtml = appDefaults.place.map(p => `<option value="${p}"></option>`).join('');
-        let checkboxesHtml = "";
-        appDefaults.support.forEach(role => {
-            let isChecked = eventData.recruit_roles.includes(role) ? "checked" : "";
-            checkboxesHtml += `<label style="background: #f1f5f9; padding: 6px 12px; border-radius: 20px; font-size: 13px;"><input type="checkbox" class="role-check" value="${role}" ${isChecked}> ${role}</label>`;
-        });
+        let supportItemsHtml = "";
 
+currentRolesArr.forEach((item, index) => {
+
+    const hasLimit =
+        item.limit !== "";
+
+    supportItemsHtml += `
+
+<div class="support-item"
+style="
+border:1px solid #e2e8f0;
+border-radius:10px;
+padding:12px;
+margin-bottom:12px;
+background:#fff;
+">
+
+<div
+style="
+display:flex;
+gap:8px;
+align-items:center;
+">
+
+<input
+list="support-defaults"
+class="support-role-name"
+value="${item.role}"
+placeholder="募集項目"
+style="
+flex:1;
+padding:10px;
+border:1px solid #cbd5e1;
+border-radius:8px;
+">
+
+<button
+type="button"
+onclick="this.closest('.support-item').remove()"
+style="
+width:34px;
+height:34px;
+border:none;
+background:#fee2e2;
+color:#dc2626;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+">
+
+×
+
+</button>
+
+</div>
+
+<div
+style="
+margin-top:10px;
+font-size:13px;
+color:#64748b;
+">
+
+<label>
+
+<input
+type="checkbox"
+class="support-limit-check"
+${hasLimit ? "checked" : ""}
+onchange="toggleSupportLimit(this)">
+
+募集人数を設定する
+
+</label>
+
+</div>
+
+<div
+class="support-limit-area"
+style="
+margin-top:10px;
+display:${hasLimit ? "block" : "none"};
+">
+
+<button
+type="button"
+onclick="changeSupportLimit(this,-1)">
+－
+</button>
+
+<input
+class="support-limit-value"
+type="number"
+min="1"
+value="${item.limit || 2}"
+style="
+width:60px;
+text-align:center;
+">
+
+<button
+type="button"
+onclick="changeSupportLimit(this,1)">
+＋
+</button>
+
+</div>
+
+<div
+class="support-no-limit"
+style="
+margin-top:8px;
+font-size:13px;
+color:#64748b;
+display:${hasLimit ? "none" : "block"};
+">
+
+人数制限なし
+
+</div>
+
+</div>
+
+`;
+
+});
+
+
+        
         let html = `
             <div class="header">
                 <button class="back-btn" onclick="renderScheduleManagerView()">戻る</button>
@@ -3065,12 +3226,50 @@ ${iconOptionsHtml}
                         </div>                        
                         <textarea id="newDescription" rows="5" placeholder="詳細やスケジュールを記入してください" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">${eventData.description}</textarea>
                     </div>
-                    <div style="margin-bottom: 24px;">
-                        <label style="display: block; font-size: 14px; font-weight: bold; margin-bottom: 4px;">募集項目 (チェックで追加)</label>
-                        <div style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px;">${checkboxesHtml}</div>
+                    <div style="margin-bottom:24px;">
+
+<label
+style="
+display:block;
+font-size:14px;
+font-weight:bold;
+margin-bottom:10px;
+">
+募集項目
+</label>
+
+<div
+id="supportContainer"
+style="
+display:flex;
+flex-direction:column;
+gap:10px;
+">
+</div>
+
+<button
+type="button"
+onclick="addSupportItem()"
+style="
+margin-top:12px;
+width:100%;
+padding:10px;
+border:1px dashed #93c5fd;
+background:#fff;
+border-radius:10px;
+font-weight:bold;
+color:#2563eb;
+cursor:pointer;
+">
+
+＋ 募集項目を追加する
+
+</button>
+
+</div>
                         <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
                             <label style="display: block; font-size: 12px; font-weight: bold; color:#475569; margin-bottom: 8px;">その他の項目</label>
-                            <div id="customRolesContainer">${extraRolesHtml}</div>
+                            <div id="customRolesContainer"></div>
                             <button type="button" onclick="addCustomRoleInput()" style="background:#ffffff; color:#2563eb; border:1px dashed #93c5fd; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%;">＋ 項目を追加する</button>
                         </div>
                     </div>
@@ -3082,9 +3281,204 @@ ${iconOptionsHtml}
                    <button onclick="deleteSchedule('${eventData.schedule_id}')" style="width:100%; padding:14px; margin-top:12px; background:#ef4444; color:white; border:none; border-radius:12px; font-size:15px; font-weight:bold; cursor:pointer; ">この予定を削除する</button>` : ""}
                 </div>
             </div>
-        `;
+        <datalist id="support-defaults">
+${appDefaults.support
+    .map(r => `<option value="${r}"></option>`)
+    .join("")}
+</datalist>
+`;
         document.getElementById('app').innerHTML = html;
+
+        // 募集項目を描画
+
+if (currentRolesArr.length) {
+
+    currentRolesArr.forEach(item=>{
+
+        addSupportItem(
+    item.role,
+    item.limit
+);
+
+    });
+
+}
+else{
+
+    addSupportItem("参加","");
+
+addSupportItem("当番","");
+
+addSupportItem("道具車","");
+
+addSupportItem("審判","");
+
+}
     }
+
+    function addSupportItem(name="", limit="") {
+
+    const container =
+        document.getElementById("supportContainer");
+
+    const div = document.createElement("div");
+
+    div.className = "support-item";
+
+    div.style.cssText = `
+        border:1px solid #e2e8f0;
+        border-radius:10px;
+        padding:12px;
+        background:#fff;
+    `;
+
+    div.innerHTML = `
+
+<div style="display:flex;gap:8px;align-items:center;">
+
+<input
+class="support-name"
+list="support-defaults"
+value="${name}"
+placeholder="募集項目"
+style="
+flex:1;
+padding:10px;
+border:1px solid #cbd5e1;
+border-radius:8px;
+">
+
+<button
+type="button"
+onclick="this.closest('.support-item').remove()"
+style="
+background:#fef2f2;
+border:1px solid #fca5a5;
+color:#ef4444;
+padding:8px 12px;
+border-radius:8px;
+cursor:pointer;
+">
+×
+</button>
+
+</div>
+
+<div style="margin-top:12px;">
+
+<label
+style="
+display:flex;
+align-items:center;
+gap:8px;
+font-size:13px;
+cursor:pointer;
+">
+
+<input
+type="checkbox"
+class="limit-check"
+${limit !== "" ? "checked" : ""}
+onchange="toggleLimitArea(this)"
+>
+
+募集人数を設定する
+
+</label>
+
+<div
+class="limit-area"
+style="
+margin-top:10px;
+display:${limit === "" ? "none" : "flex"};
+align-items:center;
+gap:8px;
+">
+
+<button
+type="button"
+onclick="changeLimit(this,-1)"
+style="
+width:32px;
+height:32px;
+border:none;
+border-radius:8px;
+background:#e2e8f0;
+cursor:pointer;
+font-weight:bold;
+">
+
+－
+
+</button>
+
+<input
+class="limit-value"
+type="text"
+readonly
+value="${limit || 2}"
+style="
+width:44px;
+text-align:center;
+border:none;
+font-weight:bold;
+background:#fff;
+">
+
+<button
+type="button"
+onclick="changeLimit(this,1)"
+style="
+width:32px;
+height:32px;
+border:none;
+border-radius:8px;
+background:#2563eb;
+color:#fff;
+cursor:pointer;
+font-weight:bold;
+">
+
+＋
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+    container.appendChild(div);
+
+}
+
+function toggleLimitArea(chk){
+
+    chk.closest(".support-item")
+        .querySelector(".limit-area")
+        .style.display =
+            chk.checked
+                ? "block"
+                : "none";
+
+}
+
+function changeLimit(btn,diff){
+
+    const input =
+        btn.parentElement.querySelector(".limit-value");
+
+    let val =
+        Number(input.value);
+
+    val += diff;
+
+    if(val < 1) val = 1;
+
+    input.value = val;
+
+}
 
     function applyScheduleTemplate() {
         const templateName = document.getElementById("scheduleTemplate").value;
@@ -3104,50 +3498,210 @@ ${iconOptionsHtml}
         }
         document.getElementById("newDescription").value = temp.value;
     }
-    function addCustomRoleInput() {
-        const container = document.getElementById('customRolesContainer');
-        const div = document.createElement('div');
-        div.className = 'custom-role-item';
-        div.style.cssText = 'display:flex; gap:8px; margin-bottom:8px;';
-        div.innerHTML = `
-            <input type="text" class="custom-role-input" value="" placeholder="募集項目名" style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
-            <button type="button" onclick="this.parentElement.remove()" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; padding:0 12px; border-radius:8px; cursor:pointer; font-weight:bold;">×</button>
-        `;
-        container.appendChild(div);
-    }
+    function addSupportItem(role = "", limit = "", removable = true) {
+
+    const container =
+        document.getElementById("customRolesContainer");
+
+    const div = document.createElement("div");
+
+    div.className = "support-item";
+
+    div.style.cssText = `
+        background:#fff;
+        border:1px solid #e2e8f0;
+        border-radius:10px;
+        padding:12px;
+        margin-bottom:12px;
+    `;
+
+    div.innerHTML = `
+
+<div style="display:flex;gap:8px;align-items:center;">
+
+<input
+class="support-name"
+list="support-defaults"
+value="${role}"
+placeholder="募集項目"
+style="
+flex:1;
+padding:10px;
+border:1px solid #cbd5e1;
+border-radius:8px;
+">
+
+${removable ? `
+<button
+type="button"
+onclick="this.closest('.support-item').remove()"
+style="
+background:#fef2f2;
+color:#ef4444;
+border:1px solid #fca5a5;
+padding:8px 12px;
+border-radius:8px;
+cursor:pointer;
+">
+×
+</button>
+` : ""}
+
+</div>
+
+<div style="margin-top:12px;">
+
+<label
+style="
+display:flex;
+align-items:center;
+gap:8px;
+font-size:13px;
+cursor:pointer;
+">
+
+<input
+type="checkbox"
+class="limit-check"
+${limit!==""?"checked":""}
+onchange="
+this.closest('.support-item')
+.querySelector('.limit-area')
+.style.display=this.checked?'flex':'none';
+">
+
+募集人数を設定する
+
+</label>
+
+<div
+class="limit-area"
+style="
+margin-top:10px;
+display:${limit!==""?"flex":"none"};
+align-items:center;
+gap:8px;
+">
+
+<button
+type="button"
+onclick="
+let i=this.nextElementSibling;
+i.value=Math.max(1,Number(i.value)-1);
+">
+−
+</button>
+
+<input
+class="limit-value"
+type="number"
+min="1"
+value="${limit||1}"
+style="
+width:60px;
+text-align:center;
+">
+
+<button
+type="button"
+onclick="
+let i=this.previousElementSibling;
+i.value=Number(i.value)+1;
+">
+＋
+</button>
+
+</div>
+
+</div>
+`;
+
+    container.appendChild(div);
+
+}
 
     async function submitScheduleForm() {
-        const dateVal = document.getElementById('newDate').value;
-        const tabVal = document.getElementById('newTabName').value;
-        const icon = document.getElementById("newIcon").value || "⚾";
-        const scheduleIdVal = document.getElementById('editScheduleId').value;
-        if (!dateVal || !tabVal) return alert("日付と予定の種類(タブ名)は必須です！");
-        const checkedRoles = Array.from(document.querySelectorAll('.role-check:checked')).map(cb => cb.value);
-        const customInputs = Array.from(document.querySelectorAll('.custom-role-input')).map(i => i.value.trim()).filter(v => v !== "");
-        const finalRecruitRoles = [...checkedRoles, ...customInputs].join(",");
-        const payload = {
-            action: 'save_schedule',
-            schedule_id: scheduleIdVal,
-            date: dateVal,
-            tab_name: tabVal,
-            priority: document.getElementById('newPriority').value || 1,
-            location: document.getElementById('newLocation').value,
-            description: document.getElementById('newDescription').value,
-            recruit_roles: finalRecruitRoles,
-            user_name: currentUser.user_name,
-            icon: icon,
-        };
-        showLoading("スケジュールを保存中...");
-        const result = await apiPost(payload);
-        if (result && result.success) {
-            showToast("保存完了！");
-            await fetchSchedules(false);
-            renderScheduleManagerView();
-        } else {
-            alert("保存エラー: " + (result ? result.message : "通信エラー"));
-            renderScheduleForm(dateVal, scheduleIdVal);
-        }
+
+    const dateVal = document.getElementById('newDate').value;
+    const tabVal = document.getElementById('newTabName').value;
+    const icon = document.getElementById("newIcon").value || "⚾";
+    const scheduleIdVal = document.getElementById('editScheduleId').value;
+
+    if (!dateVal || !tabVal) {
+        return alert("日付と予定の種類(タブ名)は必須です！");
     }
+
+    // ===== 募集項目 =====
+    const finalRecruitRoles = [];
+
+    document
+        .querySelectorAll(".support-item")
+        .forEach(item => {
+
+            const role = item
+                .querySelector(".support-name")
+                .value
+                .trim();
+
+            if (!role) return;
+
+            const useLimit =
+                item
+                    .querySelector(".limit-check")
+                    .checked;
+
+            const limit =
+                useLimit
+                    ? item.querySelector(".limit-value").value
+                    : "";
+
+            finalRecruitRoles.push(role);
+            finalRecruitRoles.push(limit);
+
+        });
+
+    const recruitRolesString =
+        finalRecruitRoles.join(",");
+
+    // ==================
+
+    const payload = {
+        action: "save_schedule",
+        schedule_id: scheduleIdVal,
+        date: dateVal,
+        tab_name: tabVal,
+        priority: document.getElementById("newPriority").value || 1,
+        location: document.getElementById("newLocation").value,
+        description: document.getElementById("newDescription").value,
+        recruit_roles: recruitRolesString,
+        user_name: currentUser.user_name,
+        icon: icon,
+    };
+
+    showLoading("スケジュールを保存中...");
+
+    const result = await apiPost(payload);
+
+    if (result && result.success) {
+
+        showToast("保存完了！");
+
+        await fetchSchedules(false);
+
+        renderScheduleManagerView();
+
+    } else {
+
+        alert(
+            "保存エラー: " +
+            (result ? result.message : "通信エラー")
+        );
+
+        renderScheduleForm(dateVal, scheduleIdVal);
+
+    }
+
+}
 
     async function deleteSchedule(scheduleId) {
         if (!confirm("本当にこの予定を削除しますか？")) return;
