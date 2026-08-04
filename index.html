@@ -1439,35 +1439,56 @@ familyAccounts.forEach(account => {
         parseRolesWithStatus(parent.response);
 
     text =
-        parsed.length > 0
-            ? parsed.map(p => {
+    parsed.length > 0
+        ? parsed.map(p => {
 
-                if (p.status === 1) {
-                    return `🌞 ${p.role}`;
-                }
+            const icon = p.status === 1 ? "🌞" : "○";
 
-                return `○ ${p.role}`;
+            return `
+                <span style="
+                    display:inline-block;
+                    white-space:nowrap;
+                    margin-right:10px;
+                    margin-bottom:4px;
+                ">
+                    ${icon} ${p.role}
+                </span>
+            `;
 
-            }).join("<br>")
-            : "不参加";
-}
+        }).join("")
+        : "不参加";}
     
     parentStatusRowsHtml += `
-        <div class="summary-row">
-            <span style="color:#64748b;">
-                保護者 (${account.user_name}):
-            </span>
-            <span style="font-weight:bold; color:${
+    <div class="summary-row"
+         style="align-items:flex-start;">
+
+        <span style="
+            color:#64748b;
+            flex:0 0 auto;
+            margin-right:6px;
+        ">
+            (${account.user_name}):
+        </span>
+
+        <span style="
+            font-weight:bold;
+            color:${
                 text === "[未回答]"
                     ? "#94a3b8"
                     : text === "不参加"
                         ? "#64748b"
                         : "#0284c7"
-            };">
-                ${text}
-            </span>
-        </div>
-    `;
+            };
+            line-height:1.8;
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px 10px;
+        ">
+            ${text}
+        </span>
+
+    </div>
+`;
 });
             if (parent && parent.comment) {
 
