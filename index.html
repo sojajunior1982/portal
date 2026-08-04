@@ -441,6 +441,7 @@
     const SCHEDULE_CACHE_MS = 5 * 60 * 1000; //5分
     let autoSyncTimer = null;
     let familyAccounts = [];
+    let roleOpenState = {};
     
     // -- Utility helpers
     function createHeaderHtml(
@@ -2199,110 +2200,342 @@ onclick="submitAllResponses('${type}')">
             }
         });
 
-        let parentsHtml = '';
-        const roles = event.recruit_roles ? event.recruit_roles.split(',').map(r => r.trim()).filter(r => r !== "") : [];
-        if (roles.length > 0) {
-            roles.forEach(role => {
-                let assigned = [];
-                parentAtts.forEach(p => {
-                    let parsed = parseRolesWithStatus(p.response);
-                    let found = parsed.find(item => item.role === role);
-                    if (found) assigned.push({ name: p.name, status: found.status, comment: p.comment });
+let parentsHtml = '';
+
+const roles = event.recruit_roles
+    ? event.recruit_roles.split(",").map(r => r.trim()).filter(r => r)
+    : [];
+
+if (roles.length > 0) {
+
+    roles.forEach(role => {
+
+        let assigned = [];
+
+        parentAtts.forEach(p => {
+
+            const parsed = parseRolesWithStatus(p.response);
+
+            const found = parsed.find(x => x.role === role);
+
+            if (found) {
+
+                assigned.push({
+                    name: p.name,
+                    status: found.status,
+                    comment: p.comment || ""
                 });
-                assigned.sort((a,b) => b.status - a.status || a.name.localeCompare(b.name, 'ja'));
-                const isConfirmedRole = assigned.some(a => a.status === 1);
-                if (isConfirmedRole) assigned = assigned.filter(a => a.status === 1);
-                let namesStr = assigned.length > 0 ? assigned.map(a => {
-                    let namesStr = assigned.length > 0
-? assigned.map(a => {
 
-    let html = `
-        <div style="margin-bottom:8px;">
-            <div>
-                ${a.status === 1 ? "🌞 " : ""}${a.name}
-            </div>
-    `;
+            }
 
-    if (a.comment && a.comment.trim() !== "") {
+        });
 
-        html += `
-            <div class="comment-preview"
-                 onclick="showComment(${JSON.stringify(a.name)}, ${JSON.stringify(a.comment)})">
-                💬 ${shortComment(a.comment)}
-            </div>
-        `;
-    }
+        assigned.sort((a,b)=>
+            b.status-a.status ||
+            a.name.localeCompare(b.name,"ja")
+        );
 
-    html += `</div>`;
+        const confirmed = assigned.filter(a=>a.status===1);
 
-    return html;
+        const entries = assigned.filter(a=>a.status!==1);
 
-}).join("")
-: '<span style="color:#94a3b8;font-size:12px;">なし</span>';
-                }).join('<br>') : '<span style="color:#94a3b8; font-size:12px;">なし</span>';
+        const isConfirmedRole = confirmed.length>0;
 
-                let statusBadge = isConfirmedRole ? `<span style="color:#059669; font-size:11px; margin-left:6px; font-weight:bold;">[🌞確定]</span>` : `<span style="color:#d97706; font-size:11px; margin-left:6px; font-weight:bold;">[募集中]</span>`;
-                let roleTitle = isConfirmedRole ? `✔️ ${role} ${statusBadge}` : `✔️ ${role} (${assigned.length}名) ${statusBadge}`;
+        let roleTitle;
 
-                parentsHtml += `
-                    <div class="role-block">
-                        <div class="role-name">${roleTitle}</div>
-                        <div style="padding-left:8px;">${namesStr}</div>
-                    </div>`;
-            });
-        } else {
-            parentsHtml = '<div style="color:#94a3b8; font-size:12px;">今回は募集項目はありません</div>';
+        if(isConfirmedRole){
+
+            roleTitle =
+                `✔️ ${role}
+                <span style="color:#059669;font-size:11px;font-weight:bold;">
+                [🌞確定]
+                </span>`;
+
+        }else{
+
+            const opened = !!roleOpenState[role];
+
+            roleTitle =
+                `✔️ ${role}
+                <span
+                    onclick='toggleRole(${JSON.stringify(role)})'
+                    style="
+                        cursor:pointer;
+                        color:#2563eb;
+                        margin-left:8px;
+                        user-select:none;
+                    ">
+                    ${opened?"▲":"▼"}
+                    （エントリー${entries.length}名）
+                </span>`;
+
         }
 
-        let recruitingHeaderHtml = roles.length > 0 && roles.some(r => {
-            return parentAtts.every(p => !parseRolesWithStatus(p.response).some(pr => pr.role === r && pr.status === 1));
-        }) ? `<div style="background:#fffbeb; border:1px solid #fde68a; color:#b45309; padding:8px 12px; border-radius:8px; font-size:12px; margin-bottom:12px; font-weight:bold;">📢 募集中の項目があります</div>` :
-            `<div style="background:#ecfdf5; border:1px solid #a7f3d0; color:#047857; padding:8px 12px; border-radius:8px; font-size:12px; margin-bottom:12px; font-weight:bold;">🎉 すべての協力パパママが確定しました！</div>`;
+        let bodyHtml = "";
 
-        document.getElementById('allResponseModalContent').innerHTML = `
-            <div class="modal-header" style="flex-shrink:0; margin-top:20px; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:12px; padding-left:16px; padding-right:16px; display:flex; justify-content:space-between; align-items:flex-start;">
-                <div><div class="modal-title" style="font-size:16px; text-align:left;">${event.tab_name} の回答状況</div></div>
-                <button onclick="closeAllResponseModal()" style="background:none; border:none; font-size:26px; font-weight:bold; color:#94a3b8; cursor:pointer; padding:0 4px;">×</button>
-            </div>
-            <div class="modal-body" style="flex:1; overflow-y:auto; min-height:0; text-align:left; padding:4px 16px;">
-                ${recruitingHeaderHtml}
-                <div class="sort-toggle-box">
-                    <div class="sort-btn ${currentAllResSort === 'number' ? 'active' : ''}" onclick="toggleAllResSort('number')">背番号・名前順</div>
-                    <div class="sort-btn ${currentAllResSort === 'area' ? 'active' : ''}" onclick="toggleAllResSort('area')">自転車班</div>
+                        if (isConfirmedRole) {
+
+            bodyHtml = confirmed.map(a => {
+
+                let html = `
+                    <div style="margin:6px 0;">
+                        🌞 ${a.name}
+                    </div>
+                `;
+
+                return html;
+
+            }).join("");
+
+        } else {
+
+            const opened = !!roleOpenState[role];
+
+            if (opened) {
+
+                bodyHtml = entries.length > 0
+                    ? entries.map(a => {
+
+                        return `
+                            <div style="margin:6px 0;">
+                                ○ ${a.name}
+                            </div>
+                        `;
+
+                    }).join("")
+                    : `<div style="color:#94a3b8;">エントリーなし</div>`;
+
+            }
+
+        }
+
+        let commentHtml = "";
+
+        const comments = assigned.filter(a => a.comment.trim() !== "");
+
+        if (comments.length > 0) {
+
+            commentHtml = `
+                <div style="
+                    margin-top:10px;
+                    padding-top:8px;
+                    border-top:1px dashed #e2e8f0;
+                ">
+                    <div style="
+                        font-size:12px;
+                        font-weight:bold;
+                        color:#64748b;
+                        margin-bottom:6px;
+                    ">
+                        ■コメント
+                    </div>
+
+                    ${comments.map(a => `
+                        <div
+                            class="comment-preview"
+                            onclick="showComment(${JSON.stringify(a.name)}, ${JSON.stringify(a.comment)})"
+                            style="margin-bottom:6px;">
+                            💬 ${shortComment(a.comment)}
+                        </div>
+                    `).join("")}
+
+                </div>
+            `;
+        }
+
+        parentsHtml += `
+            <div class="role-block">
+
+                <div class="role-name">
+                    ${roleTitle}
                 </div>
 
-                <div class="list-group">
-                    <div class="list-group-title">🧒 団員の回答</div>
-                    <div class="list-group-content">
-                        <div style="color:#059669; font-weight:bold; margin-bottom:4px;">出席 (${cGroups['出席'].length}名)</div>
-                        <div style="margin-bottom:12px; padding-left:8px;">${cGroups['出席'].length > 0 ? cGroups['出席'].join('<br>') : '<span style="color:#94a3b8;">なし</span>'}</div>
+                <div style="padding-left:8px;">
+                    ${bodyHtml}
+                    ${commentHtml}
+                </div>
 
-                        <div style="color:#ef4444; font-weight:bold; margin-bottom:4px;">お休み (${cGroups['お休み'].length}名)</div>
-                        <div style="margin-bottom:12px; padding-left:8px;">${cGroups['お休み'].length > 0 ? cGroups['お休み'].join('<br>') : '<span style="color:#94a3b8;">なし</span>'}</div>
+            </div>
+        `;
 
-                        <div style="color:#d97706; font-weight:bold; margin-bottom:4px;">遅刻 (${cGroups['遅刻'].length}名)</div>
-                        <div style="margin-bottom:12px; padding-left:8px;">${cGroups['遅刻'].length > 0 ? cGroups['遅刻'].join('<br>') : '<span style="color:#94a3b8;">なし</span>'}</div>
+    });
 
-                        <div style="color:#2563eb; font-weight:bold; margin-bottom:4px;">早退 (${cGroups['早退'].length}名)</div>
-                        <div style="padding-left:8px;">${cGroups['早退'].length > 0 ? cGroups['早退'].join('<br>') : '<span style="color:#94a3b8;">なし</span>'}</div>
+} else {
+
+    parentsHtml =
+        '<div style="color:#94a3b8;font-size:12px;">今回は募集項目はありません</div>';
+
+}
+
+                let recruitingHeaderHtml =
+            roles.length > 0 &&
+            roles.some(role => {
+                const roleMembers = parentAtts.filter(p =>
+                    parseRolesWithStatus(p.response).some(r => r.role === role)
+                );
+
+                return !roleMembers.some(p =>
+                    parseRolesWithStatus(p.response).some(r => r.role === role && r.status === 1)
+                );
+            })
+                ? `
+                <div style="
+                    background:#fffbeb;
+                    border:1px solid #fde68a;
+                    color:#b45309;
+                    padding:8px 12px;
+                    border-radius:8px;
+                    font-size:12px;
+                    margin-bottom:12px;
+                    font-weight:bold;">
+                    📢 募集中の項目があります
+                </div>`
+                : `
+                <div style="
+                    background:#ecfdf5;
+                    border:1px solid #a7f3d0;
+                    color:#047857;
+                    padding:8px 12px;
+                    border-radius:8px;
+                    font-size:12px;
+                    margin-bottom:12px;
+                    font-weight:bold;">
+                    🎉 すべての協力パパママが確定しました！
+                </div>`;
+
+        document.getElementById("allResponseModalContent").innerHTML = `
+            <div class="modal-header"
+                 style="flex-shrink:0;margin-top:20px;margin-bottom:12px;border-bottom:1px solid #e2e8f0;padding-bottom:12px;padding-left:16px;padding-right:16px;display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                    <div class="modal-title" style="font-size:16px;text-align:left;">
+                        ${event.tab_name} の回答状況
+                    </div>
+                </div>
+
+                <button onclick="closeAllResponseModal()"
+                        style="background:none;border:none;font-size:26px;font-weight:bold;color:#94a3b8;cursor:pointer;padding:0 4px;">
+                    ×
+                </button>
+            </div>
+
+            <div class="modal-body"
+                 style="flex:1;overflow-y:auto;min-height:0;text-align:left;padding:4px 16px;">
+
+                ${recruitingHeaderHtml}
+
+                <div class="sort-toggle-box">
+                    <div class="sort-btn ${currentAllResSort==="number"?"active":""}"
+                         onclick="toggleAllResSort('number')">
+                        背番号・名前順
+                    </div>
+
+                    <div class="sort-btn ${currentAllResSort==="area"?"active":""}"
+                         onclick="toggleAllResSort('area')">
+                        自転車班
                     </div>
                 </div>
 
                 <div class="list-group">
-                    <div class="list-group-title">🙋‍♂️ パパママの協力</div>
-                    <div class="list-group-content">${parentsHtml}</div>
+
+                    <div class="list-group-title">
+                        🧒 団員の回答
+                    </div>
+
+                    <div class="list-group-content">
+
+                        <div style="color:#059669;font-weight:bold;margin-bottom:4px;">
+                            出席 (${cGroups["出席"].length}名)
+                        </div>
+
+                        <div style="margin-bottom:12px;padding-left:8px;">
+                            ${
+                                cGroups["出席"].length
+                                    ? cGroups["出席"].join("<br>")
+                                    : '<span style="color:#94a3b8;">なし</span>'
+                            }
+                        </div>
+
+                        <div style="color:#ef4444;font-weight:bold;margin-bottom:4px;">
+                            お休み (${cGroups["お休み"].length}名)
+                        </div>
+
+                        <div style="margin-bottom:12px;padding-left:8px;">
+                            ${
+                                cGroups["お休み"].length
+                                    ? cGroups["お休み"].join("<br>")
+                                    : '<span style="color:#94a3b8;">なし</span>'
+                            }
+                        </div>
+
+                        <div style="color:#d97706;font-weight:bold;margin-bottom:4px;">
+                            遅刻 (${cGroups["遅刻"].length}名)
+                        </div>
+
+                        <div style="margin-bottom:12px;padding-left:8px;">
+                            ${
+                                cGroups["遅刻"].length
+                                    ? cGroups["遅刻"].join("<br>")
+                                    : '<span style="color:#94a3b8;">なし</span>'
+                            }
+                        </div>
+
+                        <div style="color:#2563eb;font-weight:bold;margin-bottom:4px;">
+                            早退 (${cGroups["早退"].length}名)
+                        </div>
+
+                        <div style="padding-left:8px;">
+                            ${
+                                cGroups["早退"].length
+                                    ? cGroups["早退"].join("<br>")
+                                    : '<span style="color:#94a3b8;">なし</span>'
+                            }
+                        </div>
+
+                    </div>
+
                 </div>
+
+                <div class="list-group">
+
+                    <div class="list-group-title">
+                        🙋‍♂️ パパママの協力
+                    </div>
+
+                    <div class="list-group-content">
+                        ${parentsHtml}
+                    </div>
+
+                </div>
+
             </div>
-            <div class="modal-footer" style="flex-shrink:0; padding:12px 16px 20px 16px; border-top:1px solid #f1f5f9; background:#fff;">
-                <button class="modal-footer-btn m-btn-cancel" style="width:100%; background:#f1f5f9; color:#475569;" onclick="closeAllResponseModal()">閉じる</button>
+
+            <div class="modal-footer"
+                 style="flex-shrink:0;padding:12px 16px 20px;border-top:1px solid #f1f5f9;background:#fff;">
+
+                <button class="modal-footer-btn m-btn-cancel"
+                        style="width:100%;background:#f1f5f9;color:#475569;"
+                        onclick="closeAllResponseModal()">
+                    閉じる
+                </button>
+
             </div>
         `;
-    }
-
+}
     function toggleAllResSort(type) {
         currentAllResSort = type;
         renderAllResponseContent();
     }
+
+    function toggleRole(role) {
+
+    if (!window.roleOpenState) {
+        window.roleOpenState = {};
+    }
+
+    roleOpenState[role] = !roleOpenState[role];
+
+    renderAllResponseContent();
+}
 
     // -- Confirm roles (admin) views
     function renderConfirmRolesListView() {
