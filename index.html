@@ -1443,10 +1443,11 @@ familyAccounts.forEach(account => {
         ? parsed.map(p => {
 
             if (p.status === 1) {
-                return `🌞 ${p.role}（確定）`;
-            }
+                if (p.status === 1) {
+    return `🌞 ${p.role}`;
+}
 
-            return `○ ${p.role}（エントリー中）`;
+return `○ ${p.role}`;
 
         }).join("<br>")
 
@@ -2313,7 +2314,7 @@ if (confirmed.length > 0) {
             font-weight:bold;
             margin-bottom:6px;
         ">
-            🌞 確定
+            🌞 確定🙇
         </div>
     `;
 
@@ -2341,7 +2342,7 @@ bodyHtml += `
         font-weight:bold;
         margin:8px 0 6px;
     ">
-        候補
+        ○ 候補
     </div>
 `;
 
