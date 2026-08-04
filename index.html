@@ -2532,9 +2532,17 @@ if (roles.length > 0) {
         window.roleOpenState = {};
     }
 
+    const body = document.querySelector("#allResponseModalContent .modal-body");
+    const scrollTop = body ? body.scrollTop : 0;
+
     roleOpenState[role] = !roleOpenState[role];
 
     renderAllResponseContent();
+
+    requestAnimationFrame(() => {
+        const newBody = document.querySelector("#allResponseModalContent .modal-body");
+        if (newBody) newBody.scrollTop = scrollTop;
+    });
 }
 
     // -- Confirm roles (admin) views
