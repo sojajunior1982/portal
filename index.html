@@ -2211,6 +2211,8 @@ onclick="submitAllResponses('${type}')">
 
 let parentsHtml = '';
 
+const allComments = [];
+
 let commentHtml = "";
 
 const roles = event.recruit_roles
@@ -2413,56 +2415,7 @@ bodyHtml += `</div>`;
 
 }
 
-        const allComments = [];
-
-parentAtts.forEach(p => {
-
-    if (p.comment && p.comment.trim() !== "") {
-
-        allComments.push({
-            name: p.name,
-            comment: p.comment
-        });
-
-    }
-
-});
-
-if (allComments.length > 0) {
-
-    parentsHtml += `
-
-        <div class="role-block">
-
-            <div class="role-name">
-                💬 コメント
-            </div>
-
-            <div style="padding-left:8px;">
-
-                ${allComments.map(c => `
-
-                    <div
-                        class="comment-preview"
-                        style="margin-bottom:8px;"
-                        onclick="showComment(${JSON.stringify(c.name)}, ${JSON.stringify(c.comment)})">
-
-                        <b>${c.name}</b><br>
-                        ${shortComment(c.comment)}
-
-                    </div>
-
-                `).join("")}
-
-            </div>
-
-        </div>
-
-    `;
-
-}
-
-                let recruitingHeaderHtml =
+        let recruitingHeaderHtml =
             roles.length > 0 &&
             roles.some(role => {
                 const roleMembers = parentAtts.filter(p =>
