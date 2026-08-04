@@ -2965,49 +2965,42 @@ rowsHtml += `
         const defaultRoles = appDefaults.support;
         // デフォルト募集項目
 
-if (currentRolesArr.length === 0) {
+iconst defaultRoles = appDefaults.support;
 
-    currentRolesArr =
-        defaultRoles.map(role => ({
+// ======================
+// 募集項目読込
+// ======================
 
-            role,
-
-            limit: ""
-
-        }));
-
-}
-        let currentRolesArr = [];
+let currentRolesArr = [];
 
 if (eventData.recruit_roles) {
 
-    const arr = eventData.recruit_roles
-    ? eventData.recruit_roles.split(",")
-    : [];
-
-const recruitItems = [];
-
-for (let i = 0; i < arr.length; i += 2) {
-
-    recruitItems.push({
-        name: arr[i] || "",
-        limit: arr[i + 1] || ""
-    });
-
-}
-        .map(v => v.trim());
+    const arr = eventData.recruit_roles.split(",");
 
     for (let i = 0; i < arr.length; i += 2) {
 
         currentRolesArr.push({
 
-            role: arr[i] || "",
+            role: (arr[i] || "").trim(),
 
-            limit: arr[i + 1] || ""
+            limit: (arr[i + 1] || "").trim()
 
         });
 
     }
+
+}
+
+// 新規作成ならデフォルト4件
+if (currentRolesArr.length === 0) {
+
+    currentRolesArr = defaultRoles.map(role => ({
+
+        role,
+
+        limit: ""
+
+    }));
 
 }
         
@@ -3058,7 +3051,7 @@ align-items:center;
 
 <input
 list="support-defaults"
-class="support-role-name"
+class="support-name"
 value="${item.role}"
 placeholder="募集項目"
 style="
@@ -3099,7 +3092,7 @@ color:#64748b;
 
 <input
 type="checkbox"
-class="support-limit-check"
+class="limit-check"
 ${hasLimit ? "checked" : ""}
 onchange="toggleSupportLimit(this)">
 
@@ -3123,7 +3116,7 @@ onclick="changeSupportLimit(this,-1)">
 </button>
 
 <input
-class="support-limit-value"
+class="limit-value"
 type="number"
 min="1"
 value="${item.limit || 2}"
@@ -3379,7 +3372,7 @@ cursor:pointer;
 type="checkbox"
 class="limit-check"
 ${limit !== "" ? "checked" : ""}
-onchange="toggleLimitArea(this)"
+onchange="toggleSupportLimit(this)"
 >
 
 募集人数を設定する
@@ -3397,7 +3390,7 @@ gap:8px;
 
 <button
 type="button"
-onclick="changeLimit(this,-1)"
+onclick="changeSupportLimit(this,-1)"
 style="
 width:32px;
 height:32px;
@@ -3427,7 +3420,7 @@ background:#fff;
 
 <button
 type="button"
-onclick="changeLimit(this,1)"
+onclick="changeSupportLimit(this,1)"
 style="
 width:32px;
 height:32px;
@@ -3453,18 +3446,20 @@ font-weight:bold;
 
 }
 
-function toggleLimitArea(chk){
+function toggleSupportLimit(chk){
 
-    chk.closest(".support-item")
-        .querySelector(".limit-area")
-        .style.display =
-            chk.checked
-                ? "block"
-                : "none";
+    const item =
+        chk.closest(".support-item");
+
+    item.querySelector(".support-limit-area").style.display =
+        chk.checked ? "block" : "none";
+
+    item.querySelector(".support-no-limit").style.display =
+        chk.checked ? "none" : "block";
 
 }
 
-function changeLimit(btn,diff){
+function changeSupportLimit(btn,diff){
 
     const input =
         btn.parentElement.querySelector(".limit-value");
@@ -3498,30 +3493,39 @@ function changeLimit(btn,diff){
         }
         document.getElementById("newDescription").value = temp.value;
     }
-    function addSupportItem(role = "", limit = "", removable = true) {
+    function addSupportItem(role="", limit="") {
 
     const container =
-        document.getElementById("customRolesContainer");
+        document.getElementById("supportContainer");
 
-    const div = document.createElement("div");
+    const hasLimit =
+        limit !== "";
+
+    const div =
+        document.createElement("div");
 
     div.className = "support-item";
 
     div.style.cssText = `
-        background:#fff;
         border:1px solid #e2e8f0;
         border-radius:10px;
         padding:12px;
         margin-bottom:12px;
+        background:#fff;
     `;
 
     div.innerHTML = `
 
-<div style="display:flex;gap:8px;align-items:center;">
+<div
+style="
+display:flex;
+gap:8px;
+align-items:center;
+">
 
 <input
-class="support-name"
 list="support-defaults"
+class="support-name"
 value="${role}"
 placeholder="募集項目"
 style="
@@ -3531,72 +3535,65 @@ border:1px solid #cbd5e1;
 border-radius:8px;
 ">
 
-${removable ? `
 <button
 type="button"
 onclick="this.closest('.support-item').remove()"
 style="
-background:#fef2f2;
-color:#ef4444;
-border:1px solid #fca5a5;
-padding:8px 12px;
+width:34px;
+height:34px;
+border:none;
+background:#fee2e2;
+color:#dc2626;
 border-radius:8px;
+font-weight:bold;
 cursor:pointer;
 ">
+
 ×
+
 </button>
-` : ""}
 
 </div>
 
-<div style="margin-top:12px;">
-
-<label
+<div
 style="
-display:flex;
-align-items:center;
-gap:8px;
+margin-top:10px;
 font-size:13px;
-cursor:pointer;
+color:#64748b;
 ">
+
+<label>
 
 <input
 type="checkbox"
 class="limit-check"
-${limit!==""?"checked":""}
-onchange="
-this.closest('.support-item')
-.querySelector('.limit-area')
-.style.display=this.checked?'flex':'none';
-">
+${hasLimit ? "checked" : ""}
+onchange="toggleSupportLimit(this)">
 
 募集人数を設定する
 
 </label>
 
+</div>
+
 <div
-class="limit-area"
+class="support-limit-area"
 style="
 margin-top:10px;
-display:${limit!==""?"flex":"none"};
-align-items:center;
-gap:8px;
+display:${hasLimit ? "block" : "none"};
 ">
 
 <button
 type="button"
-onclick="
-let i=this.nextElementSibling;
-i.value=Math.max(1,Number(i.value)-1);
-">
-−
+onclick="changeSupportLimit(this,-1)">
+－
 </button>
 
 <input
 class="limit-value"
 type="number"
 min="1"
-value="${limit||1}"
+value="${limit || 2}"
 style="
 width:60px;
 text-align:center;
@@ -3604,16 +3601,25 @@ text-align:center;
 
 <button
 type="button"
-onclick="
-let i=this.previousElementSibling;
-i.value=Number(i.value)+1;
-">
+onclick="changeSupportLimit(this,1)">
 ＋
 </button>
 
 </div>
 
+<div
+class="support-no-limit"
+style="
+margin-top:8px;
+font-size:13px;
+color:#64748b;
+display:${hasLimit ? "none" : "block"};
+">
+
+人数制限なし
+
 </div>
+
 `;
 
     container.appendChild(div);
