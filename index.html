@@ -446,7 +446,9 @@
     let appDefaults = {
         tab: ["練習", "練習（雨天時）", "練習試合", "試合"],
         place: ["小学校", "本球場"],
-        support: ["🙆 参加", "🙋 当番", "🚗 道具車", "⚾ 審判"]
+        support: ["参加", "当番", "道具車", "審判"]
+        icon: ["⚾","🏟️","🏃","🚩","🏆","🌧️"]
+};
     };
     let confirmStateMap = {};
     let notifications = [];
@@ -2974,7 +2976,9 @@ rowsHtml += `
             `;
         });
         let tabOptionsHtml = appDefaults.tab.map(t => `<option value="${t}"></option>`).join('');
-        let iconOptionsHtml = appDefaults.icon
+        const iconList = appDefaults.icon || ["⚾"];
+
+let iconOptionsHtml = iconList
     .map(i => `
         <option
             value="${i}"
