@@ -275,6 +275,26 @@
             margin-bottom:12px;
         }
         #2563eb
+        .summary-row{
+    display:flex;
+    align-items:flex-start;
+    margin-bottom:6px;
+}
+
+.parent-name{
+    width:95px;
+    flex-shrink:0;
+    color:#64748b;
+}
+
+.parent-role-list{
+    flex:1;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px 10px;
+    line-height:1.8;
+    font-weight:bold;
+}
     </style>
 </head>
 <body>
@@ -1445,27 +1465,28 @@ familyAccounts.forEach(account => {
             const icon = p.status === 1 ? "🌞" : "○";
 
             return `
-                <span style="
-                    display:inline-block;
-                    white-space:nowrap;
-                    margin-right:10px;
-                    margin-bottom:4px;
-                ">
-                    ${icon} ${p.role}
-                </span>
-            `;
-
+    <span style="
+        white-space:nowrap;
+        margin-right:10px;
+        margin-bottom:4px;
+    ">
+        ${icon} ${p.role}
+    </span>
+`;
         }).join("")
         : "不参加";}
     
     parentStatusRowsHtml += `
     <div class="summary-row"
-         style="align-items:flex-start;">
+         style="
+            display:flex;
+            align-items:flex-start;
+        ">
 
         <span style="
             color:#64748b;
-            flex:0 0 auto;
-            margin-right:6px;
+            width:90px;
+            flex-shrink:0;
         ">
             (${account.user_name}):
         </span>
@@ -1483,6 +1504,7 @@ familyAccounts.forEach(account => {
             display:flex;
             flex-wrap:wrap;
             gap:6px 10px;
+            flex:1;
         ">
             ${text}
         </span>
