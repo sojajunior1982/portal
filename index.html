@@ -1439,9 +1439,18 @@ familyAccounts.forEach(account => {
             parseRolesWithStatus(parent.response);
 
         text =
-            parsed.length > 0
-                ? parsed.map(p => p.role).join(", ")
-                : "不参加";
+    parsed.length > 0
+        ? parsed.map(p => {
+
+            if (p.status === 1) {
+                return `🌞 ${p.role}（確定）`;
+            }
+
+            return `○ ${p.role}（エントリー中）`;
+
+        }).join("<br>")
+
+        : "不参加";
     }
 
     parentStatusRowsHtml += `
@@ -2202,6 +2211,8 @@ onclick="submitAllResponses('${type}')">
 
 let parentsHtml = '';
 
+let commentHtml = "";
+
 const roles = event.recruit_roles
     ? event.recruit_roles.split(",").map(r => r.trim()).filter(r => r)
     : [];
@@ -2225,6 +2236,19 @@ if (roles.length > 0) {
                     status: found.status,
                     comment: p.comment || ""
                 });
+
+                if (
+    p.comment &&
+    p.comment.trim() !== "" &&
+    !allComments.some(c => c.name === p.name)
+) {
+
+    allComments.push({
+        name: p.name,
+        comment: p.comment
+    });
+
+}
 
             }
 
@@ -2273,35 +2297,63 @@ if (roles.length > 0) {
 
         let bodyHtml = "";
 
-                        if (isConfirmedRole) {
+                        const opened = !!roleOpenState[role];
 
-            bodyHtml = confirmed.map(a => {
+bodyHtml = "";
 
-                let html = `
-                    <div style="margin:6px 0;">
-                        🌞 ${a.name}
-                    </div>
-                `;
+/* ===== 確定者 ===== */
 
-                return html;
+if (confirmed.length > 0) {
 
-            }).join("");
+    bodyHtml += `
+        <div style="
+            color:#059669;
+            font-weight:bold;
+            margin-bottom:6px;
+        ">
+            🌞 確定
+        </div>
+    `;
 
-        } else {
+    bodyHtml += confirmed.map(a=>`
 
-            const opened = !!roleOpenState[role];
+        <div style="margin:4px 0 8px 12px;">
+            🌞 ${a.name}
+        </div>
 
-            if (opened) {
+    `).join("");
 
-                bodyHtml = entries.length > 0
-                    ? entries.map(a => {
+}
 
-                        return `
-                            <div style="margin:6px 0;">
-                                ○ ${a.name}
-                            </div>
-                        `;
+/* ===== エントリー ===== */
 
+bodyHtml += `
+<div
+    id="role_${role}"
+    style="display:${opened ? "block":"none"};">
+`;
+
+bodyHtml += `
+    <div style="
+        color:#2563eb;
+        font-weight:bold;
+        margin:8px 0 6px;
+    ">
+        候補
+    </div>
+`;
+
+bodyHtml += entries.length
+    ? entries.map(a=>`
+
+        <div style="margin:4px 0 8px 12px;">
+            ○ ${a.name}
+        </div>
+
+    `).join("")
+    : `<div style="margin-left:12px;color:#94a3b8;">なし</div>`;
+
+bodyHtml += `</div>`;
                     }).join("")
                     : `<div style="color:#94a3b8;">エントリーなし</div>`;
 
@@ -2309,41 +2361,8 @@ if (roles.length > 0) {
 
         }
 
-        let commentHtml = "";
-
-        const comments = assigned.filter(a => a.comment.trim() !== "");
-
-        if (comments.length > 0) {
-
-            commentHtml = `
-                <div style="
-                    margin-top:10px;
-                    padding-top:8px;
-                    border-top:1px dashed #e2e8f0;
-                ">
-                    <div style="
-                        font-size:12px;
-                        font-weight:bold;
-                        color:#64748b;
-                        margin-bottom:6px;
-                    ">
-                        ■コメント
-                    </div>
-
-                    ${comments.map(a => `
-                        <div
-                            class="comment-preview"
-                            onclick="showComment(${JSON.stringify(a.name)}, ${JSON.stringify(a.comment)})"
-                            style="margin-bottom:6px;">
-                            💬 ${shortComment(a.comment)}
-                        </div>
-                    `).join("")}
-
-                </div>
-            `;
-        }
-
-        parentsHtml += `
+        
+                parentsHtml += `
             <div class="role-block">
 
                 <div class="role-name">
@@ -2352,7 +2371,6 @@ if (roles.length > 0) {
 
                 <div style="padding-left:8px;">
                     ${bodyHtml}
-                    ${commentHtml}
                 </div>
 
             </div>
@@ -2360,10 +2378,94 @@ if (roles.length > 0) {
 
     });
 
+    // -------------------------
+    // コメント一覧
+    // -------------------------
+    if (allComments.length > 0) {
+
+        parentsHtml += `
+            <div class="role-block">
+
+                <div class="role-name">
+                    ■ コメント
+                </div>
+
+                <div style="padding-left:8px;">
+
+                    ${allComments.map(c => `
+
+                        <div
+                            class="comment-preview"
+                            style="margin-bottom:8px;"
+                            onclick="showComment(${JSON.stringify(c.name)}, ${JSON.stringify(c.comment)})">
+
+                            💬 <b>${c.name}</b><br>
+                            ${shortComment(c.comment)}
+
+                        </div>
+
+                    `).join("")}
+
+                </div>
+
+            </div>
+        `;
+
+    }
+
 } else {
 
     parentsHtml =
         '<div style="color:#94a3b8;font-size:12px;">今回は募集項目はありません</div>';
+
+}
+
+        const allComments = [];
+
+parentAtts.forEach(p => {
+
+    if (p.comment && p.comment.trim() !== "") {
+
+        allComments.push({
+            name: p.name,
+            comment: p.comment
+        });
+
+    }
+
+});
+
+if (allComments.length > 0) {
+
+    parentsHtml += `
+
+        <div class="role-block">
+
+            <div class="role-name">
+                💬 コメント
+            </div>
+
+            <div style="padding-left:8px;">
+
+                ${allComments.map(c => `
+
+                    <div
+                        class="comment-preview"
+                        style="margin-bottom:8px;"
+                        onclick="showComment(${JSON.stringify(c.name)}, ${JSON.stringify(c.comment)})">
+
+                        <b>${c.name}</b><br>
+                        ${shortComment(c.comment)}
+
+                    </div>
+
+                `).join("")}
+
+            </div>
+
+        </div>
+
+    `;
 
 }
 
