@@ -106,7 +106,35 @@
     color:#f59e0b;
 }
         
-        
+ .small-blue-btn{
+
+background:#eff6ff;
+
+border:1px solid #bfdbfe;
+
+color:#2563eb;
+
+padding:8px 14px;
+
+border-radius:999px;
+
+font-size:12px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+box-shadow:0 2px 6px rgba(37,99,235,.15);
+
+transition:.2s;
+
+}
+
+.small-blue-btn:hover{
+
+background:#dbeafe;
+
+}       
         
         
         
@@ -1622,7 +1650,28 @@ html += `
         title="${event.tab_name}"
         onclick="event.stopPropagation();showScheduleTitle(${JSON.stringify(event.tab_name)})">
 
-        ${event.icon || "⚾"} ${event.tab_name}
+        <div
+class="tab ${activeClass}"
+id="tab-${index}"
+onclick="switchTab(${index}, ${events.length})">
+
+<span
+style="
+display:block;
+overflow:hidden;
+white-space:nowrap;
+text-overflow:ellipsis;
+"
+title="${event.tab_name}"
+onclick="event.stopPropagation();showScheduleTitle(${JSON.stringify(event.tab_name)})">
+
+${event.icon || "⚾"} ${event.tab_name}
+
+</span>
+
+${newBadge}
+
+</div>
 
     </span>
 
@@ -1656,32 +1705,45 @@ html += `
 <div class="tab-panel ${activeClass}" id="tab-panel-${index}">
 
     
-    <div class="detail-item">
-        <div class="detail-value"
-             style="
-                font-size:19px;
-                font-weight:800;
-                color:#1e3b8a;
-                margin-bottom:10px;
-             ">
-            ${event.tab_name}
-        </div>
-    </div>
+    <div
+style="
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:10px;
+margin-bottom:14px;
+">
 
-    <div style="
-        display:flex;
-        justify-content:flex-end;
-        margin-bottom:12px;
-    ">
-        <button
-            class="small-blue-btn"
-            onclick="openAnswerModal('${event.schedule_id}')">
+<div
+style="
+flex:1;
+font-size:19px;
+font-weight:800;
+color:#1e3b8a;
+overflow:hidden;
+white-space:nowrap;
+text-overflow:ellipsis;
+cursor:pointer;
+"
+title="${event.tab_name}"
+onclick="showScheduleTitle(${JSON.stringify(event.tab_name)})">
 
-            👥 この予定の回答を見る
+${event.icon || "⚾"} ${event.tab_name}
 
-        </button>
-    </div>
+</div>
 
+<button
+class="small-blue-btn"
+style="
+flex-shrink:0;
+"
+onclick="openAnswerModal('${event.schedule_id}')">
+
+👥回答を見る
+
+</button>
+
+</div>
 
     <div class="detail-item">
         <div class="detail-label">
