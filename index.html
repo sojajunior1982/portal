@@ -1399,19 +1399,52 @@ ${
     }
 
     // -- Check if a schedule has recruiting roles needing confirmation
-    function hasRecruitingRoles(schedule) {
-        const roles = schedule.recruit_roles ? schedule.recruit_roles.split(',').map(r => r.trim()).filter(r => r !== "") : [];
-        if (roles.length === 0) return false;
-        const atts = allAttendances.filter(a => String(a.schedule_id) === String(schedule.schedule_id) && a.type === '保護者');
-        for (let role of roles) {
-            let isConfirmed = atts.some(a => {
-                let parsed = parseRolesWithStatus(a.response);
-                return parsed.some(p => p.role === role && p.status === 1);
-            });
-            if (!isConfirmed) return true;
+function hasRecruitingRoles(schedule) {
+
+    // recruit_rolesから役職名だけ取り出す
+    let roles = [];
+
+    if (schedule.recruit_roles) {
+
+        const arr = schedule.recruit_roles
+            .split(",")
+            .map(v => v.trim());
+
+        // 最後の余分な空要素だけ削除
+        while (arr.length && arr[arr.length - 1] === "") {
+            arr.pop();
         }
-        return false;
+
+        for (let i = 0; i < arr.length; i += 2) {
+            roles.push(arr[i]);
+        }
     }
+
+    if (roles.length === 0) return false;
+
+    const atts = allAttendances.filter(
+        a =>
+            String(a.schedule_id) === String(schedule.schedule_id) &&
+            a.type === "保護者"
+    );
+
+    for (let role of roles) {
+
+        const isConfirmed = atts.some(a => {
+
+            const parsed = parseRolesWithStatus(a.response);
+
+            return parsed.some(
+                p => p.role === role && p.status === 1
+            );
+
+        });
+
+        if (!isConfirmed) return true;
+    }
+
+    return false;
+}
 
     // -- Detail view
     function renderDetailView(date) {
@@ -2259,9 +2292,20 @@ const allComments = [];
 
 let commentHtml = "";
 
-const roles = event.recruit_roles
-    ? event.recruit_roles.split(",").map(r => r.trim()).filter(r => r)
-    : [];
+const roles = [];
+
+if (event.recruit_roles) {
+
+    const arr = event.recruit_roles
+        .split(",")
+        .map(v => v.trim())
+        .filter(v => v !== "");
+
+    for (let i = 0; i < arr.length; i += 2) {
+        roles.push(arr[i]);   // ロール名だけ取得
+    }
+
+}
 
 if (roles.length > 0) {
 
@@ -2698,7 +2742,19 @@ bodyHtml += `</div>`;
 
         events.forEach((event, index) => {
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
-            const roles = event.recruit_roles ? event.recruit_roles.split(',').map(r => r.trim()).filter(r => r !== "") : [];
+            const roles = [];
+
+if (event.recruit_roles) {
+
+    const arr = event.recruit_roles
+        .split(",")
+        .map(v => v.trim())
+        .filter(v => v !== "");
+
+    for (let i = 0; i < arr.length; i += 2) {
+        roles.push(arr[i]);   // ← ロール名だけ取り出す
+    }
+}
             let rolesBlockHtml = "";
             if (roles.length === 0) {
                 rolesBlockHtml = `<p style="color:#94a3b8; text-align:center; padding:20px;">この予定に募集項目はありません</p>`;
