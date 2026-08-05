@@ -474,6 +474,41 @@
 </div>
 
 <div class="toast" id="toast">保存しました！</div>
+    <div class="modal-overlay" id="titleModal">
+
+    <div class="modal" style="max-width:320px;">
+
+        <div id="titleModalText"
+             style="
+                padding:28px 24px;
+                font-size:18px;
+                font-weight:bold;
+                color:#1e3b8a;
+                line-height:1.7;
+                text-align:center;
+                word-break:break-word;
+             ">
+        </div>
+
+        <div style="
+            padding:16px;
+            border-top:1px solid #e2e8f0;
+        ">
+
+            <button
+                class="modal-footer-btn m-btn-cancel"
+                style="width:100%;"
+                onclick="closeScheduleTitle()">
+
+                OK
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 <div class="all-res-overlay" id="allResponseModal">
     <div class="modal" id="allResponseModalContent"></div>
@@ -1560,128 +1595,19 @@ function hasRecruitingRoles(schedule) {
         events.forEach((event, index) => {
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
             const newBadge = isNewUpdate(event.update) ? `<span style="background:#ef4444; color:white; font-size:9px; padding:2px 4px; border-radius:4px; margin-left:4px; vertical-align:middle; font-weight:bold;">New</span>` : '';
-            html += `<div class="tab ${activeClass}" id="tab-${index}" onclick="switchTab(${index}, ${events.length})">${event.icon || "⚾"} ${event.tab_name}${newBadge}</div>`;
+            html += `<div
+    class="event-title"
+    onclick="showScheduleTitle(${JSON.stringify(event.tab_name)})"
+    style="cursor:pointer;">
+
+    ${event.icon || "⚾"} ${event.tab_name}
+
+</div>`;
         });
         html += `</div><div class="tab-content-box">`;
         events.forEach((event, index) => {
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
-            const familyAttsForThisEvent = allAttendances.filter(
-                a =>
-                    String(a.schedule_id) === String(event.schedule_id) &&
-                    a.family_id === currentUser.family_id
-            );
-            const parentAnswers =
-                familyAttsForThisEvent.filter(
-                    a => a.type === "保護者"
-                );
-            let parentStatusRowsHtml = "";
-
-familyAccounts.forEach(account => {
-
-    const parent = parentAnswers.find(
-        p => p.name === account.user_name
-    );
-
-    let roleHtml = "";
-    let textColor = "#94a3b8";
-
-    if (parent) {
-
-        const parsed = parseRolesWithStatus(parent.response);
-
-        if (parsed.length > 0) {
-
-            textColor = "#0284c7";
-
-            const first = parsed[0];
-
-            roleHtml += `
-                <div style="white-space:nowrap;">
-                    ${first.status === 1 ? "🌞" : "○"} ${first.role}
-                </div>
-            `;
-
-            if (parsed.length > 1) {
-
-                roleHtml += `
-                    <div class="parent-role-second">
-                `;
-
-                parsed.slice(1).forEach(p => {
-
-                    roleHtml += `
-                        <span style="white-space:nowrap;">
-                            ${p.status === 1 ? "🌞" : "○"} ${p.role}
-                        </span>
-                    `;
-
-                });
-
-                roleHtml += `</div>`;
-            }
-
-        } else {
-
-            textColor = "#64748b";
-            roleHtml = "不参加";
-
-        }
-
-    } else {
-
-        roleHtml = "[未回答]";
-
-    }
-
-    parentStatusRowsHtml += `
-        <div class="summary-row">
-
-            <span class="parent-name">
-                保護者 (${account.user_name}):
-            </span>
-
-            <div class="parent-role-list"
-                 style="color:${textColor};">
-
-                ${roleHtml}
-
-            </div>
-
-        </div>
-    `;
-
-});
-            if (parent && parent.comment) {
-
-    const short =
-        parent.comment.length > 18
-            ? parent.comment.substring(0, 18) + "..."
-            : parent.comment;
-
-    parentStatusRowsHtml += `
-        <div class="comment-preview"
-             onclick="showComment(${JSON.stringify(parent.name)}, ${JSON.stringify(parent.comment)})">
-            💬 ${short}
-        </div>
-    `;
-}
-
-            let childrenStatusRowsHtml = "";
-            if (childrenList.length > 0) {
-                childrenList.forEach(childName => {
-                    const childAns = familyAttsForThisEvent.find(a => a.type === '団員' && a.name === childName);
-                    const childStatusText = childAns ? childAns.response : "[未回答]";
-                    childrenStatusRowsHtml += `
-                        <div class="summary-row">
-                            <span style="color:#64748b;">団員 (${childName}):</span>
-                            <span style="font-weight:bold; color: ${childStatusText.includes('出席') ? '#059669' : '#ef4444'};">${childStatusText}</span>
-                        </div>
-                    `;
-                });
-            } else {
-                childrenStatusRowsHtml = `<div class="summary-row"><span style="color:#94a3b8;">団員の情報がありません</span></div>`;
-            }
-
+            
             const updateTime = event.updated_at
                 ? new Date(event.updated_at).toLocaleString('ja-JP', {
                     month: 'numeric',
@@ -1699,9 +1625,21 @@ familyAccounts.forEach(account => {
 
             const updaterName = event.updated_by || "不明";
 
-            html += `
                 html += `
 <div class="tab-panel ${activeClass}" id="tab-panel-${index}">
+
+    
+    <div class="detail-item">
+        <div class="detail-value"
+             style="
+                font-size:19px;
+                font-weight:800;
+                color:#1e3b8a;
+                margin-bottom:10px;
+             ">
+            ${event.tab_name}
+        </div>
+    </div>
 
     <div style="
         display:flex;
@@ -1717,17 +1655,6 @@ familyAccounts.forEach(account => {
         </button>
     </div>
 
-    <div class="detail-item">
-        <div class="detail-value"
-             style="
-                font-size:19px;
-                font-weight:800;
-                color:#1e3b8a;
-                margin-bottom:10px;
-             ">
-            ${event.tab_name}
-        </div>
-    </div>
 
     <div class="detail-item">
         <div class="detail-label">
@@ -1750,6 +1677,7 @@ familyAccounts.forEach(account => {
              ">
             ${event.description || "詳細なし"}
         </div>
+   
     </div>
 
     <div style="
@@ -1935,6 +1863,48 @@ onclick="closeAnswerModal()">
     renderMyResponseContent();
 
 }
+
+function showScheduleTitle(title){
+
+    document.getElementById("titleModalText").textContent = title;
+
+    document.getElementById("titleModal").style.display = "flex";
+
+    document.addEventListener("click", function(e){
+
+    const modal = document.getElementById("titleModal");
+
+    if(
+        modal &&
+        e.target === modal
+    ){
+        closeScheduleTitle();
+    }
+
+});
+
+}
+
+function closeScheduleTitle(){
+
+    document.getElementById("titleModal").style.display = "none";
+
+    document.addEventListener("click", function(e){
+
+    const modal = document.getElementById("titleModal");
+
+    if(
+        modal &&
+        e.target === modal
+    ){
+        closeScheduleTitle();
+    }
+
+});
+
+}
+
+    
         function renderMyResponseContent(){
 
     document
