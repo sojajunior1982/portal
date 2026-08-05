@@ -344,6 +344,20 @@
     color:#fff;
 
 }
+
+        .event-title{
+
+display:block;
+
+overflow:hidden;
+
+white-space:nowrap;
+
+text-overflow:ellipsis;
+
+max-width:100%;
+
+}
         
     </style>
 </head>
@@ -1595,14 +1609,27 @@ function hasRecruitingRoles(schedule) {
         events.forEach((event, index) => {
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
             const newBadge = isNewUpdate(event.update) ? `<span style="background:#ef4444; color:white; font-size:9px; padding:2px 4px; border-radius:4px; margin-left:4px; vertical-align:middle; font-weight:bold;">New</span>` : '';
-            html += `<div
-    class="event-title"
-    onclick="showScheduleTitle(${JSON.stringify(event.tab_name)})"
-    style="cursor:pointer;">
+            const activeClass = index === currentActiveTabIndex ? "active" : "";
 
-    ${event.icon || "⚾"} ${event.tab_name}
+html += `
+<div
+    class="tab ${activeClass}"
+    id="tab-${index}"
+    onclick="switchTab(${index}, ${events.length})">
 
-</div>`;
+    <span
+        class="event-title"
+        title="${event.tab_name}"
+        onclick="event.stopPropagation();showScheduleTitle(${JSON.stringify(event.tab_name)})">
+
+        ${event.icon || "⚾"} ${event.tab_name}
+
+    </span>
+
+    ${newBadge}
+
+</div>
+`;
         });
         html += `</div><div class="tab-content-box">`;
         events.forEach((event, index) => {
