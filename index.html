@@ -290,12 +290,18 @@
 .parent-role-list{
     flex:1;
     display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:4px;
+    font-weight:bold;
+}
+  .parent-role-second{
+    display:flex;
     flex-wrap:wrap;
     gap:6px 10px;
-    line-height:1.8;
-    font-weight:bold;
     justify-content:flex-end;
-}
+}      
+        
     </style>
 </head>
 <body>
@@ -1532,71 +1538,78 @@ function hasRecruitingRoles(schedule) {
 
 familyAccounts.forEach(account => {
 
-    const parent =
-        parentAnswers.find(
-            p => p.name === account.user_name
-        );
+    const parent = parentAnswers.find(
+        p => p.name === account.user_name
+    );
 
-    let text = "[未回答]";
+    let roleHtml = "";
+    let textColor = "#94a3b8";
 
     if (parent) {
 
-    const parsed =
-        parseRolesWithStatus(parent.response);
+        const parsed = parseRolesWithStatus(parent.response);
 
-    text =
-    parsed.length > 0
-        ? parsed.map(p => {
+        if (parsed.length > 0) {
 
-            const icon = p.status === 1 ? "🌞" : "○";
+            textColor = "#0284c7";
 
-            return `
-    <span style="
-        white-space:nowrap;
-        margin-right:10px;
-        margin-bottom:4px;
-    ">
-        ${icon} ${p.role}
-    </span>
-`;
-        }).join("")
-        : "不参加";}
-    
+            const first = parsed[0];
+
+            roleHtml += `
+                <div style="white-space:nowrap;">
+                    ${first.status === 1 ? "🌞" : "○"} ${first.role}
+                </div>
+            `;
+
+            if (parsed.length > 1) {
+
+                roleHtml += `
+                    <div class="parent-role-second">
+                `;
+
+                parsed.slice(1).forEach(p => {
+
+                    roleHtml += `
+                        <span style="white-space:nowrap;">
+                            ${p.status === 1 ? "🌞" : "○"} ${p.role}
+                        </span>
+                    `;
+
+                });
+
+                roleHtml += `</div>`;
+            }
+
+        } else {
+
+            textColor = "#64748b";
+            roleHtml = "不参加";
+
+        }
+
+    } else {
+
+        roleHtml = "[未回答]";
+
+    }
+
     parentStatusRowsHtml += `
-    <div class="summary-row"
-         style="
-            display:flex;
-            align-items:flex-start;
-        ">
+        <div class="summary-row">
 
-        <span style="
-            color:#64748b;
-            width:90px;
-            flex-shrink:0;
-        ">
-            (${account.user_name}):
-        </span>
+            <span class="parent-name">
+                保護者 (${account.user_name}):
+            </span>
 
-        <span style="
-            font-weight:bold;
-            color:${
-                text === "[未回答]"
-                    ? "#94a3b8"
-                    : text === "不参加"
-                        ? "#64748b"
-                        : "#0284c7"
-            };
-            line-height:1.8;
-            display:flex;
-            flex-wrap:wrap;
-            gap:6px 10px;
-            flex:1;
-        ">
-            ${text}
-        </span>
+            <div class="parent-role-list"
+                 style="color:${textColor};">
 
-    </div>
-`;
+                ${roleHtml}
+
+            </div>
+
+        </div>
+    `;
+
 });
             if (parent && parent.comment) {
 
