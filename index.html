@@ -1647,9 +1647,9 @@ function renderDetailView(date) {
         header +
         `<div class="content" style="display:flex;flex-direction:column;">`;
 
-    // -------------------------
+    // -----------------------
     // タブ
-    // -------------------------
+    // -----------------------
 
     html += `<div class="tab-container">`;
 
@@ -1662,19 +1662,15 @@ function renderDetailView(date) {
 
         const newBadge =
             isNewUpdate(event.update)
-                ? `
-<span
-style="
-background:#ef4444;
-color:#fff;
-font-size:9px;
-padding:2px 4px;
-border-radius:4px;
-margin-left:4px;
-font-weight:bold;
-">
-New
-</span>`
+                ? `<span style="
+                    background:#ef4444;
+                    color:#fff;
+                    font-size:9px;
+                    padding:2px 4px;
+                    border-radius:4px;
+                    margin-left:4px;
+                    font-weight:bold;
+                ">New</span>`
                 : "";
 
         html += `
@@ -1683,21 +1679,12 @@ class="tab ${activeClass}"
 id="tab-${index}"
 onclick="switchTab(${index},${events.length})">
 
-<div
-style="
-display:flex;
-align-items:center;
-gap:4px;
-overflow:hidden;
-">
-
 <span
 style="
+display:block;
 overflow:hidden;
-text-overflow:ellipsis;
 white-space:nowrap;
-flex:1;
-cursor:pointer;
+text-overflow:ellipsis;
 "
 title="${event.tab_name}"
 onclick="
@@ -1712,106 +1699,83 @@ ${event.icon || "⚾"} ${event.tab_name}
 ${newBadge}
 
 </div>
-
-</div>
 `;
 
     });
 
     html += `</div>`;
 
-    // -------------------------
+    // -----------------------
     // タブ内容
-    // -------------------------
+    // -----------------------
 
     html += `<div class="tab-content-box">`;
+        events.forEach((event, index) => {
+            const activeClass = index === currentActiveTabIndex ? 'active' : '';
+            
+            const updateTime = event.updated_at
+                ? new Date(event.updated_at).toLocaleString('ja-JP', {
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                })
+                : '日時不明';
 
-    events.forEach((event, index) => {
+            const updateType = {
+                created: "追加",
+                updated: "更新",
+                deleted: "削除"
+            }[event.update_type] || "更新";
 
-        const activeClass =
-            index === currentActiveTabIndex
-                ? "active"
-                : "";
+            const updaterName = event.updated_by || "不明";
 
-        const updateTime =
-            event.updated_at
-                ? new Date(event.updated_at).toLocaleString(
-                    "ja-JP",
-                    {
-                        month:"numeric",
-                        day:"numeric",
-                        hour:"numeric",
-                        minute:"2-digit"
-                    }
-                )
-                : "日時不明";
+                html += `
 
-        const updateType = {
-            created:"追加",
-            updated:"更新",
-            deleted:"削除"
-        }[event.update_type] || "更新";
+<div class="tab-panel ${activeClass}" id="tab-panel-${index}">
 
-        const updaterName =
-            event.updated_by || "不明";
-
-        html += `
-
-<div
-class="tab-panel ${activeClass}"
-id="tab-panel-${index}">
-
-    <!-- タイトル＋回答ボタン（固定エリア） -->
-    <div
-        style="
-            position:sticky;
-            top:0;
-            background:#fff;
-            z-index:5;
-            padding-bottom:12px;
-            margin-bottom:10px;
-            border-bottom:1px solid #e2e8f0;
-        ">
+    <!-- タイトル＋回答ボタン -->
+    <div style="
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:10px;
+        margin-bottom:14px;
+    ">
 
         <div
             style="
-                display:flex;
-                justify-content:flex-end;
-                margin-bottom:10px;
-            ">
-
-            <button
-                class="small-blue-btn"
-                onclick="openAnswerModal('${event.schedule_id}')">
-
-                👥 回答を見る
-
-            </button>
-
-        </div>
-
-        <div
-            onclick="showScheduleTitle(${JSON.stringify(event.tab_name)})"
-            title="${event.tab_name}"
-            style="
-                cursor:pointer;
-                font-size:20px;
+                flex:1;
+                min-width:0;
+                font-size:19px;
                 font-weight:800;
                 color:#1e3b8a;
-                line-height:1.4;
-
+                line-height:1.35;
                 overflow:hidden;
-                text-overflow:ellipsis;
                 white-space:nowrap;
-            ">
+                text-overflow:ellipsis;
+                cursor:pointer;
+            "
+            title="${event.tab_name}"
+            onclick="showScheduleTitle(${JSON.stringify(event.tab_name)})">
 
             ${event.icon || "⚾"} ${event.tab_name}
 
         </div>
 
-    </div>
+        <button
+            class="small-blue-btn"
+            style="
+                flex-shrink:0;
+                white-space:nowrap;
+            "
+            onclick="openAnswerModal('${event.schedule_id}')">
 
-    <!-- スクロール部分 -->
+            👥回答を見る
+
+        </button>
+
+    </div>
 
     <div class="detail-item">
 
@@ -1819,12 +1783,7 @@ id="tab-panel-${index}">
             📍 場所
         </div>
 
-        <div
-            class="detail-value"
-            style="
-                font-weight:600;
-                font-size:15px;
-            ">
+        <div class="detail-value" style="font-weight:600;">
 
             ${event.location || "未定"}
 
@@ -1843,8 +1802,6 @@ id="tab-panel-${index}">
             style="
                 color:#475569;
                 font-size:14.5px;
-                line-height:1.8;
-                white-space:pre-wrap;
             ">
 
             ${event.description || "詳細なし"}
@@ -1853,15 +1810,14 @@ id="tab-panel-${index}">
 
     </div>
 
-    <div
-        style="
-            margin-top:24px;
-            text-align:right;
-            font-size:11px;
-            color:#94a3b8;
-            border-top:1px dashed #e2e8f0;
-            padding-top:8px;
-        ">
+    <div style="
+        margin-top:24px;
+        text-align:right;
+        font-size:11px;
+        color:#94a3b8;
+        border-top:1px dashed #e2e8f0;
+        padding-top:8px;
+    ">
 
         🔄 ${updateTime}
         　${updateType}：${updaterName}
@@ -1871,48 +1827,24 @@ id="tab-panel-${index}">
 </div>
 
 `;
+            
+        });
 
-    });
+        html += `</div>`;
 
-    // -------------------------
-    // タブコンテンツ終了
-    // -------------------------
-
-    html += `
-</div>
-`;
-
-    // -------------------------
-    // 下部固定ボタン
-    // -------------------------
-
-    html += `
-
+html += `
 <div class="bottom-action-bar">
 
-    <div
-        style="
-            display:flex;
-            gap:10px;
-            width:100%;
-        ">
+    <div style="display:flex; gap:10px; width:100%;">
 
         <button
             class="fixed-btn fixed-btn-recruit"
             onclick="openFullResponseModal('保護者')">
 
             🙋‍♂️ 保護者のご協力
-
             <br>
-
-            <span
-                style="
-                    font-size:11px;
-                    font-weight:normal;
-                ">
-
+            <span style="font-size:11px;font-weight:normal;">
                 できること選ぶ！
-
             </span>
 
         </button>
@@ -1922,17 +1854,9 @@ id="tab-panel-${index}">
             onclick="openFullResponseModal('団員')">
 
             🧒 団員の出欠連絡
-
             <br>
-
-            <span
-                style="
-                    font-size:11px;
-                    font-weight:normal;
-                ">
-
+            <span style="font-size:11px;font-weight:normal;">
                 連絡はこちらから
-
             </span>
 
         </button>
@@ -1940,20 +1864,12 @@ id="tab-panel-${index}">
     </div>
 
 </div>
-
 `;
 
-    html += `
-</div>
-`;
+html += `</div>`;
 
-    document.getElementById("app").innerHTML = html;
-
-    // 表示後に現在タブだけ有効化
-    switchTab(currentActiveTabIndex, events.length);
-
+document.getElementById("app").innerHTML = html;
 }
-
     
 function openAnswerModal(scheduleId){
 
