@@ -1624,36 +1624,60 @@ function hasRecruitingRoles(schedule) {
 }
 
     // -- Detail view
-    function renderDetailView(date) {
-        currentActiveDate = date;
-        const events = groupedSchedules[date] || [];
-        const d = new Date(date);
-        const titleStr = `${d.getMonth() + 1}月${d.getDate()}日の詳細`;
-        const childrenList = getChildrenList();
+function renderDetailView(date) {
 
-        let header = createHeaderHtml(`<button class="back-btn" onclick="renderListView()">戻る</button>`, titleStr, '', "view");
-        let html = header + `<div class="content" style="display:flex; flex-direction:column;">`;
-        html += `<div class="tab-container">`;
-        events.forEach((event, index) => {
-            const activeClass = index === currentActiveTabIndex ? 'active' : '';
-            const newBadge = isNewUpdate(event.update) ? `<span style="background:#ef4444; color:white; font-size:9px; padding:2px 4px; border-radius:4px; margin-left:4px; vertical-align:middle; font-weight:bold;">New</span>` : '';
-            const activeClass = index === currentActiveTabIndex ? "active" : "";
+    currentActiveDate = date;
 
-html += `
+    const events = groupedSchedules[date] || [];
+
+    const d = new Date(date);
+
+    const titleStr =
+        `${d.getMonth() + 1}月${d.getDate()}日の詳細`;
+
+    let header =
+        createHeaderHtml(
+            `<button class="back-btn" onclick="renderListView()">戻る</button>`,
+            titleStr,
+            "",
+            "view"
+        );
+
+    let html =
+        header +
+        `<div class="content" style="display:flex;flex-direction:column;">`;
+
+    // -----------------------
+    // タブ
+    // -----------------------
+
+    html += `<div class="tab-container">`;
+
+    events.forEach((event, index) => {
+
+        const activeClass =
+            index === currentActiveTabIndex
+                ? "active"
+                : "";
+
+        const newBadge =
+            isNewUpdate(event.update)
+                ? `<span style="
+                    background:#ef4444;
+                    color:#fff;
+                    font-size:9px;
+                    padding:2px 4px;
+                    border-radius:4px;
+                    margin-left:4px;
+                    font-weight:bold;
+                ">New</span>`
+                : "";
+
+        html += `
 <div
-    class="tab ${activeClass}"
-    id="tab-${index}"
-    onclick="switchTab(${index}, ${events.length})">
-
-    <span
-        class="event-title"
-        title="${event.tab_name}"
-        onclick="event.stopPropagation();showScheduleTitle(${JSON.stringify(event.tab_name)})">
-
-        <div
 class="tab ${activeClass}"
 id="tab-${index}"
-onclick="switchTab(${index}, ${events.length})">
+onclick="switchTab(${index},${events.length})">
 
 <span
 style="
@@ -1663,7 +1687,10 @@ white-space:nowrap;
 text-overflow:ellipsis;
 "
 title="${event.tab_name}"
-onclick="event.stopPropagation();showScheduleTitle(${JSON.stringify(event.tab_name)})">
+onclick="
+event.stopPropagation();
+showScheduleTitle(${JSON.stringify(event.tab_name)});
+">
 
 ${event.icon || "⚾"} ${event.tab_name}
 
@@ -1672,15 +1699,17 @@ ${event.icon || "⚾"} ${event.tab_name}
 ${newBadge}
 
 </div>
-
-    </span>
-
-    ${newBadge}
-
-</div>
 `;
-        });
-        html += `</div><div class="tab-content-box">`;
+
+    });
+
+    html += `</div>`;
+
+    // -----------------------
+    // タブ内容
+    // -----------------------
+
+    html += `<div class="tab-content-box">`;
         events.forEach((event, index) => {
             const activeClass = index === currentActiveTabIndex ? 'active' : '';
             
@@ -1702,71 +1731,83 @@ ${newBadge}
             const updaterName = event.updated_by || "不明";
 
                 html += `
+
 <div class="tab-panel ${activeClass}" id="tab-panel-${index}">
 
-    
-    <div
-style="
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:10px;
-margin-bottom:14px;
-">
+    <!-- タイトル＋回答ボタン -->
+    <div style="
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:10px;
+        margin-bottom:14px;
+    ">
 
-<div
-style="
-flex:1;
-font-size:19px;
-font-weight:800;
-color:#1e3b8a;
-overflow:hidden;
-white-space:nowrap;
-text-overflow:ellipsis;
-cursor:pointer;
-"
-title="${event.tab_name}"
-onclick="showScheduleTitle(${JSON.stringify(event.tab_name)})">
+        <div
+            style="
+                flex:1;
+                min-width:0;
+                font-size:19px;
+                font-weight:800;
+                color:#1e3b8a;
+                line-height:1.35;
+                overflow:hidden;
+                white-space:nowrap;
+                text-overflow:ellipsis;
+                cursor:pointer;
+            "
+            title="${event.tab_name}"
+            onclick="showScheduleTitle(${JSON.stringify(event.tab_name)})">
 
-${event.icon || "⚾"} ${event.tab_name}
+            ${event.icon || "⚾"} ${event.tab_name}
 
-</div>
-
-<button
-class="small-blue-btn"
-style="
-flex-shrink:0;
-"
-onclick="openAnswerModal('${event.schedule_id}')">
-
-👥回答を見る
-
-</button>
-
-</div>
-
-    <div class="detail-item">
-        <div class="detail-label">
-            📍 場所
         </div>
-        <div class="detail-value" style="font-weight:600;">
-            ${event.location || "未定"}
-        </div>
+
+        <button
+            class="small-blue-btn"
+            style="
+                flex-shrink:0;
+                white-space:nowrap;
+            "
+            onclick="openAnswerModal('${event.schedule_id}')">
+
+            👥回答を見る
+
+        </button>
+
     </div>
 
     <div class="detail-item">
+
+        <div class="detail-label">
+            📍 場所
+        </div>
+
+        <div class="detail-value" style="font-weight:600;">
+
+            ${event.location || "未定"}
+
+        </div>
+
+    </div>
+
+    <div class="detail-item">
+
         <div class="detail-label">
             📝 スケジュール・連絡
         </div>
 
-        <div class="detail-value"
-             style="
+        <div
+            class="detail-value"
+            style="
                 color:#475569;
                 font-size:14.5px;
-             ">
+            ">
+
             ${event.description || "詳細なし"}
+
         </div>
-   
+
     </div>
 
     <div style="
@@ -1784,72 +1825,51 @@ onclick="openAnswerModal('${event.schedule_id}')">
     </div>
 
 </div>
+
 `;
             
         });
 
         html += `</div>`;
 
-        html += `
-
+html += `
 <div class="bottom-action-bar">
 
-<div
-style="
-display:flex;
-gap:10px;
-width:100%;
-">
+    <div style="display:flex; gap:10px; width:100%;">
 
-<button
-class="fixed-btn fixed-btn-recruit"
-onclick="openFullResponseModal('保護者')">
+        <button
+            class="fixed-btn fixed-btn-recruit"
+            onclick="openFullResponseModal('保護者')">
 
-🙋‍♂️ 保護者のご協力
+            🙋‍♂️ 保護者のご協力
+            <br>
+            <span style="font-size:11px;font-weight:normal;">
+                できること選ぶ！
+            </span>
 
-<br>
+        </button>
 
-<span
-style="
-font-size:11px;
-font-weight:normal;
-">
+        <button
+            class="fixed-btn fixed-btn-absent"
+            onclick="openFullResponseModal('団員')">
 
-できること選ぶ！
+            🧒 団員の出欠連絡
+            <br>
+            <span style="font-size:11px;font-weight:normal;">
+                連絡はこちらから
+            </span>
 
-</span>
+        </button>
 
-</button>
-
-<button
-class="fixed-btn fixed-btn-absent"
-onclick="openFullResponseModal('団員')">
-
-🧒 団員の出欠連絡
-
-<br>
-
-<span
-style="
-font-size:11px;
-font-weight:normal;
-">
-
-連絡はこちらから
-
-</span>
-
-</button>
+    </div>
 
 </div>
-
-</div>
-
 `;
 
-        html += `</div>`;
-        document.getElementById('app').innerHTML = html;
-    }
+html += `</div>`;
+
+document.getElementById("app").innerHTML = html;
+}
 function openAnswerModal(scheduleId){
 
     currentAnswerScheduleId = scheduleId;
