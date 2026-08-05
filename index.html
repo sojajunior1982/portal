@@ -2973,7 +2973,13 @@ let currentRolesArr = [];
 
 if (eventData.recruit_roles) {
 
-    const arr = eventData.recruit_roles.split(",");
+    const arr = eventData.recruit_roles
+    .split(",")
+    .map(v => v.trim());
+
+while (arr.length && arr[arr.length - 1] === "") {
+    arr.pop();
+}
 
     for (let i = 0; i < arr.length; i += 2) {
 
@@ -3022,133 +3028,7 @@ let iconOptionsHtml = iconList
             .join("");
         
         let placeOptionsHtml = appDefaults.place.map(p => `<option value="${p}"></option>`).join('');
-        let supportItemsHtml = "";
-
-currentRolesArr.forEach((item, index) => {
-
-    const hasLimit =
-        item.limit !== "";
-
-    supportItemsHtml += `
-
-<div class="support-item"
-style="
-border:1px solid #e2e8f0;
-border-radius:10px;
-padding:12px;
-margin-bottom:12px;
-background:#fff;
-">
-
-<div
-style="
-display:flex;
-gap:8px;
-align-items:center;
-">
-
-<input
-list="support-defaults"
-class="support-name"
-value="${item.role}"
-placeholder="募集項目"
-style="
-flex:1;
-padding:10px;
-border:1px solid #cbd5e1;
-border-radius:8px;
-">
-
-<button
-type="button"
-onclick="this.closest('.support-item').remove()"
-style="
-width:34px;
-height:34px;
-border:none;
-background:#fee2e2;
-color:#dc2626;
-border-radius:8px;
-font-weight:bold;
-cursor:pointer;
-">
-
-×
-
-</button>
-
-</div>
-
-<div
-style="
-margin-top:10px;
-font-size:13px;
-color:#64748b;
-">
-
-<label>
-
-<input
-type="checkbox"
-class="limit-check"
-${hasLimit ? "checked" : ""}
-onchange="toggleSupportLimit(this)">
-
-募集人数を設定する
-
-</label>
-
-</div>
-
-<div
-class="support-limit-area"
-style="
-margin-top:10px;
-display:${hasLimit ? "block" : "none"};
-">
-
-<button
-type="button"
-onclick="changeSupportLimit(this,-1)">
-－
-</button>
-
-<input
-class="limit-value"
-type="number"
-min="1"
-value="${item.limit || 2}"
-style="
-width:60px;
-text-align:center;
-">
-
-<button
-type="button"
-onclick="changeSupportLimit(this,1)">
-＋
-</button>
-
-</div>
-
-<div
-class="support-no-limit"
-style="
-margin-top:8px;
-font-size:13px;
-color:#64748b;
-display:${hasLimit ? "none" : "block"};
-">
-
-人数制限なし
-
-</div>
-
-</div>
-
-`;
-
-});
+        
 
 
         
@@ -3275,31 +3155,13 @@ ${appDefaults.support
 `;
         document.getElementById('app').innerHTML = html;
 
-        // 募集項目を描画
-
-if (currentRolesArr.length) {
-
-    currentRolesArr.forEach(item=>{
-
-        addSupportItem(
-    item.role,
-    item.limit
-);
-
-    });
-
-}
-else{
-
-    addSupportItem("参加","");
-
-addSupportItem("当番","");
-
-addSupportItem("道具車","");
-
-addSupportItem("審判","");
-
-}
+        // 募集項目描画
+currentRolesArr.forEach(item=>{
+    addSupportItem(
+        item.role,
+        item.limit
+    );
+});
     }
 
     function addSupportItem(name="", limit="") {
