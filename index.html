@@ -147,7 +147,11 @@
         .detail-update{ margin-top:18px; padding-top:10px; border-top:1px dashed #d6dbe5; text-align:right; font-size:11px; color:#94a3b8; }
         .answer-tab-area{ display:flex; gap:8px; padding:14px 16px 10px; flex-shrink:0; border-bottom:1px solid #e5e7eb;}
         .list-group-content .summary-row:last-child{ border-bottom:none; }
-        .comment-preview{ margin:8px 0 14px 120px; font-size:13px; }        
+        .comment-preview{ margin:8px 0 14px 120px; font-size:13px; } 
+        .summary-card{ background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:14px 16px; margin-bottom:12px; box-shadow:0 2px 6px rgba(0,0,0,.04); }
+        .summary-name{ font-size:14px; font-weight:700; color:#334155; margin-bottom:10px; }
+        .summary-response{ font-size:17px; font-weight:800; color:#0f172a; line-height:1.5; }
+        .summary-comment{ margin-top:10px; font-size:13px; color:#2563eb; cursor:pointer; }
     </style>
 </head>
 <body>
@@ -1732,25 +1736,35 @@ onclick="closeAnswerModal()">
 
     children.forEach(c=>{
 
-        html+=`
-<div class="summary-row">
+html += `
+<div class="summary-card">
 
-<span style="color:#64748b;width:120px;">
+    <div class="summary-name">
+        🧒 ${c.name}
+    </div>
 
-団員 (${c.name})
+    <div class="summary-response">
+        ${c.response || "[未回答]"}
+    </div>
 
-</span>
+    ${
+        c.comment
+        ? `
+        <div
+            class="summary-comment"
+            onclick="showComment(${JSON.stringify(c.name)},${JSON.stringify(c.comment)})">
 
-<span style="font-weight:bold;">
+            💬 コメントを見る ▶
 
-${c.response || "[未回答]"}
-
-</span>
+        </div>
+        `
+        : ""
+    }
 
 </div>
 `;
 
-    });
+});
 
     html+=`
 </div>
@@ -1760,7 +1774,6 @@ ${c.response || "[未回答]"}
 
     html+=`
 <div class="list-group">
-
 <div class="list-group-title">
 
 🙋‍♂️ 保護者
@@ -1772,66 +1785,59 @@ ${c.response || "[未回答]"}
 
     familyAccounts.forEach(acc=>{
 
-        const p=
-            parents.find(x=>x.name===acc.user_name);
+    const p =
+        parents.find(x=>x.name===acc.user_name);
 
-        let text="[未回答]";
+    let text = "[未回答]";
 
-        if(p){
+    if(p){
 
-            const parsed=
-                parseRolesWithStatus(p.response);
+        const parsed =
+            parseRolesWithStatus(p.response);
 
-            if(parsed.length){
+        if(parsed.length){
 
-                text=parsed.map(r=>
-                    `${r.status===1?"🌞":"○"} ${r.role}`
-                ).join("<br>");
+            text = parsed.map(r=>
+                `${r.status===1?"🌞":"○"} ${r.role}`
+            ).join("<br>");
 
-            }else{
+        }else{
 
-                text="不参加";
-
-            }
+            text = "不参加";
 
         }
 
-        html+=`
-<div class="summary-row">
+    }
 
-<span style="
-width:120px;
-color:#64748b;
-">
+    html += `
+<div class="summary-card">
 
-保護者 (${acc.user_name})
+    <div class="summary-name">
+        🙋 ${acc.user_name}
+    </div>
 
-</span>
+    <div class="summary-response">
+        ${text}
+    </div>
 
-<span style="font-weight:bold;">
-
-${text}
-
-</span>
-
-</div>
-`;
-
-        if(p && p.comment){
-
-            html+=`
-<div class="comment-preview"
+    ${
+        p && p.comment
+        ? `
+<div
+class="summary-comment"
 onclick="showComment(${JSON.stringify(p.name)},${JSON.stringify(p.comment)})">
 
-💬 ${shortComment(p.comment)}
+💬 コメントを見る ▶
+
+</div>
+`
+        : ""
+    }
 
 </div>
 `;
 
-        }
-
-    });
-
+});
     html+=`
 </div>
 
