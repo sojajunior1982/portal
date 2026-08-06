@@ -2460,6 +2460,10 @@ function closeAnswerModal() {
 
     function renderAllResponseContent() {
         const event = rawSchedules.find(s => String(s.schedule_id) === String(currentAnswerScheduleId));
+
+        console.log(event);
+console.log(event.recruit_roles);
+        
         if (!event) return;
         const atts = allAttendances.filter(a => String(a.schedule_id) === String(currentAnswerScheduleId));
         const childrenAtts = atts.filter(a => a.type === '団員');
