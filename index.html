@@ -1827,13 +1827,17 @@ html += `
     ${
     p && p.comment
     ? `
-<div
-class="summary-comment"
-onclick="showComment(${JSON.stringify(p.name)},${JSON.stringify(p.comment)})">
+${
+p && p.comment
+? `
+<div class="summary-comment">
 
-💬 コメントを見る ▶
+💬 ${escapeHtml(p.comment)}
 
 </div>
+`
+:""
+}
 `
     : ""
 }
@@ -2724,7 +2728,7 @@ bodyHtml += `</div>`;
 
                     <div
                         class="comment-preview"
-                        onclick="showComment(${JSON.stringify(c.name)}, ${JSON.stringify(c.comment)})">
+                        onclick="showCommentByIndex(${index})">
 
                        <b>${c.name}</b>
 
