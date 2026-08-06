@@ -2131,37 +2131,11 @@ function showScheduleTitle(title){
 
     document.getElementById("titleModal").style.display = "flex";
 
-    document.addEventListener("click", function(e){
-
-    const modal = document.getElementById("titleModal");
-
-    if(
-        modal &&
-        e.target === modal
-    ){
-        closeScheduleTitle();
-    }
-
-});
-
 }
 
 function closeScheduleTitle(){
 
     document.getElementById("titleModal").style.display = "none";
-
-    document.addEventListener("click", function(e){
-
-    const modal = document.getElementById("titleModal");
-
-    if(
-        modal &&
-        e.target === modal
-    ){
-        closeScheduleTitle();
-    }
-
-});
 
 }
 
