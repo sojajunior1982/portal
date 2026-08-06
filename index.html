@@ -2733,22 +2733,19 @@ bodyHtml += `</div>`;
 
                 ${allComments.map(c => `
 
-                    <div
-                        class="comment-preview"
-                        onclick="showComment(
-    ${JSON.stringify(c.name)},
-    ${JSON.stringify(c.comment)}
-)">
+<div
+    class="comment-preview"
+    onclick='showComment(${JSON.stringify(c.name)}, ${JSON.stringify(c.comment)})'>
 
-                       <b>${c.name}</b>
+    <b>${c.name}</b>
 
-<div style="margin-top:4px;color:#64748b;">
-${shortComment(c.comment)}
+    <div style="margin-top:4px;color:#64748b;">
+        ${shortComment(c.comment)}
+    </div>
+
 </div>
 
-                    </div>
-
-                `).join("")}
+`).join("")}
 
             </div>
 
