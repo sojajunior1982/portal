@@ -2533,7 +2533,7 @@ if (event.recruit_roles) {
     }
 
 }
-if (roles.length > 0) {
+if (roleInfo.length > 0) {
 
     roleInfo.forEach(item => {
 
@@ -2739,8 +2739,10 @@ bodyHtml += `</div>`;
 }
 
         let recruitingHeaderHtml =
-            roles.length > 0 &&
-            roles.some(role => {
+            roleInfo.length > 0 &&
+roleInfo.some(item => {
+
+    const role = item.role;
                 const roleMembers = parentAtts.filter(p =>
                     parseRolesWithStatus(p.response).some(r => r.role === role)
                 );
