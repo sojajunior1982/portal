@@ -1447,14 +1447,12 @@ overflow:hidden;
 white-space:nowrap;
 text-overflow:ellipsis;
 "
-title="${event.tab_name}"
+title="${event.tab_name}">
 
 ${event.icon || "⚾"} ${event.tab_name}
 
 </span>
-
 ${newBadge}
-
 </div>
 `;
 
@@ -1506,12 +1504,12 @@ ${newBadge}
     </div>
 
     <div
-        class="detail-title"
-        title="${event.tab_name}"
-        
-        ${event.icon || "⚾"} ${event.tab_name}
+class="detail-title"
+title="${event.tab_name}">
 
-    </div>
+    ${event.icon || "⚾"} ${event.tab_name}
+
+</div>
 
 </div>
 <div class="detail-scroll">
