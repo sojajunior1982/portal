@@ -1872,10 +1872,7 @@ white-space:nowrap;
 text-overflow:ellipsis;
 "
 title="${event.tab_name}"
-onclick="
-event.stopPropagation();
-showScheduleTitle(${JSON.stringify(event.tab_name)});
-">
+onclick='event.stopPropagation();showScheduleTitle(${JSON.stringify(event.tab_name)})'>
 
 ${event.icon || "⚾"} ${event.tab_name}
 
@@ -1936,7 +1933,7 @@ ${newBadge}
     <div
         class="detail-title"
         title="${event.tab_name}"
-        onclick="showScheduleTitle(${JSON.stringify(event.tab_name)})">
+        onclick='showScheduleTitle(${JSON.stringify(event.tab_name)})'>
 
         ${event.icon || "⚾"} ${event.tab_name}
 
