@@ -386,6 +386,126 @@ text-overflow:ellipsis;
 max-width:100%;
 
 }
+        .detail-header{
+
+    flex-shrink:0;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+    padding-bottom:16px;
+
+    border-bottom:1px solid #e5e7eb;
+
+}
+  .detail-header-top{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    margin-bottom:2px;
+
+} 
+        .detail-scroll{
+
+    flex:1;
+
+    overflow-y:auto;
+
+    padding-top:18px;
+
+    padding-left:6px;
+
+    padding-right:6px;
+
+    -webkit-overflow-scrolling:touch;
+
+}
+    .detail-item{
+
+    margin-bottom:32px;
+
+}    
+        .detail-label{
+
+    font-size:15px;
+
+    font-weight:700;
+
+    color:#475569;
+
+    margin-bottom:14px;
+
+}
+        .detail-value{
+
+    padding-left:26px;
+
+    line-height:1.9;
+
+    font-size:15px;
+
+}
+        .tab-panel{
+
+    display:none;
+
+    flex-direction:column;
+
+    height:100%;
+
+}
+
+.tab-panel.active{
+
+    display:flex;
+
+}
+        .tab-content-box{
+
+    flex:1;
+
+    overflow:hidden;
+
+}
+        .detail-title{
+
+    font-size:18px;
+
+    font-weight:800;
+
+    color:#1e3b8a;
+
+    line-height:1.45;
+
+    overflow:hidden;
+
+    white-space:nowrap;
+
+    text-overflow:ellipsis;
+
+    cursor:pointer;
+
+}
+        .detail-update{
+
+    margin-top:18px;
+
+    padding-top:10px;
+
+    border-top:1px dashed #d6dbe5;
+
+    text-align:right;
+
+    font-size:11px;
+
+    color:#94a3b8;
+
+}
         
     </style>
 </head>
@@ -1734,41 +1854,12 @@ ${newBadge}
 
 <div class="tab-panel ${activeClass}" id="tab-panel-${index}">
 
-    <!-- タイトル＋回答ボタン -->
-    <div style="
-        display:flex;
-        align-items:flex-start;
-        justify-content:space-between;
-        gap:10px;
-        margin-bottom:14px;
-    ">
+    <div class="detail-header">
 
-        <div
-            style="
-                flex:1;
-                min-width:0;
-                font-size:19px;
-                font-weight:800;
-                color:#1e3b8a;
-                line-height:1.35;
-                overflow:hidden;
-                white-space:nowrap;
-                text-overflow:ellipsis;
-                cursor:pointer;
-            "
-            title="${event.tab_name}"
-            onclick="showScheduleTitle(${JSON.stringify(event.tab_name)})">
-
-            ${event.icon || "⚾"} ${event.tab_name}
-
-        </div>
+    <div class="detail-header-top">
 
         <button
             class="small-blue-btn"
-            style="
-                flex-shrink:0;
-                white-space:nowrap;
-            "
             onclick="openAnswerModal('${event.schedule_id}')">
 
             👥回答を見る
@@ -1777,6 +1868,17 @@ ${newBadge}
 
     </div>
 
+    <div
+        class="detail-title"
+        title="${event.tab_name}"
+        onclick="showScheduleTitle(${JSON.stringify(event.tab_name)})">
+
+        ${event.icon || "⚾"} ${event.tab_name}
+
+    </div>
+
+</div>
+<div class="detail-scroll">
     <div class="detail-item">
 
         <div class="detail-label">
@@ -1810,20 +1912,14 @@ ${newBadge}
 
     </div>
 
-    <div style="
-        margin-top:24px;
-        text-align:right;
-        font-size:11px;
-        color:#94a3b8;
-        border-top:1px dashed #e2e8f0;
-        padding-top:8px;
-    ">
+    <div class="detail-update">
 
         🔄 ${updateTime}
         　${updateType}：${updaterName}
 
     </div>
 
+</div>
 </div>
 
 `;
@@ -1910,12 +2006,6 @@ function renderAnswerModal() {
     <div class="modal-title">
         👥 ${event.tab_name}
     </div>
-
-    <button
-        class="close-btn"
-        onclick="closeAnswerModal()">
-        ×
-    </button>
 
 </div>
 
