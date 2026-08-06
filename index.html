@@ -2553,31 +2553,37 @@ if (roleInfo.length > 0) {
 
         let assigned = [];
 
+        
         parentAtts.forEach(p => {
 
-            const parsed = parseRolesWithStatus(p.response);
+    if (
+        p.comment &&
+        p.comment.trim() &&
+        !allComments.some(c => c.name === p.name)
+    ) {
 
-            const found = parsed.find(x => x.role === role);
+        allComments.push({
+            name: p.name,
+            comment: p.comment
+        });
 
-            if (found) {
+    }
 
-                assigned.push({
-                    name: p.name,
-                    status: found.status,
-                    comment: p.comment || ""
-                });
+    const parsed = parseRolesWithStatus(p.response);
 
-                if (
-    p.comment &&
-    p.comment.trim() !== "" &&
-    !allComments.some(c => c.name === p.name)
-) {
+    const found = parsed.find(x => x.role === role);
 
-    allComments.push({
-        name: p.name,
-        comment: p.comment
-    });
+    if (found) {
 
+        assigned.push({
+            name: p.name,
+            status: found.status,
+            comment: p.comment || ""
+        });
+
+    }
+
+});
 }
 
             }
