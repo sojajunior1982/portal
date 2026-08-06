@@ -2511,24 +2511,34 @@ const allComments = [];
 
 let commentHtml = "";
 
-const roles = [];
+const roleInfo = [];
 
 if (event.recruit_roles) {
 
     const arr = event.recruit_roles
         .split(",")
-        .map(v => v.trim())
-        .filter(v => v !== "");
+        .map(v => v.trim());
+
+    while (arr.length && arr[arr.length - 1] === "") {
+        arr.pop();
+    }
 
     for (let i = 0; i < arr.length; i += 2) {
-        roles.push(arr[i]);   // ロール名だけ取得
+
+        roleInfo.push({
+            role: arr[i] || "",
+            limit: Number(arr[i + 1]) || 0
+        });
+
     }
 
 }
-
 if (roles.length > 0) {
 
-    roles.forEach(role => {
+    roleInfo.forEach(item => {
+
+    const role = item.role;
+    const limit = item.limit;
 
         let assigned = [];
 
@@ -2588,19 +2598,27 @@ if (roles.length > 0) {
 
             const opened = !!roleOpenState[role];
 
-            roleTitle =
-                `✔️ ${role}
-                <span
-                    onclick='toggleRole(${JSON.stringify(role)})'
-                    style="
-                        cursor:pointer;
-                        color:#2563eb;
-                        margin-left:8px;
-                        user-select:none;
-                    ">
-                    ${opened?"▲":"▼"}
-                    （エントリー${entries.length}名）
-                </span>`;
+            const recruitText =
+    limit > 0
+        ? `　${limit}名募集！`
+        : "";
+
+roleTitle =
+`✔️ ${role}${recruitText}
+
+<span
+onclick='toggleRole(${JSON.stringify(role)})'
+style="
+cursor:pointer;
+color:#2563eb;
+margin-left:8px;
+user-select:none;
+">
+
+${opened?"▲":"▼"}
+（候補${entries.length}人）
+
+</span>`;
 
         }
 
