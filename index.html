@@ -1748,19 +1748,16 @@ html += `
     </div>
 
     ${
-        c.comment
-        ? `
-        <div
-            class="summary-comment"
-            onclick="showComment(${JSON.stringify(c.name)},${JSON.stringify(c.comment)})">
+    c.comment
+    ? `
+<div class="summary-comment">
 
-            💬 コメントを見る ▶
+💬 ${c.comment}
 
-        </div>
-        `
-        : ""
-    }
-
+</div>
+`
+    : ""
+}
 </div>
 `;
 
@@ -1821,8 +1818,8 @@ html += `
     </div>
 
     ${
-        p && p.comment
-        ? `
+    p && p.comment
+    ? `
 <div
 class="summary-comment"
 onclick="showComment(${JSON.stringify(p.name)},${JSON.stringify(p.comment)})">
@@ -1831,9 +1828,8 @@ onclick="showComment(${JSON.stringify(p.name)},${JSON.stringify(p.comment)})">
 
 </div>
 `
-        : ""
-    }
-
+    : ""
+}
 </div>
 `;
 
@@ -2689,35 +2685,33 @@ bodyHtml += `</div>`;
     // -------------------------
     if (allComments.length > 0) {
 
-        parentsHtml += `
-            <div class="role-block">
+    parentsHtml += `
+        <div class="role-block">
 
-                <div class="role-name">
-                    ■ コメント
-                </div>
+            <div class="role-name">
+                💬 コメント
+            </div>
 
-                <div style="padding-left:8px;">
+            <div style="padding-left:8px;">
 
-                    ${allComments.map(c => `
+                ${allComments.map(c => `
 
-                        <div
-                            class="comment-preview"
-                            style="margin-bottom:8px;"
-                            onclick="showComment(${JSON.stringify(c.name)}, ${JSON.stringify(c.comment)})">
+                    <div
+                        class="comment-preview"
+                        onclick="showComment(${JSON.stringify(c.name)}, ${JSON.stringify(c.comment)})">
 
-                            💬 <b>${c.name}</b><br>
-                            ${shortComment(c.comment)}
+                        <b>${c.name}</b><br>
+                        ${shortComment(c.comment)}
 
-                        </div>
+                    </div>
 
-                    `).join("")}
-
-                </div>
+                `).join("")}
 
             </div>
-        `;
 
-    }
+        </div>
+    `;
+}
 
 } else {
 
