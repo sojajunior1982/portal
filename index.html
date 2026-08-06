@@ -2613,17 +2613,19 @@ if (roleInfo.length > 0) {
 roleTitle =
 `✔️ ${role}${recruitText}
 
+<br>
+
 <span
 onclick='toggleRole(${JSON.stringify(role)})'
 style="
+display:block;
 cursor:pointer;
 color:#2563eb;
-margin-left:8px;
+margin-top:4px;
 user-select:none;
 ">
 
-${opened?"▲":"▼"}
-（候補${entries.length}人）
+${opened ? "▲" : "▼"}（候補${entries.length}人）
 
 </span>`;
 
