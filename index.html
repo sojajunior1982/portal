@@ -403,6 +403,89 @@
     position:relative;
     z-index:2;
 }
+        /* ===============================
+   Pull to Refresh
+   =============================== */
+
+.content{
+    position:relative;
+    overscroll-behavior-y:contain;
+}
+
+.pull-refresh-indicator{
+    position:absolute;
+
+    top:0;
+    left:50%;
+
+    width:100%;
+    height:52px;
+
+    transform:translate(-50%, -52px);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    color:#64748b;
+
+    font-size:13px;
+    font-weight:700;
+
+    pointer-events:none;
+
+    opacity:0;
+
+    z-index:5;
+
+    transition:
+        transform .22s ease,
+        opacity .22s ease;
+}
+
+.pull-refresh-icon{
+    width:26px;
+    height:26px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:20px;
+
+    transition:transform .25s ease;
+}
+
+.pull-refresh-indicator.ready{
+    color:#2563eb;
+}
+
+.pull-refresh-indicator.ready
+.pull-refresh-icon{
+    transform:rotate(180deg);
+}
+
+.pull-refresh-indicator.refreshing{
+    color:#2563eb;
+}
+
+.pull-refresh-indicator.refreshing
+.pull-refresh-icon{
+    animation:pullRefreshSpin .8s linear infinite;
+}
+
+@keyframes pullRefreshSpin{
+
+    from{
+        transform:rotate(0deg);
+    }
+
+    to{
+        transform:rotate(360deg);
+    }
+
+}
                     
     </style>
 </head>
@@ -1366,7 +1449,8 @@ function renderListView() {
     const notiList = generateNotifications();
 
     const unreadCount = notifications.filter(
-        n => String(n.notification_id) > String(currentUser.last_notification_id || "")
+        n => String(n.notification_id) >
+             String(currentUser.last_notification_id || "")
     ).length;
 
     const badgeHtml = unreadCount > 0
@@ -1374,97 +1458,84 @@ function renderListView() {
         : "";
 
     let html = createHeaderHtml(
-        `<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`, "📅 スケジュール",
+        `<button class="menu-btn" onclick="toggleSideMenu()">☰</button>`,
+        "📅 スケジュール",
         `<div class="bell-icon" onclick="openNotifications()">🔔${badgeHtml}</div>`
     );
 
     html += `
-<div class="content">
+    <div class="content">
 
-<div style="
-display:flex;
-justify-content:center;
-gap:8px;
-margin:10px 0 15px;
-">
+        <!-- プルリフレッシュ表示 -->
+        <div id="pullRefreshArea" class="pull-refresh-area">
+            <span
+                class="pull-refresh-icon"
+                id="pullRefreshIcon">
+                ↓
+            </span>
 
-<button
-onclick="
-scheduleViewMode='list';
-renderListView();
-"
-style="
-padding:6px 14px;
-border:none;
-border-radius:20px;
-background:${scheduleViewMode==="list" ? "#2563eb" : "#e2e8f0"};
-color:${scheduleViewMode==="list" ? "#fff" : "#334155"};
-font-weight:bold;
-cursor:pointer;
-">
-📋 リスト
-</button>
+            <span id="pullRefreshText">
+                引っ張って更新
+            </span>
+        </div>
 
-<button
-onclick="
-scheduleViewMode='calendar';
-renderListView();
-"
-style="
-padding:6px 14px;
-border:none;
-border-radius:20px;
-background:${scheduleViewMode==="calendar" ? "#2563eb" : "#e2e8f0"};
-color:${scheduleViewMode==="calendar" ? "#fff" : "#334155"};
-font-weight:bold;
-cursor:pointer;
-">
-📅 カレンダー
-</button>
+        <!-- リスト / カレンダー切替 -->
+        <div class="schedule-view-switch">
+            <button
+                onclick="
+                    scheduleViewMode='list';
+                    renderListView();
+                "
+                class="schedule-view-btn ${scheduleViewMode === "list" ? "active" : ""}">
+                📋 リスト
+            </button>
 
-</div>
+            <button
+                onclick="
+                    scheduleViewMode='calendar';
+                    renderListView();
+                "
+                class="schedule-view-btn ${scheduleViewMode === "calendar" ? "active" : ""}">
+                📅 カレンダー
+            </button>
+        </div>
 
-<div class="month-selector">
+        <!-- 月移動 -->
+        <div class="month-selector">
 
-    <span class="arrow"
-        onclick="
-            currentMonth.setMonth(currentMonth.getMonth()-1);
-            renderListView();
-        ">
-        ◀
-    </span>
+            <span
+                class="arrow"
+                onclick="
+                    currentMonth.setMonth(currentMonth.getMonth()-1);
+                    renderListView();
+                ">
+                ◀
+            </span>
 
-    <span class="month-title">
-        ${currentMonth.getFullYear()}年 ${currentMonth.getMonth()+1}月
-    </span>
+            <span class="month-title">
+                ${currentMonth.getFullYear()}年
+                ${currentMonth.getMonth()+1}月
+            </span>
 
-    <span class="arrow"
-        onclick="
-            currentMonth.setMonth(currentMonth.getMonth()+1);
-            renderListView();
-        ">
-        ▶
-    </span>
+            <span
+                class="arrow"
+                onclick="
+                    currentMonth.setMonth(currentMonth.getMonth()+1);
+                    renderListView();
+                ">
+                ▶
+            </span>
 
-</div>
+        </div>
 
-<div style="
-font-size:11px;
-color:#64748b;
-margin:8px 0 12px;
-text-align:center;
-">
-🆕 New　🤝 募集あり　⚾ 予定
-</div>
+        ${
+            scheduleViewMode === "calendar"
+                ? createMonthCalendar()
+                : createListTimeline()
+        }
 
-${
-    scheduleViewMode === "calendar"
-        ? createMonthCalendar()
-        : createListTimeline()
-}
-
-</div>
-`;
+    </div>
+    `;
 
     // ===============================
     // 通知モーダル
@@ -1534,41 +1605,267 @@ ${
 
     document.getElementById("app").innerHTML = html;
 
-    // ===============================
-    // プルリフレッシュ
-    // ===============================
+   // ===============================
+// Pull to Refresh
+// ===============================
 
-    const content = document.querySelector(".content");
+const content = document.querySelector(".content");
 
-    let startY = 0;
-    let moveY = 0;
+if (content) {
 
+    // --------------------------------
+    // インジケーターを作成
+    // --------------------------------
+
+    const pullIndicator = document.createElement("div");
+
+    pullIndicator.className = "pull-refresh-indicator";
+
+    pullIndicator.innerHTML = `
+        <span class="pull-refresh-icon">↓</span>
+        <span class="pull-refresh-text">
+            引っ張って更新
+        </span>
+    `;
+
+    content.prepend(pullIndicator);
+
+
+    const pullIcon =
+        pullIndicator.querySelector(".pull-refresh-icon");
+
+    const pullText =
+        pullIndicator.querySelector(".pull-refresh-text");
+
+
+    // --------------------------------
+    // 状態
+    // --------------------------------
+
+    let pullStartY = 0;
+    let pullDistance = 0;
+    let isPulling = false;
+    let isPullRefreshing = false;
+
+
+    const PULL_THRESHOLD = 80;
+    const MAX_PULL_DISTANCE = 110;
+
+
+    // --------------------------------
+    // 指を置いた
+    // --------------------------------
 
     content.addEventListener("touchstart", e => {
 
-        startY = e.touches[0].clientY;
+        if (isPullRefreshing) return;
 
-    });
+        // 最上部以外では開始しない
+        if (content.scrollTop !== 0) return;
+
+        pullStartY = e.touches[0].clientY;
+
+        pullDistance = 0;
+
+        isPulling = true;
+
+    }, { passive:true });
+
+
+    // --------------------------------
+    // 引っ張っている
+    // --------------------------------
 
     content.addEventListener("touchmove", e => {
 
-        moveY = e.touches[0].clientY;
+        if (!isPulling || isPullRefreshing) return;
 
-    });
+        // 途中でスクロール位置が変わったら終了
+        if (content.scrollTop !== 0) {
 
-    content.addEventListener("touchend", async () => {
+            isPulling = false;
 
-        if (
-            content.scrollTop === 0 &&
-            moveY - startY > 80
-        ) {
+            pullIndicator.style.opacity = "0";
 
-            await reloadSchedules();
+            pullIndicator.style.transform =
+                "translate(-50%, -52px)";
+
+            return;
 
         }
 
-    });
 
+        const currentY =
+            e.touches[0].clientY;
+
+        const diffY =
+            currentY - pullStartY;
+
+
+        // 上方向へ動かした
+        if (diffY <= 0) {
+
+            pullDistance = 0;
+
+            pullIndicator.style.opacity = "0";
+
+            pullIndicator.style.transform =
+                "translate(-50%, -52px)";
+
+            return;
+
+        }
+
+
+        /*
+         * 抵抗をつける
+         *
+         * 指で100px引っ張っても
+         * 実際の表示は65px程度。
+         */
+        pullDistance =
+            Math.min(
+                diffY * 0.65,
+                MAX_PULL_DISTANCE
+            );
+
+
+        const ready =
+            pullDistance >= PULL_THRESHOLD;
+
+
+        // --------------------------------
+        // 表示位置
+        // --------------------------------
+
+        pullIndicator.style.opacity =
+            Math.min(pullDistance / 45, 1);
+
+        pullIndicator.style.transform =
+            `translate(-50%, ${pullDistance - 52}px)`;
+
+
+        // --------------------------------
+        // 通常状態
+        // --------------------------------
+
+        if (!ready) {
+
+            pullIndicator.classList.remove("ready");
+
+            pullIcon.textContent = "↓";
+
+            pullText.textContent =
+                "引っ張って更新";
+
+            return;
+
+        }
+
+
+        // --------------------------------
+        // 更新可能
+        // --------------------------------
+
+        pullIndicator.classList.add("ready");
+
+        pullIcon.textContent = "↑";
+
+        pullText.textContent =
+            "離して更新";
+
+    }, { passive:true });
+
+
+    // --------------------------------
+    // 指を離した
+    // --------------------------------
+
+    content.addEventListener("touchend", async () => {
+
+        if (!isPulling || isPullRefreshing) return;
+
+        isPulling = false;
+
+
+        const shouldRefresh =
+            pullDistance >= PULL_THRESHOLD;
+
+
+        // --------------------------------
+        // 更新しない
+        // --------------------------------
+
+        if (!shouldRefresh) {
+
+            pullDistance = 0;
+
+            pullIndicator.style.opacity = "0";
+
+            pullIndicator.style.transform =
+                "translate(-50%, -52px)";
+
+            pullIndicator.classList.remove("ready");
+
+            pullIcon.textContent = "↓";
+
+            pullText.textContent =
+                "引っ張って更新";
+
+            return;
+
+        }
+
+
+        // --------------------------------
+        // 更新開始
+        // --------------------------------
+
+        isPullRefreshing = true;
+
+        pullIndicator.classList.remove("ready");
+
+        pullIndicator.classList.add("refreshing");
+
+        pullIcon.textContent = "↻";
+
+        pullText.textContent =
+            "最新情報を取得中...";
+
+
+        pullIndicator.style.opacity = "1";
+
+        pullIndicator.style.transform =
+            "translate(-50%, 18px)";
+
+
+        try {
+
+            await reloadSchedules();
+
+        } finally {
+
+            isPullRefreshing = false;
+
+            pullIndicator.classList.remove("refreshing");
+
+            pullDistance = 0;
+
+            pullIndicator.style.opacity = "0";
+
+            pullIndicator.style.transform =
+                "translate(-50%, -52px)";
+
+            pullIcon.textContent = "↓";
+
+            pullText.textContent =
+                "引っ張って更新";
+
+        }
+
+    }, { passive:true });
+
+}
 }
     function goToDetail(date) {
         currentActiveTabIndex = 0;
