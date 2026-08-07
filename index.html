@@ -486,6 +486,31 @@
     }
 
 }
+.schedule-view-switch{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:6px;
+    margin-bottom:12px;
+}
+
+.schedule-view-btn{
+    flex:none;
+    padding:8px 16px;
+    border:none;
+    border-radius:9px;
+    background:#f1f5f9;
+    color:#64748b;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.schedule-view-btn.active{
+    background:#2563eb;
+    color:#fff;
+}        
+        
                     
     </style>
 </head>
@@ -1759,7 +1784,7 @@ if (content) {
         pullIcon.textContent = "↑";
 
         pullText.textContent =
-            "離して更新";
+            "予定を再読み込み";
 
     }, { passive:true });
 
