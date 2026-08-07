@@ -1694,9 +1694,16 @@ function renderListView() {
                 notiList.length > 0
                 ? notiList.map(n => `
                     <div class="noti-item">
-                        <div class="noti-date">${n.date}</div>
-                        ${n.msg}
-                    </div>
+
+    <div class="noti-date">
+        ${n.schedule_date
+            ? `📅 ${n.schedule_date}の予定`
+            : ""}
+    </div>
+
+    ${n.msg}
+
+</div>
                 `).join("")
                 : `
                 <p style="
