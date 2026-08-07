@@ -176,42 +176,66 @@
         .detail-scroll{ flex:1; overflow-y:auto; padding-top:18px; padding-left:6px; padding-right:6px; -webkit-overflow-scrolling:touch; }
         .detail-item{ margin-bottom:32px; }    
         .detail-label{
-    margin-bottom:8px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+
+    font-size:18px;
     font-weight:700;
-    color:#1e3a8a;
+
+    color:#334155;
+
+    margin-bottom:10px;
+
+    text-align:left;
 }
-        .detail-value{ padding-left:26px; line-height:1.9; font-size:15px; }
+
+.detail-value{
+    font-size:17px;
+    color:#334155;
+
+    line-height:1.85;
+
+    text-align:left;
+
+    white-space:pre-wrap;
+    word-break:break-word;
+}
         .tab-panel{ display:none; flex-direction:column; height:100%; }
         .tab-panel.active{ display:flex; }
         .tab-content-box{ flex:1; overflow:hidden; }
-        .detail-title{ font-size:18px; font-weight:800; color:#1e3b8a; line-height:1.45; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; }
-        .detail-update{ .detail-update{
-    margin-top:18px;
+        .detail-title{
+    font-size:24px;
+    font-weight:800;
+    line-height:1.45;
+    color:#1e3a8a;
+    margin-bottom:6px;
+}
+        .detail-update{
+
+    margin-top:20px;
+
+    padding-top:12px;
+
+    border-top:1px dashed #d6dbe5;
 
     text-align:right;
 
-    font-size:11px;
-    color:#64748b;
+    font-size:12px;
 
-    line-height:1.6;
-}:18px; padding-top:10px; border-top:1px dashed #d6dbe5; text-align:right; font-size:11px; color:#94a3b8; }
-        .answer-tab-area{ display:flex; gap:8px; padding:14px 16px 10px; flex-shrink:0; border-bottom:1px solid #e5e7eb;}
+    color:#94a3b8;
+
+    line-height:1.7;
+}
 .answer-link-btn{
     width:100%;
-    padding:12px 16px;
+    padding:14px 18px;
+    margin-top:2px;
 
-    border:1px solid #bfdbfe;
-    border-radius:12px;
+    border-radius:14px;
 
-    background:#eff6ff;
-    color:#2563eb;
-
+    font-size:15px;
     font-weight:700;
-    font-size:14px;
-
-    cursor:pointer;
-
-    transition:.2s;
 }
 
         .answer-link-btn:hover{
@@ -219,9 +243,20 @@
 }
 
 .detail-label{
-    margin-bottom:8px;
+
+    display:flex;
+    align-items:center;
+
+    gap:6px;
+
+    font-size:18px;
     font-weight:700;
-    color:#1e3a8a;
+
+    color:#334155;
+
+    margin-bottom:10px;
+
+    text-align:left;
 }
         
         .list-group-content .summary-row:last-child{ border-bottom:none; }
@@ -1582,11 +1617,14 @@ ${newBadge}
 </div><div class="detail-scroll">
     <div class="detail-item">
 
-        <div class="detail-label">
-            📍 場所
-        </div>
+        <div class="detail-item">
 
-        <div class="detail-value" style="font-weight:600;">
+    <div class="detail-label">
+        <span>📍</span>
+        <span>場所</span>
+    </div>
+
+    <div class="detail-value">
 
             ${event.location || "未定"}
 
@@ -1596,21 +1634,18 @@ ${newBadge}
 
     <div class="detail-item">
 
-        <div class="detail-label">
-            📝 スケジュール・連絡
-        </div>
+    <div class="detail-label">
+        <span>📝</span>
+        <span>スケジュール・連絡</span>
+    </div>
 
-        <div
-            class="detail-value"
-            style="
-                color:#475569;
-                font-size:14.5px;
-            ">
+    <div class="detail-value">
 
-            ${event.description || "詳細なし"}
+        ${event.description || "詳細なし"}
 
-        </div>
+    </div>
 
+</div>
     </div>
 
     <div class="detail-update">
