@@ -222,7 +222,7 @@
     -webkit-overflow-scrolling:touch;
 
     margin:14px 10px 16px;
-    padding:18px 18px 20px;
+    padding:16px 16px 18px;
 
     background:#ffffff;
     border:1px solid #dfe7f0;
@@ -251,12 +251,16 @@
 
 /* 本文 */
 .detail-value{
+    margin:0;
+    padding:0;
+
     font-size:17px;
-    line-height:1.8;
+    line-height:1.65;
     color:#334155;
 
     text-align:left;
-    white-space:pre-wrap;
+
+    white-space:pre-line;
     word-break:break-word;
 }
 
@@ -1753,9 +1757,7 @@ ${newBadge}
             <span>場所</span>
         </div>
 
-        <div class="detail-value detail-location">
-            ${event.location || "未定"}
-        </div>
+        <div class="detail-value detail-location">${event.location || "未定"}</div>
 
 
         <div class="detail-label">
@@ -1763,9 +1765,7 @@ ${newBadge}
             <span>スケジュール・連絡</span>
         </div>
 
-        <div class="detail-value detail-description">
-            ${event.description || "詳細なし"}
-        </div>
+        <div class="detail-value detail-description">${event.description || "詳細なし"}</div>
 
 
         <div class="detail-update">
