@@ -1099,41 +1099,114 @@ async function fetchDefaults() {
 
     
 
-    // -- Notifications
-    function generateNotifications() {
-        return notifications.map(n => {
-            const upd = new Date(n.created_at);
-            const updateDate =
-                `${upd.getMonth()+1}月${upd.getDate()}日`;
-                let icon = "";
-                let msg = "";
-                switch (n.type) {
-                        case "created":
-                            icon = "📅";
-                            msg = `「${n.tab_name}」が追加されました。`;
-                            break;
-                        case "updated":
-                            icon = "✏️";
-                            msg = `「${n.tab_name}」が変更されました。`;
-                            break;
-                        case "deleted":
-                            icon = "🗑️";
-                            msg = `「${n.tab_name}」が削除されました。`;
-                            break;
-                        case "assigned":
-                            icon = "🎉";
-                            msg = `「${n.tab_name}」の「${n.detail}」に決まりました。`;
-                            break;
-                            default:
-                            return null;
-                }
-                return {
-                    time: upd.getTime(),
-                    date: updateDate,
-             msg: `${icon} ${msg}`
-            };
-      }).filter(Boolean);
-    }
+   // -- Notifications
+function generateNotifications() {
+
+    console.log("NOTIFICATIONS =", notifications);
+
+
+    return notifications.map(n => {
+
+        // 通知が作成された日時
+        const upd = new Date(n.created_at);
+
+        // --------------------------------
+        // 対象となった予定の日付
+        // --------------------------------
+
+        let scheduleDateText = "";
+
+        if (n.schedule_date) {
+
+            const dateText =
+                String(n.schedule_date);
+
+            const match =
+                dateText.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+
+            if (match) {
+
+                scheduleDateText =
+                    `${Number(match[2])}月${Number(match[3])}日`;
+
+            }
+
+        }
+
+        // 日付が取得できなかった場合だけ
+        // 通知作成日を使用
+        if (!scheduleDateText) {
+
+            scheduleDateText =
+                `${upd.getMonth() + 1}月${upd.getDate()}日`;
+
+        }
+
+
+        let icon = "";
+        let msg = "";
+
+        switch (n.type) {
+
+            case "created":
+
+                icon = "📅";
+                msg =
+                    `「${n.tab_name}」が追加されました。`;
+
+                break;
+
+
+            case "updated":
+
+                icon = "✏️";
+                msg =
+                    `「${n.tab_name}」が変更されました。`;
+
+                break;
+
+
+            case "deleted":
+
+                icon = "🗑️";
+                msg =
+                    `「${n.tab_name}」が削除されました。`;
+
+                break;
+
+
+            case "assigned":
+
+                icon = "🎉";
+                msg =
+                    `「${n.tab_name}」の「${n.detail}」に決まりました。`;
+
+                break;
+
+
+            default:
+                return null;
+        }
+
+
+        return {
+
+            notification_id:
+                n.notification_id,
+
+            time:
+                upd.getTime(),
+
+            date:
+                scheduleDateText,
+
+            msg:
+                `${icon} ${msg}`
+
+        };
+
+    }).filter(Boolean);
+}
     
     function openNotifications() {
 
@@ -1146,18 +1219,22 @@ async function fetchDefaults() {
 
 
     // --------------------------------
-    // 今表示している通知の最新ID
+    // 今回表示する通知の最新IDを取得
     // --------------------------------
 
     if (notifications.length > 0) {
 
         latestNotificationId =
             notifications.reduce(
-                (max, n) =>
-                    Number(n.notification_id) > Number(max)
-                        ? n.notification_id
-                        : max,
-                "0"
+                (max, n) => {
+
+                    const id =
+                        String(n.notification_id || "");
+
+                    return id > max ? id : max;
+
+                },
+                ""
             );
 
     }
