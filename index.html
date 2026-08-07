@@ -272,6 +272,36 @@
         .role-entry{ margin-left:14px; color:#334155; font-size:14px; line-height:1.8; }
         .comment-preview{ padding:10px 12px; margin:8px 0; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer; font-size:13px; line-height:1.6; }
         .comment-preview b{ color:#334155; }
+                    .answer-tab-area{
+    display:flex;
+    gap:8px;
+    width:100%;
+    margin:16px 0;
+}
+
+.answer-tab{
+    flex:1;
+
+    padding:14px 10px;
+
+    border:none;
+    border-radius:12px;
+
+    background:#e2e8f0;
+    color:#475569;
+
+    font-size:16px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.answer-tab.active{
+    background:#2563eb;
+    color:#fff;
+}
     </style>
 </head>
 <body>
@@ -1749,8 +1779,7 @@ function renderAnswerModal() {
 
 <button
     id="answerTabMine"
-    class="tab active"
-    style="flex:1;"
+    class="answer-tab active"
     onclick="renderMyResponseContent()">
 
     わが家の回答
@@ -1759,8 +1788,7 @@ function renderAnswerModal() {
 
 <button
     id="answerTabAll"
-    class="tab"
-    style="flex:1;"
+    class="answer-tab"
     onclick="renderAllResponseContent()">
 
     全員の回答
