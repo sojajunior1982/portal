@@ -164,8 +164,6 @@
         .parent-role-second{ display:flex; flex-wrap:wrap; gap:6px 10px; justify-content:flex-end; } 
         .summary-row:not(:last-child){ border-bottom:1px solid #eef2f7; padding-bottom:8px; margin-bottom:8px; }
         .answer-switch{ display:flex; gap:8px; margin-bottom:14px; }
-        .answer-tab{ flex:1; padding:10px; border:none; border-radius:10px; background:#e2e8f0; color:#475569; fo.detail-update{nt-weight:bold; cursor:pointer; }
-        .answer-tab.active{ background:#2563eb; color:#fff; }
         .event-title{ display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:100%; }
         .detail-header{
     display:flex;
@@ -272,23 +270,26 @@
         .role-entry{ margin-left:14px; color:#334155; font-size:14px; line-height:1.8; }
         .comment-preview{ padding:10px 12px; margin:8px 0; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; cursor:pointer; font-size:13px; line-height:1.6; }
         .comment-preview b{ color:#334155; }
-                    .answer-tab-area{
+
+        .answer-tab-area{
     display:flex;
-    gap:8px;
+    gap:0;
     width:100%;
-    margin:16px 0;
+    margin:18px 0 16px;
 }
 
 .answer-tab{
     flex:1;
 
-    padding:14px 10px;
-
-    border:none;
-    border-radius:12px;
+    padding:13px 8px;
 
     background:#e2e8f0;
     color:#475569;
+
+    border:1.5px solid #cbd5e1;
+    border-bottom:none;
+
+    border-radius:18px 18px 0 0;
 
     font-size:16px;
     font-weight:700;
@@ -298,10 +299,20 @@
     transition:.2s;
 }
 
-.answer-tab.active{
-    background:#2563eb;
-    color:#fff;
+.answer-tab:first-child{
+    margin-right:4px;
 }
+
+.answer-tab.active{
+    background:#fff;
+    color:#1e3a8a;
+
+    border-color:#94a3b8;
+
+    position:relative;
+    z-index:2;
+}
+                    
     </style>
 </head>
 <body>
