@@ -1136,12 +1136,46 @@ async function fetchDefaults() {
     }
     
     function openNotifications() {
-        const notiModal = document.getElementById('notiModal');
-        if (notiModal) notiModal.style.display = 'flex';
-        localStorage.setItem('lastReadTime', Date.now());
-        const badge = document.querySelector('.bell-icon .badge');
-        if (badge) badge.style.display = 'none';
+
+    const notiModal =
+        document.getElementById('notiModal');
+
+    if (notiModal) {
+        notiModal.style.display = 'flex';
     }
+
+
+    // --------------------------------
+    // 今表示している通知の最新ID
+    // --------------------------------
+
+    if (notifications.length > 0) {
+
+        latestNotificationId =
+            notifications.reduce(
+                (max, n) =>
+                    Number(n.notification_id) > Number(max)
+                        ? n.notification_id
+                        : max,
+                "0"
+            );
+
+    }
+
+
+    localStorage.setItem(
+        'lastReadTime',
+        Date.now()
+    );
+
+
+    const badge =
+        document.querySelector('.bell-icon .badge');
+
+    if (badge) {
+        badge.style.display = 'none';
+    }
+}
 
     async function closeNotifications() {
         const notiModal = document.getElementById('notiModal');
