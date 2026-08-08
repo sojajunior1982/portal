@@ -1651,63 +1651,74 @@ function renderListView() {
 // ===============================
 
 html += `
-<div class="noti-content" onclick="event.stopPropagation()">
 
-    <div style="
-        font-size:16px;
-        font-weight:bold;
-        color:#1e3a8a;
-        margin-bottom:12px;
-        border-bottom:2px solid #e2e8f0;
-        padding-bottom:8px;
-    ">
-        🔔 新着通知
-    </div>
+<div
+    id="notiModal"
+    class="noti-modal"
+    onclick="closeNotifications()">
 
-    <div id="notiListArea">
+    <div
+        class="noti-content"
+        onclick="event.stopPropagation()">
 
-        ${
-            notiList.length > 0
-            ? notiList.map(n => `
-                <div class="noti-item">
-
-                    <div class="noti-date">
-                        ${n.date}
-                    </div>
-
-                    ${n.msg}
-
-                </div>
-            `).join("")
-            : `
-            <p style="
-                color:#94a3b8;
-                font-size:13px;
-                text-align:center;
-            ">
-                新着通知はありません
-            </p>
-            `
-        }
-
-    </div>
-
-    <button
-        onclick="closeNotifications()"
-        style="
-            width:100%;
-            margin-top:16px;
-            padding:10px;
-            background:#f1f5f9;
-            color:#475569;
-            border:none;
-            border-radius:8px;
+        <div style="
+            font-size:16px;
             font-weight:bold;
+            color:#1e3a8a;
+            margin-bottom:12px;
+            border-bottom:2px solid #e2e8f0;
+            padding-bottom:8px;
         ">
-        閉じる
-    </button>
+            🔔 新着通知
+        </div>
+
+        <div id="notiListArea">
+
+            ${
+                notiList.length > 0
+                ? notiList.map(n => `
+                    <div class="noti-item">
+
+                        <div class="noti-date">
+                            ${n.date}
+                        </div>
+
+                        ${n.msg}
+
+                    </div>
+                `).join("")
+                : `
+                <p style="
+                    color:#94a3b8;
+                    font-size:13px;
+                    text-align:center;
+                ">
+                    新着通知はありません
+                </p>
+                `
+            }
+
+        </div>
+
+        <button
+            onclick="closeNotifications()"
+            style="
+                width:100%;
+                margin-top:16px;
+                padding:10px;
+                background:#f1f5f9;
+                color:#475569;
+                border:none;
+                border-radius:8px;
+                font-weight:bold;
+            ">
+            閉じる
+        </button>
+
+    </div>
 
 </div>
+
 `;
 
     // ===============================
