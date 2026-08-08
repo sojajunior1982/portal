@@ -1690,31 +1690,33 @@ function renderListView() {
 
         <div id="notiListArea">
 
-            ${
-                notiList.length > 0
-                ? notiList.map(n => `
-                    <div class="noti-item">
+    ${
+        notiList.length > 0
+        ? notiList.map(n => `
+            <div class="noti-item">
 
-    <div class="noti-item">
+                <div class="noti-date">
+                    📅 ${n.date}
+                </div>
 
-    <div class="noti-date">
-        ${n.schedule_date
-            ? `📅 ${n.schedule_date}の予定`
-            : ""}
-    </div>
+                <div>
+                    ${n.msg}
+                </div>
 
-    ${n.msg}
+            </div>
+        `).join("")
+        : `
+        <p style="
+            color:#94a3b8;
+            font-size:13px;
+            text-align:center;
+        ">
+            新着通知はありません
+        </p>
+        `
+    }
 
 </div>
-                `).join("")
-                : `
-                <p style="
-                    color:#94a3b8;
-                    font-size:13px;
-                    text-align:center;
-                ">
-                    新着通知はありません
-                </p>`
             }
 
         </div>
