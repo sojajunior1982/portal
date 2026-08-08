@@ -3659,10 +3659,17 @@ if (event.recruit_roles) {
 
 });
 });
-                    applicants.sort((a,b) => b.status - a.status || a.name.localeCompare(b.name, 'ja'));
-                   const confirmedCount =
+                    applicants.sort((a,b) =>
+    b.status - a.status ||
+    a.name.localeCompare(b.name, 'ja')
+);
+
+const applicantCount = applicants.length;
+
+const confirmedCount =
     applicants.filter(a => a.status === 1).length;
-                    let rowsHtml = "";
+
+let rowsHtml = "";
                     if (applicants.length === 0) {
                         rowsHtml = `<div style="font-size:12px; color:#94a3b8; padding:6px 0;">希望者なし</div>`;
                     } else {
