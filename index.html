@@ -854,18 +854,13 @@ result.push({
     rolesArr.forEach(r => {
 
         out.push(r.role);
-
-        if (r.limit !== "" && r.limit != null) {
-            out.push(String(r.limit));
-        }
-
         out.push(String(r.status));
 
     });
 
     return out.join(",");
-
 }
+    
     function isNewUpdate(updateStr) {
         if (!updateStr) return false;
         const updateDate = new Date(updateStr);
@@ -3627,14 +3622,17 @@ if (event.recruit_roles) {
 
     const arr = event.recruit_roles
         .split(",")
-        .map(v => v.trim())
-        .filter(v => v !== "");
+        .map(v => v.trim());
 
     for (let i = 0; i < arr.length; i += 2) {
-        roles.push(arr[i]);   // ← ロール名だけ取り出す
+
+        const role = arr[i];
+
+        if (role !== "") {
+            roles.push(role);
+        }
     }
-}
-            let rolesBlockHtml = "";
+}         let rolesBlockHtml = "";
             if (roles.length === 0) {
                 rolesBlockHtml = `<p style="color:#94a3b8; text-align:center; padding:20px;">この予定に募集項目はありません</p>`;
             } else {
