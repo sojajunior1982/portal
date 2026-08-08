@@ -1102,24 +1102,21 @@ async function fetchDefaults() {
    // -- Notifications
 function generateNotifications() {
 
-    console.log("NOTIFICATIONS =", notifications);
-
-
     return notifications.map(n => {
 
         // 通知が作成された日時
         const upd = new Date(n.created_at);
 
-        // --------------------------------
-        // 対象となった予定の日付
-        // --------------------------------
+        // 通知された日
+        const notificationDate =
+            `${upd.getMonth() + 1}月${upd.getDate()}日`;
 
+        // 対象となった予定の日付
         let scheduleDateText = "";
 
         if (n.schedule_date) {
 
-            const dateText =
-                String(n.schedule_date);
+            const dateText = String(n.schedule_date);
 
             const match =
                 dateText.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
@@ -1130,18 +1127,7 @@ function generateNotifications() {
                     `${Number(match[2])}月${Number(match[3])}日`;
 
             }
-
         }
-
-        // 日付が取得できなかった場合だけ
-        // 通知作成日を使用
-        if (!scheduleDateText) {
-
-            scheduleDateText =
-                `${upd.getMonth() + 1}月${upd.getDate()}日`;
-
-        }
-
 
         let icon = "";
         let msg = "";
@@ -1152,56 +1138,48 @@ function generateNotifications() {
 
                 icon = "📅";
                 msg =
-                    `「${n.tab_name}」が追加されました。`;
+                    `「${scheduleDateText ? `📅 ${scheduleDateText}　` : ""}${n.tab_name}」が追加されました。`;
 
                 break;
-
 
             case "updated":
 
                 icon = "✏️";
                 msg =
-                    `「${n.tab_name}」が変更されました。`;
+                    `「${scheduleDateText ? `📅 ${scheduleDateText}　` : ""}${n.tab_name}」が変更されました。`;
 
                 break;
-
 
             case "deleted":
 
                 icon = "🗑️";
                 msg =
-                    `「${n.tab_name}」が削除されました。`;
+                    `「${scheduleDateText ? `📅 ${scheduleDateText}　` : ""}${n.tab_name}」が削除されました。`;
 
                 break;
-
 
             case "assigned":
 
                 icon = "🎉";
                 msg =
-                    `「${n.tab_name}」の「${n.detail}」に決まりました。`;
+                    `「${scheduleDateText ? `📅 ${scheduleDateText}　` : ""}${n.tab_name}」の「${n.detail}」に決まりました。`;
 
                 break;
-
 
             default:
                 return null;
         }
 
-
         return {
 
-            notification_id:
-                n.notification_id,
+            notification_id: n.notification_id,
 
-            time:
-                upd.getTime(),
+            time: upd.getTime(),
 
-            date:
-                scheduleDateText,
+            // 通知された日
+            date: notificationDate,
 
-            msg:
-                `${icon} ${msg}`
+            msg: `${icon} ${msg}`
 
         };
 
@@ -1696,12 +1674,10 @@ function renderListView() {
             <div class="noti-item">
 
                 <div class="noti-date">
-                    📅 ${n.date}
+                    ${n.date}
                 </div>
 
-                <div>
-                    ${n.msg}
-                </div>
+                ${n.msg}
 
             </div>
         `).join("")
