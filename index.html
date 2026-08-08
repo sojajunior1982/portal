@@ -3793,21 +3793,51 @@ rowsHtml += `
     }
 
     async function submitConfirmations() {
-        showToast("確定状況を保存中...");
-        const updates = [];
-        Object.keys(confirmStateMap).forEach(sId => {
-            const sMap = confirmStateMap[sId];
-            Object.keys(sMap).forEach(fId => {
-                const person = sMap[fId];
-                updates.push({
-                    schedule_id: sId,
-                    family_id: fId,
-                    name: person.name,
-                    response: stringifyRolesWithStatus(person.roles)
-                });
+
+    showToast("確定状況を保存中...");
+
+    const updates = [];
+
+    Object.keys(confirmStateMap).forEach(sId => {
+
+        const sMap = confirmStateMap[sId];
+
+        Object.keys(sMap).forEach(key => {
+
+            const person = sMap[key];
+
+            updates.push({
+                schedule_id: sId,
+                family_id: person.family_id,   // ★ここ
+                name: person.name,
+                response: stringifyRolesWithStatus(person.roles)
             });
+
         });
 
+    });
+
+    const result = await apiPost({
+        action: 'save_confirmations',
+        updates
+    });
+
+    if (result && result.success) {
+
+        await fetchSchedules(false);
+
+        showToast("保存完了！");
+        renderConfirmRolesListView();
+
+    } else {
+
+        alert(
+            "保存エラー: " +
+            (result ? result.message : "通信エラー")
+        );
+
+    }
+}
         const result = await apiPost({ action: 'save_confirmations', updates });
         if (result && result.success) {
             await fetchSchedules(false);
