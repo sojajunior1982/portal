@@ -1097,88 +1097,120 @@ async function fetchDefaults() {
    // -- Notifications
 function generateNotifications() {
 
-    return notifications.map(n => {
+    return notifications
+        .filter(n => {
 
-        // 通知が作成された日時
-        const upd = new Date(n.created_at);
-
-        // 通知された日
-        const notificationDate =
-            `${upd.getMonth() + 1}月${upd.getDate()}日`;
-
-        // 対象となった予定の日付
-        let scheduleDateText = "";
-
-        if (n.schedule_date) {
-
-            const dateText = String(n.schedule_date);
-
-            const match =
-                dateText.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
-
-            if (match) {
-
-                scheduleDateText =
-                    `${Number(match[2])}月${Number(match[3])}日`;
-
+            // -----------------------------
+            // 全員向け通知
+            // -----------------------------
+            if (!n.family_id) {
+                return true;
             }
-        }
 
-        let icon = "";
-        let msg = "";
+            // -----------------------------
+            // 家族向け通知
+            // -----------------------------
+            return String(n.family_id).trim() ===
+                   String(currentUser.family_id || "").trim();
 
-        switch (n.type) {
+        })
+        .map(n => {
 
-            case "created":
-
-                icon = "📅";
-                msg =
-                    `「${scheduleDateText ? ` ${scheduleDateText}　` : ""}${n.tab_name}」が追加されました。`;
-
-                break;
-
-            case "updated":
-
-                icon = "✏️";
-                msg =
-                    `「${scheduleDateText ? ` ${scheduleDateText}　` : ""}${n.tab_name}」が変更されました。`;
-
-                break;
-
-            case "deleted":
-
-                icon = "🗑️";
-                msg =
-                    `「${scheduleDateText ? ` ${scheduleDateText}　` : ""}${n.tab_name}」が削除されました。`;
-
-                break;
-
-            case "assigned":
-
-                icon = "🎉";
-                msg =
-                    `「${scheduleDateText ? ` ${scheduleDateText}　` : ""}${n.tab_name}」の「${n.detail}」に決まりました。`;
-
-                break;
-
-            default:
-                return null;
-        }
-
-        return {
-
-            notification_id: n.notification_id,
-
-            time: upd.getTime(),
+            // 通知が作成された日時
+            const upd = new Date(n.created_at);
 
             // 通知された日
-            date: notificationDate,
+            const notificationDate =
+                `${upd.getMonth() + 1}月${upd.getDate()}日`;
 
-            msg: `${icon} ${msg}`
+            // 対象となった予定の日付
+            let scheduleDateText = "";
 
-        };
+            if (n.schedule_date) {
 
-    }).filter(Boolean);
+                const dateText =
+                    String(n.schedule_date);
+
+                const match =
+                    dateText.match(
+                        /(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/
+                    );
+
+                if (match) {
+
+                    scheduleDateText =
+                        `${Number(match[2])}月${Number(match[3])}日`;
+
+                }
+            }
+
+            let icon = "";
+            let msg = "";
+
+            switch (n.type) {
+
+                case "created":
+
+                    icon = "📅";
+
+                    msg =
+                        `「${scheduleDateText ? ` ${scheduleDateText}　` : ""}${n.tab_name}」が追加されました。`;
+
+                    break;
+
+
+                case "updated":
+
+                    icon = "✏️";
+
+                    msg =
+                        `「${scheduleDateText ? ` ${scheduleDateText}　` : ""}${n.tab_name}」が変更されました。`;
+
+                    break;
+
+
+                case "deleted":
+
+                    icon = "🗑️";
+
+                    msg =
+                        `「${scheduleDateText ? ` ${scheduleDateText}　` : ""}${n.tab_name}」が削除されました。`;
+
+                    break;
+
+
+                case "assigned":
+
+                    icon = "🎉";
+
+                    msg =
+                        `「${scheduleDateText ? ` ${scheduleDateText}　` : ""}${n.tab_name}」の「${n.detail}」に決まりました。`;
+
+                    break;
+
+
+                default:
+                    return null;
+            }
+
+            return {
+
+                notification_id:
+                    n.notification_id,
+
+                time:
+                    upd.getTime(),
+
+                date:
+                    notificationDate,
+
+                msg:
+                    `${icon} ${msg}`
+
+            };
+
+        })
+        .filter(Boolean);
 }
     
     function openNotifications() {
