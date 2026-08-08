@@ -3794,7 +3794,7 @@ rowsHtml += `
 
     async function submitConfirmations() {
 
-    showToast("確定状況を保存中...");
+    showLoading("確定状況を保存中...");
 
     const updates = [];
 
@@ -3817,24 +3817,35 @@ rowsHtml += `
 
     });
 
-    const result = await apiPost({
-        action: 'save_confirmations',
-        updates
-    });
+    try {
 
-    if (result && result.success) {
+        const result = await apiPost({
+            action: "save_confirmations",
+            updates
+        });
 
-        await fetchSchedules(false);
+        if (result && result.success) {
 
-        showToast("保存完了！");
-        renderConfirmRolesListView();
+            await fetchSchedules(false);
 
-    } else {
+            renderConfirmRolesListView();
 
-        alert(
-            "保存エラー: " +
-            (result ? result.message : "通信エラー")
-        );
+            showToast("保存完了！");
+
+        } else {
+
+            alert(
+                "保存エラー: " +
+                (result ? result.message : "通信エラー")
+            );
+
+        }
+
+    } catch (e) {
+
+        console.error(e);
+
+        alert("保存に失敗しました");
 
     }
 }
