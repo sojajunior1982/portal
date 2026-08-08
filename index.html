@@ -3808,7 +3808,7 @@ rowsHtml += `
 
             updates.push({
                 schedule_id: sId,
-                family_id: person.family_id,   // ★ここ
+                family_id: person.family_id,
                 name: person.name,
                 response: stringifyRolesWithStatus(person.roles)
             });
@@ -3838,16 +3838,6 @@ rowsHtml += `
 
     }
 }
-        const result = await apiPost({ action: 'save_confirmations', updates });
-        if (result && result.success) {
-            await fetchSchedules(false);
-            showToast("保存完了！");
-            renderConfirmRolesListView();
-        } else {
-            alert("保存エラー: " + (result ? result.message : "通信エラー"));
-        }
-    }
-
     
 
     // -- Navigation helpers
