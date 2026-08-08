@@ -3626,17 +3626,26 @@ if (event.recruit_roles) {
 
     for (let i = 0; i < arr.length; i += 2) {
 
-        const role = arr[i];
+        const role = arr[i] || "";
+        const limit = Number(arr[i + 1]) || 0;
 
         if (role !== "") {
-            roles.push(role);
+            roles.push({
+                role: role,
+                limit: limit
+            });
         }
     }
-}         let rolesBlockHtml = "";
+}
+            let rolesBlockHtml = "";
             if (roles.length === 0) {
                 rolesBlockHtml = `<p style="color:#94a3b8; text-align:center; padding:20px;">この予定に募集項目はありません</p>`;
             } else {
-                roles.forEach(role => {
+                
+               roles.forEach(roleInfo => {
+
+    const role = roleInfo.role;
+    const limit = roleInfo.limit;
                     let applicants = [];
                     const scheduleState = confirmStateMap[event.schedule_id] || {};
                     Object.keys(scheduleState).forEach(key => {
@@ -3647,20 +3656,19 @@ if (event.recruit_roles) {
     family_id: person.family_id,
     name: person.name,
     status: foundRole.status,
-    comment: foundRole.comment || person.comment || ""
+
 });
 });
                     applicants.sort((a,b) => b.status - a.status || a.name.localeCompare(b.name, 'ja'));
+                   const confirmedCount =
+    applicants.filter(a => a.status === 1).length;
                     let rowsHtml = "";
                     if (applicants.length === 0) {
                         rowsHtml = `<div style="font-size:12px; color:#94a3b8; padding:6px 0;">希望者なし</div>`;
                     } else {
                         applicants.forEach(app => {
                             const isConfirmed = app.status === 1;
-                            const shortComment =
-    app.comment && app.comment.length > 18
-        ? app.comment.substring(0,18) + "..."
-        : app.comment;
+                            
 
 rowsHtml += `
     <div style="padding:8px 0; border-bottom:1px dashed #f1f5f9;">
@@ -3676,30 +3684,40 @@ rowsHtml += `
                 ${isConfirmed ? '確定中 ✓' : '確定する'}
             </button>
         </div>
-
-        ${
-            app.comment
-                ? `
-                <div
-                    class="comment-preview"
-                    onclick="showComment(${JSON.stringify(app.name)}, ${JSON.stringify(app.comment)})">
-                    💬 ${shortComment}
-                </div>
-                `
-                : ""
-        }
-
     </div>
 `;
                         });
                     }
-                    rolesBlockHtml += `<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; margin-bottom:12px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <span style="font-weight:800; font-size:14px; color:#1e3a8a;">✔️ ${role} (${applicants.length}名)</span>
-                            <button onclick="selectAllForRole('${event.schedule_id}', '${role}')" style="font-size:11px; background:#eff6ff; color:#2563eb; border:1px solid #93c5fd; padding:3px 8px; border-radius:6px; font-weight:bold; cursor:pointer;">全員確定</button>
-                        </div>
-                        ${rowsHtml}
-                    </div>`;
+                    rolesBlockHtml += `
+    <div class="role-block">
+
+        <div class="role-name">
+            🤝 ${role}
+            <span style="
+                font-size:12px;
+                color:#64748b;
+                margin-left:6px;
+            ">
+                ${limit > 0 ? `${limit}名募集` : ""}
+            </span>
+        </div>
+
+        <div style="
+    font-size:12px;
+    color:#64748b;
+    font-weight:bold;
+    margin:4px 0 10px;
+">
+    希望者 ${applicantCount}名 ／
+    <span style="color:${confirmedCount > 0 ? "#059669" : "#94a3b8"};">
+        現在 ${confirmedCount}名確定
+    </span>
+</div>
+
+        ${rowsHtml}
+
+    </div>
+`;
                 });
             }
             html += `<div class="tab-panel ${activeClass}" id="tab-panel-${index}">
